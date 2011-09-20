@@ -27,6 +27,42 @@ trait PrintExp extends Print with EffectExp {
   def print(s: Rep[Any]) = reflectEffect(Print(s))
 }
 
+trait DynamicBase extends Base {
+  trait DynamicRep extends Dynamic {
+    def applyDynamic(method: String)(args: Rep[Any]*): Rep[Any] with DynamicRep
+  }
+  protected def dynamic(x: Rep[Any]): Rep[Any] with DynamicRep  
+}
+
+trait DynamicExp extends DynamicBase with EffectExp {
+  
+  case class DynamicCall(receiver: Rep[Any], method: String, args: List[Rep[Any]]) extends Def[Any]
+  
+  case class DynamicExp(receiver: Rep[Any]) extends Exp[Any] with DynamicRep {
+    override def applyDynamic(method: String)(args: Rep[Any]*): Rep[Any] with DynamicRep =
+      DynamicExp(reflectEffect(DynamicCall(receiver, method, args.toList)))
+  }
+  
+  def dynamic(x: Rep[Any]) = DynamicExp(x)
+
+}
+
+trait JSGenDynamicCall extends JSGenEffect {
+  val IR: DynamicExp
+  import IR._
+  
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+    case DynamicCall(receiver, method, args) =>  emitValDef(sym, 
+      quote(receiver) + "." + method + args.map(quote).mkString("(", ",", ")"))
+    case _ => super.emitNode(sym, rhs)
+  }
+  
+  override def quote(x: Exp[Any]) : String = x match {
+    case DynamicExp(receiver) => quote(receiver)
+    case _ => super.quote(x)
+  }
+}
+
 trait ScalaGenPrint extends ScalaGenEffect {
   val IR: PrintExp
   import IR._
@@ -86,7 +122,19 @@ trait ConditionalProg { this: Arith with Equal with Print with IfThenElse =>
   
 }
 
+trait DynamicProg { this: DynamicBase =>
+  def test(x: Rep[Any]): Rep[Any] = {
+    dynamic(x).foo.bar(x)
+  }
+}
 
+class DynamicTest extends Dynamic {
+  
+  def applyDynamic(method: String)(args: Any*) = {
+    println(method + args.mkString("(", ",", ")"))
+  }
+  
+}
 
 object Main extends App {
   println("-- begin")
@@ -111,6 +159,13 @@ object Main extends App {
     codegen.emitSource(f, "main", new PrintWriter(System.out))
     codegen.emitHTMLPage(() => f(7), new PrintWriter(System.out))
   }
+ 
+  new DynamicProg with DynamicExp { self =>
+    val codegen = new JSGenDynamicCall { val IR: self.type = self }
+    val f = (x: Rep[Any]) => test(x)
+    codegen.emitSource(f, "main", new PrintWriter(System.out))
+  }
 
   println("-- end")
+  (new DynamicTest).foo(1)
 }
