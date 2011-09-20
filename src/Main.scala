@@ -128,14 +128,6 @@ trait DynamicProg { this: DynamicBase =>
   }
 }
 
-class DynamicTest extends Dynamic {
-  
-  def applyDynamic(method: String)(args: Any*) = {
-    println(method + args.mkString("(", ",", ")"))
-  }
-  
-}
-
 object Main extends App {
   println("-- begin")
 
@@ -167,5 +159,4 @@ object Main extends App {
   }
 
   println("-- end")
-  (new DynamicTest).foo(1)
 }
