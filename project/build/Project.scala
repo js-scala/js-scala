@@ -34,7 +34,7 @@ class Project(info: ProjectInfo) extends DefaultProject(info)
   val virtualization_lms_core = "scala" % "virtualization-lms-core_2.9.x-virtualized-SNAPSHOT" % "0.1"
 
   // compile options
-  override def compileOptions = super.compileOptions ++ Seq(/*Unchecked, */Deprecation)
+  override def compileOptions = super.compileOptions ++ Seq(/*Unchecked, */Deprecation) ++ compileOptions("-Xexperimental")
 
   override def testCompileOptions = super.testCompileOptions ++ compileOptions("-Xplugin:"+
     local.scalaVirtualizedHome.get.get+"/misc/scala-devel/plugins/continuations.jar", "-P:continuations:enable")
