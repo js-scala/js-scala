@@ -28,18 +28,21 @@ trait PrintExp extends Print with EffectExp {
 }
 
 trait DynamicBase extends Base {
-  trait DynamicRep extends Dynamic {
-    def applyDynamic(method: String)(args: Rep[Any]*): Rep[Any] with DynamicRep
+  protected type DynamicRep <: DynamicRepImpl with Rep[Any] with Dynamic
+  protected trait DynamicRepImpl extends Dynamic {
+    def applyDynamic(method: String)(args: Rep[Any]*): DynamicRep
   }
-  protected def dynamic(x: Rep[Any]): Rep[Any] with DynamicRep  
+  protected def dynamic(x: Rep[Any]): DynamicRep
 }
 
 trait DynamicExp extends DynamicBase with EffectExp {
   
+  type DynamicRep = DynamicExp
+
   case class DynamicCall(receiver: Rep[Any], method: String, args: List[Rep[Any]]) extends Def[Any]
   
-  case class DynamicExp(receiver: Rep[Any]) extends Exp[Any] with DynamicRep {
-    override def applyDynamic(method: String)(args: Rep[Any]*): Rep[Any] with DynamicRep =
+  case class DynamicExp(receiver: Rep[Any]) extends Rep[Any] with DynamicRepImpl {
+    override def applyDynamic(method: String)(args: Rep[Any]*): DynamicRep =
       DynamicExp(reflectEffect(DynamicCall(receiver, method, args.toList)))
   }
   
