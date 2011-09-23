@@ -12,17 +12,22 @@ import java.io.PrintWriter
   trait JSLiteral extends Base with EmbeddedControls {
     trait JSLiteral extends Row[Rep]
     override def __new[T](args: (String, Any)*): T = newRow(args: _*).asInstanceOf[T]
-    def newRow(args: (String, Any)*): JSLiteral
+    def newRow(args: (String, Any)*): Rep[JSLiteral]
     
-    class JSLiteralOps {
-      def applyDynamic[T](n: String)(as: AnyRef*): Rep[T] = sys.error(n + as.mkString("(", ",", ")"))
-    }      
-    implicit def jsLiteralOps[T <: JSLiteral](qual: Rep[T]): JSLiteralOps = new JSLiteralOps
+    abstract class JSLiteralOps {
+      val receiver: Rep[JSLiteral]
+      def applyDynamic[T](n: String)(as: AnyRef*): Rep[T]
+    }
+    implicit def jsLiteralOps[T <: JSLiteral](receiver: Rep[T]): JSLiteralOps
   }
   
   trait JSLiteralExp extends JSLiteral with BaseExp {
-    case class JSLiteralExp(args: List[(String, Any)]) extends Def[Any] with JSLiteral
-    def newRow(args: (String, Any)*) : JSLiteral = JSLiteralExp(args.toList)
+    case class JSLiteralExp(args: List[(String, Any)]) extends Def[JSLiteral]
+    class JSLiteralOpsImpl(val receiver: Rep[JSLiteral]) extends JSLiteralOps {
+      def applyDynamic[T](n: String)(as: AnyRef*): Rep[T] = sys.error(n + as.mkString("(", ",", ")"))
+    }
+    implicit def jsLiteralOps[T <: JSLiteral](receiver: Rep[T]): JSLiteralOps = new JSLiteralOpsImpl(receiver)
+    def newRow(args: (String, Any)*) : Rep[JSLiteral] = JSLiteralExp(args.toList)
   }
   
 //  object Test extends EmbeddedControls {
