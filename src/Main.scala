@@ -94,10 +94,19 @@ trait ConditionalProg { this: Arith with Equal with Print with IfThenElse =>
 
 trait DynamicProg { this: DynamicBase =>
   def test(x: Rep[Any]): Rep[Any] = {
-    dynamic(x).foo.bar(x)
+    dynamic(x).foo_field.foo_fun().bar(x)
   }
 }
 
+trait LiteralProg { this: Arith with JSLiteral =>
+  def test(x: Rep[Double]): Rep[Double] = {
+    val o = new JSLiteral {
+      val a = x + 1
+    }
+    o.a
+  }
+}
+  
 object Main extends App {
   println("-- begin")
 
@@ -132,4 +141,8 @@ object Main extends App {
   }
 
   println("-- end")
+  
+  new LiteralProg with ArithExpOpt with JSLiteralExp { self =>
+    println(test(1.0))
+  }
 }
