@@ -11,8 +11,8 @@ import java.io.PrintWriter
   
   trait JSLiteral extends Base with EmbeddedControls {
     trait JSLiteral extends Row[Rep]
-    override def __new[T](args: (String, Any)*): T = newRow(args: _*).asInstanceOf[T]
-    def newRow(args: (String, Any)*): Rep[JSLiteral]
+    override def __new[T](args: (String, Any)*): T = newJSLiteral(args: _*).asInstanceOf[T]
+    def newJSLiteral(args: (String, Any)*): Rep[JSLiteral]
     
     abstract class JSLiteralOps {
       val receiver: Rep[JSLiteral]
@@ -27,7 +27,7 @@ import java.io.PrintWriter
       def applyDynamic[T](n: String)(as: AnyRef*): Rep[T] = sys.error(n + as.mkString("(", ",", ")"))
     }
     implicit def jsLiteralOps[T <: JSLiteral](receiver: Rep[T]): JSLiteralOps = new JSLiteralOpsImpl(receiver)
-    def newRow(args: (String, Any)*) : Rep[JSLiteral] = JSLiteralExp(args.toList)
+    def newJSLiteral(args: (String, Any)*) : Rep[JSLiteral] = JSLiteralExp(args.toList)
   }
   
 //  object Test extends EmbeddedControls {
