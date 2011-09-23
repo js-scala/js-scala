@@ -14,14 +14,14 @@ trait DynamicExp extends DynamicBase with EffectExp {
   
   type DynamicRep = DynamicExp
 
-  case class DynamicCall(receiver: Rep[Any], method: String, args: List[Rep[Any]]) extends Def[Any]
+  case class DynamicCall(receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[Any]
   
-  case class DynamicExp(receiver: Rep[Any]) extends Exp[Any] with DynamicRepImpl {
-    override def applyDynamic(method: String)(args: Rep[Any]*): DynamicRep =
+  case class DynamicExp(receiver: Exp[Any]) extends Exp[Any] with DynamicRepImpl {
+    override def applyDynamic(method: String)(args: Exp[Any]*): DynamicExp =
       dynamic(reflectEffect(DynamicCall(receiver, method, args.toList)))
   }
   
-  def dynamic(x: Rep[Any]) = DynamicExp(x)
+  def dynamic(x: Exp[Any]) = DynamicExp(x)
 
 }
 
