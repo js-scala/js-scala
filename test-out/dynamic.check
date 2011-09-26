@@ -1,0 +1,7 @@
+-- begin
+function main(x0) {
+var x1 = x0.foo()
+var x2 = x1.bar(x0)
+return x2
+}
+-- end
