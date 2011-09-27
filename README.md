@@ -1,6 +1,7 @@
 ### Setup
 
-* From [`scala-virtualized`](http://github.com/TiarkRompf/scala-virtualized):
+* From [`scala-dev`](http://github.com/gkossakowski/scala-dev):
+  * Run `git checkout js`.
   * Run `ant fastdist`.
 
 * From [`virtualization-lms-core`](http://github.com/TiarkRompf/virtualization-lms-core):
