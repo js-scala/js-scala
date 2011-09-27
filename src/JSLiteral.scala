@@ -10,24 +10,30 @@ import java.io.PrintWriter
   // class ObjDef[T] extends Exp[Row[Rep] with T]
   
   trait JSLiteral extends Base with EmbeddedControls {
-    trait JSLiteral extends Row[Rep]
+    type JSLiteral <: Row[Rep]
     override def __new[T](args: (String, Any)*): T = newJSLiteral(args: _*).asInstanceOf[T]
     def newJSLiteral(args: (String, Any)*): Rep[JSLiteral]
     
     abstract class JSLiteralOps {
-      val receiver: Rep[JSLiteral]
       def applyDynamic[T](n: String)(as: AnyRef*): Rep[T]
+      def selectDynamic[T](field: String): Rep[T]
     }
-    implicit def jsLiteralOps[T <: JSLiteral](receiver: Rep[T]): JSLiteralOps
+    implicit def jsLiteralOps(receiver: Rep[JSLiteral]): JSLiteralOps
   }
   
   trait JSLiteralExp extends JSLiteral with BaseExp {
-    case class JSLiteralExp(args: List[(String, Any)]) extends Def[JSLiteral]
-    class JSLiteralOpsImpl(val receiver: Rep[JSLiteral]) extends JSLiteralOps {
-      def applyDynamic[T](n: String)(as: AnyRef*): Rep[T] = sys.error(n + as.mkString("(", ",", ")"))
+    trait JSLiteral extends Row[Rep]
+    case class JSLiteralExp(args: List[(String, Exp[Any])]) extends Exp[JSLiteral]
+    class JSLiteralOpsImpl(val receiver: Exp[JSLiteral]) extends JSLiteralOps {
+      def applyDynamic[T](n: String)(as: AnyRef*): Rep[T] =
+        sys.error(receiver.toString +
+          ".applyDynamic(%1s)(%2s)".format(n, as.mkString("(", ",", ")")))
+
+      def selectDynamic[T](field: String): Rep[T] =
+        sys.error(receiver.toString + ".selectDynamic(%1s)".format(field))
     }
-    implicit def jsLiteralOps[T <: JSLiteral](receiver: Rep[T]): JSLiteralOps = new JSLiteralOpsImpl(receiver)
-    def newJSLiteral(args: (String, Any)*) : Rep[JSLiteral] = JSLiteralExp(args.toList)
+    implicit def jsLiteralOps(receiver: Exp[JSLiteral]): JSLiteralOps = new JSLiteralOpsImpl(receiver)
+    def newJSLiteral(args: (String, Any)*) : Exp[JSLiteral] = JSLiteralExp(args.toList collect { case (name, arg: Exp[_]) => (name, arg) })
   }
   
 //  object Test extends EmbeddedControls {

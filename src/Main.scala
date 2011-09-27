@@ -101,7 +101,8 @@ trait DynamicProg { this: DynamicBase =>
 trait LiteralProg { this: Arith with JSLiteral =>
   def test(x: Rep[Double]): Rep[Double] = {
     val o = new JSLiteral {
-      val a = x + 1
+      val a = x
+      val b: Rep[Double] = x + 2
     }
     o.a
   }
