@@ -1,8 +1,10 @@
 ### Setup
 
 * From [`scala-dev`](http://github.com/gkossakowski/scala-dev):
+  * Run `git checkout virtualized-master`.
+  * Run `ant replacelocker`.
   * Run `git checkout js`.
-  * Run `ant fastdist`.
+  * Run `ant clean && ant fastdist`.
 
 * From [`virtualization-lms-core`](http://github.com/TiarkRompf/virtualization-lms-core):
   * Run `git checkout delite-develop`.
