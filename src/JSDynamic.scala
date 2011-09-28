@@ -32,7 +32,7 @@ trait DynamicExp extends DynamicBase with EffectExp {
 
 }
 
-trait JSGenDynamicCall extends JSGenEffect {
+trait JSGenDynamic extends JSGenEffect {
   val IR: DynamicExp
   import IR._
   

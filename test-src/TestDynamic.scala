@@ -19,7 +19,7 @@ class TestDynamic extends FileDiffSuite {
       println("-- begin")
 
       new DynamicProg with DynamicExp { self =>
-        val codegen = new JSGenDynamicCall { val IR: self.type = self }
+        val codegen = new JSGenDynamic { val IR: self.type = self }
         val f = (x: Rep[Any]) => test(x)
         codegen.emitSource(f, "main", new PrintWriter(System.out))
       }
