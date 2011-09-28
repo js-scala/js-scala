@@ -21,8 +21,24 @@ trait JSLiteralExp extends JSLiteral with BaseExp {
   case class JSLiteralDef(members: List[(String, Exp[Any])]) extends Def[JSLiteral]
   case class MemberCall(receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[Any]
   case class MemberSelect(receiver: Exp[Any], field: String) extends Def[Any]
-  case class Member(value: Exp[Any]) extends Def[Any]
-  case class JSLiteralSelf(map: scala.collection.mutable.Map[String, Exp[Any]]) extends Exp[JSLiteral]
+  private class Self(members: Map[String, Exp[JSLiteral] => Exp[Any]]) extends Exp[JSLiteral] {
+    import scala.collection.mutable.{Map => MutMap}
+    private val pending: MutMap[String, Exp[JSLiteral] => Exp[Any]] = MutMap(members.toSeq: _*)
+    private val done: MutMap[String, Exp[Any]] = MutMap.empty
+    private def eval(member: String): Exp[Any] = {
+      val x = pending(member)(this)
+      pending.remove(member)
+      done.update(member, x)
+      x
+    }
+    def apply(member: String): Exp[Any] = done.getOrElseUpdate(member, eval(member))
+  }
+  class SelfOps(receiver: Self) extends JSLiteralOps {
+    def applyDynamic[T](method: String)(args: Exp[Any]*): Exp[T] =
+      sys.error("apply dynamic is not allowed on Self")
+
+    def selectDynamic[T](field: String): Exp[T] = receiver(field).asInstanceOf[Exp[T]]
+  }
 
   class JSLiteralOpsImpl(val receiver: Exp[JSLiteral]) extends JSLiteralOps {
     def applyDynamic[T](method: String)(args: Exp[Any]*): Exp[T] =
@@ -31,15 +47,14 @@ trait JSLiteralExp extends JSLiteral with BaseExp {
     def selectDynamic[T](field: String): Exp[T] =
       (MemberSelect(receiver, field): Exp[Any]).asInstanceOf[Exp[T]]
   }
-  implicit def jsLiteralOps(receiver: Exp[JSLiteral]): JSLiteralOps = new JSLiteralOpsImpl(receiver)
+  implicit def jsLiteralOps(receiver: Exp[JSLiteral]): JSLiteralOps = receiver match {
+    case receiver: Self => new SelfOps(receiver)
+    case receiver =>       new JSLiteralOpsImpl(receiver)
+  }
   def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): Exp[JSLiteral] = {
-    def ensureSym(exp: Exp[Any]): Exp[Any] = exp match {
-      case Sym(_) => exp
-      case _ => Member(exp)
-    }
-    val map = scala.collection.mutable.Map[String, Exp[Any]]()
-    val evalArgs = args.toList map { case (name, f) => (name, ensureSym(f(JSLiteralSelf(map)))) }
-    evalArgs.foreach(map += _)
+    val self = new Self(args.toMap)
+    val argNames = args.toList.map(_._1)
+    val evalArgs = argNames.map(x => x -> self(x))
     JSLiteralDef(evalArgs)
   }
 }
@@ -48,19 +63,13 @@ trait JSGenLiteral extends JSGenBase {
   val IR: JSLiteralExp
   import IR._
 
-  def getMember(receiver : Exp[Any], member: String) = receiver match {
-    case JSLiteralSelf(map) => quote(map.get(member).get)
-    case _ => quote(receiver) + "." + member
-  }
-
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
     case JSLiteralDef(members) => emitValDef(sym,
       members.map({case (name, value) => "'" + name + "' : " + quote(value)}).mkString("{", ",", "}"))
-    case Member(value) => emitValDef(sym, quote(value))
     case MemberCall(receiver, method, args) =>  emitValDef(sym,
-      getMember(receiver, method) + args.map(quote).mkString("(", ",", ")"))
-    case MemberSelect(receiver, field) => emitValDef(sym,
-      getMember(receiver, field))
+      quote(receiver) + "." + method + args.map(quote).mkString("(", ",", ")"))
+    case MemberSelect(receiver, field) =>
+      emitValDef(sym, quote(receiver) + "." + field)
     case _ => super.emitNode(sym, rhs)
   }
 }

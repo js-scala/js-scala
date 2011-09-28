@@ -105,9 +105,19 @@ trait LiteralProg { this: Arith with JSLiteral =>
       val b = x + 2
       val c = 1.0
       val d = a + b
+      val e = c + 2.0
     }
     o.a
   }
+
+ def test2(x: Rep[Double]): Rep[Double] = {
+   x + 2.0
+ }
+ // This is commented out due to: https://github.com/adriaanm/scala-dev/pull/5
+ // def test3(x: Rep[Double]): Rep[Double] = {
+ //   val o = new JSLiteral { val a = x + 2.0 }
+ //   o.a
+ // }
 }
   
 object Main extends App {
