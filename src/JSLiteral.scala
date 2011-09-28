@@ -4,8 +4,9 @@ import java.io.PrintWriter
   
 trait JSLiteral extends Base with EmbeddedControls {
   type JSLiteral <: Row[Rep]
-  override def __new[T](args: (String, Any)*): T = newJSLiteral(args: _*).asInstanceOf[T]
-  def newJSLiteral(args: (String, Any)*): Rep[JSLiteral]
+  override def __new[T, R[x]](args: (String, T => (R[t] forSome{type t}))*): T =
+    newJSLiteral(args.map(_.asInstanceOf[(String, Rep[JSLiteral] => (Rep[t] forSome{type t}))]): _*).asInstanceOf[T]
+  def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): Rep[JSLiteral]
   
   abstract class JSLiteralOps {
     def applyDynamic[T](n: String)(as: AnyRef*): Rep[T]
@@ -26,5 +27,6 @@ trait JSLiteralExp extends JSLiteral with BaseExp {
       sys.error(receiver.toString + ".selectDynamic(%1s)".format(field))
   }
   implicit def jsLiteralOps(receiver: Exp[JSLiteral]): JSLiteralOps = new JSLiteralOpsImpl(receiver)
-  def newJSLiteral(args: (String, Any)*) : Exp[JSLiteral] = JSLiteralExp(args.toList collect { case (name, arg: Exp[_]) => (name, arg) })
+  def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): Exp[JSLiteral] =
+    JSLiteralExp(args.toList collect { case (name, arg: Exp[_]) => (name, arg) })
 }
