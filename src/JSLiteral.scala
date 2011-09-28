@@ -29,7 +29,7 @@ trait JSLiteralExp extends JSLiteral with BaseExp {
   }
   implicit def jsLiteralOps(receiver: Exp[JSLiteral]): JSLiteralOps = new JSLiteralOpsImpl(receiver)
   def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): Exp[JSLiteral] = {
-    val evalArgs = args.toList map { case (name, f) => (name, f(null).asInstanceOf[Exp[Any]]) }
+    val evalArgs = args.toList map { case (name, f) => (name, f(null)) }
     JSLiteralDef(evalArgs)
   }
 }
