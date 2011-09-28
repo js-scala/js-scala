@@ -17,7 +17,7 @@ trait JSLiteral extends Base with EmbeddedControls {
 
 trait JSLiteralExp extends JSLiteral with BaseExp {
   trait JSLiteral extends Row[Rep]
-  case class JSLiteralExp(args: List[(String, Exp[Any])]) extends Exp[JSLiteral]
+  case class JSLiteralDef(args: List[(String, Exp[Any])]) extends Def[JSLiteral]
   class JSLiteralOpsImpl(val receiver: Exp[JSLiteral]) extends JSLiteralOps {
     def applyDynamic[T](n: String)(as: AnyRef*): Rep[T] =
       sys.error(receiver.toString +
@@ -27,6 +27,7 @@ trait JSLiteralExp extends JSLiteral with BaseExp {
       sys.error(receiver.toString + ".selectDynamic(%1s)".format(field))
   }
   implicit def jsLiteralOps(receiver: Exp[JSLiteral]): JSLiteralOps = new JSLiteralOpsImpl(receiver)
-  def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): Exp[JSLiteral] =
-    JSLiteralExp(args.toList collect { case (name, arg: Exp[_]) => (name, arg) })
+  def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): Exp[JSLiteral] = {
+    JSLiteralDef(args.toList collect { case (name, arg: Exp[_]) => (name, arg) })
+  }
 }
