@@ -102,8 +102,9 @@ trait LiteralProg { this: Arith with JSLiteral =>
   def test(x: Rep[Double]): Rep[Double] = {
     val o = new JSLiteral {
       val a = x
+      val b = x + 2
       val c = 1.0
-//      val b: Rep[Double] = x + 2
+      val d = a + b
     }
     o.a
   }

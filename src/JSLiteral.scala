@@ -30,7 +30,11 @@ trait JSLiteralExp extends JSLiteral with BaseExp {
   }
   implicit def jsLiteralOps(receiver: Exp[JSLiteral]): JSLiteralOps = new JSLiteralOpsImpl(receiver)
   def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): Exp[JSLiteral] = {
-    val evalArgs = args.toList map { case (name, f) => (name, toAtom(Member(f(null)))) }
+    def ensureSym(exp: Exp[Any]): Exp[Any] = exp match {
+      case Sym(_) => exp
+      case _ => Member(exp)
+    }
+    val evalArgs = args.toList map { case (name, f) => (name, ensureSym(f(null))) }
     JSLiteralDef(evalArgs)
   }
 }
@@ -49,4 +53,4 @@ trait JSGenLiteral extends JSGenBase {
       emitValDef(sym, quote(receiver) + "." + field)
     case _ => super.emitNode(sym, rhs)
   }
-  }
+}
