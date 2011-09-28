@@ -102,7 +102,7 @@ trait LiteralProg { this: Arith with JSLiteral =>
   def test(x: Rep[Double]): Rep[Double] = {
     val o = new JSLiteral {
       val a = x
-      val b: Rep[Double] = x + 2
+//      val b: Rep[Double] = x + 2
     }
     o.a
   }
@@ -143,7 +143,9 @@ object Main extends App {
 
   println("-- end")
   
-  new LiteralProg with ArithExpOpt with JSLiteralExp { self =>
-    println(test(1.0))
+  new LiteralProg with JSLiteralExp with ArithExpOpt { self =>
+    val codegen = new JSGenLiteral with JSGenArith { val IR: self.type = self }
+    val f = (x: Rep[Double]) => test(x)
+    codegen.emitSource(f, "main", new PrintWriter(System.out))
   }
 }
