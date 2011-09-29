@@ -9,7 +9,6 @@ trait JSLiteral extends Base with EmbeddedControls {
   def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): Rep[JSLiteral]
   
   abstract class JSLiteralOps {
-    def applyDynamic[T](method: String)(args: Rep[Any]*): Rep[T]
     def selectDynamic[T](field: String): Rep[T]
   }
   implicit def jsLiteralOps(receiver: Rep[JSLiteral]): JSLiteralOps
@@ -19,7 +18,6 @@ trait JSLiteralExp extends JSLiteral with BaseExp {
   trait JSLiteral extends Row[Rep]
 
   case class JSLiteralDef(members: List[(String, Exp[Any])]) extends Def[JSLiteral]
-  case class MemberCall(receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[Any]
   case class MemberSelect(receiver: Exp[Any], field: String) extends Def[Any]
   private class Self(members: Map[String, Exp[JSLiteral] => Exp[Any]]) extends Exp[JSLiteral] {
     import scala.collection.mutable.{Map => MutMap}
@@ -34,16 +32,10 @@ trait JSLiteralExp extends JSLiteral with BaseExp {
     def apply(member: String): Exp[Any] = done.getOrElseUpdate(member, eval(member))
   }
   class SelfOps(receiver: Self) extends JSLiteralOps {
-    def applyDynamic[T](method: String)(args: Exp[Any]*): Exp[T] =
-      sys.error("apply dynamic is not allowed on Self")
-
     def selectDynamic[T](field: String): Exp[T] = receiver(field).asInstanceOf[Exp[T]]
   }
 
   class JSLiteralOpsImpl(val receiver: Exp[JSLiteral]) extends JSLiteralOps {
-    def applyDynamic[T](method: String)(args: Exp[Any]*): Exp[T] =
-      (MemberCall(receiver, method, args.toList): Exp[Any]).asInstanceOf[Exp[T]]
-
     def selectDynamic[T](field: String): Exp[T] =
       (MemberSelect(receiver, field): Exp[Any]).asInstanceOf[Exp[T]]
   }
@@ -66,8 +58,6 @@ trait JSGenLiteral extends JSGenBase {
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
     case JSLiteralDef(members) => emitValDef(sym,
       members.map({case (name, value) => "'" + name + "' : " + quote(value)}).mkString("{", ",", "}"))
-    case MemberCall(receiver, method, args) =>  emitValDef(sym,
-      quote(receiver) + "." + method + args.map(quote).mkString("(", ",", ")"))
     case MemberSelect(receiver, field) =>
       emitValDef(sym, quote(receiver) + "." + field)
     case _ => super.emitNode(sym, rhs)
