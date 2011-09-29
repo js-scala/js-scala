@@ -25,7 +25,7 @@ trait DynamicExp extends DynamicBase with EffectExp {
     override def selectDynamic(field: String): DynamicExp =
       //no call to reflectEffect at the moment because selecting field is not sideeffecting operation
       //probably we need some other way of expressing the effect (like reading effect)
-      DynamicExp(DynamicSelect(receiver, field))
+      dynamic(DynamicSelect(receiver, field))
   }
   
   def dynamic(x: Exp[Any]) = DynamicExp(x)
