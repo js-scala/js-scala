@@ -102,7 +102,7 @@ trait LiteralProg { this: Arith with JSLiteral =>
   def test(x: Rep[Double]): Rep[Double] = {
     val o = new JSLiteral {
       val a = x
-      val b = x + 2
+      val b = x + 2.0
       val c = 1.0
       val d = a + b
       val e = c + 2.0
@@ -110,18 +110,19 @@ trait LiteralProg { this: Arith with JSLiteral =>
     o.a
   }
 
- def test2(x: Rep[Double]): Rep[Double] = {
-   x + 2.0
- }
- // This is commented out due to: https://github.com/adriaanm/scala-dev/pull/5
- // def test3(x: Rep[Double]): Rep[Double] = {
- //   val o = new JSLiteral { val a = x + 2.0 }
- //   o.a
- // }
+  def test2(x: Rep[Double]): Rep[Double] = {
+    x + 2.0
+  }
+
+  def test3(x: Rep[Double]): Rep[Double] = {
+    val o = new JSLiteral { val a = x + 2 }
+    o.a
+  }
+}
 
 trait FunProg { this: JSFunctions =>
   def test(x: Rep[Any]): Rep[Any] = {
-    val id = fun { x : Rep[Any] => x}
+    val id = fun { x : Rep[Any] => x }
     id(x)
   }
 }
