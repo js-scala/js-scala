@@ -118,6 +118,12 @@ trait LiteralProg { this: Arith with JSLiteral =>
  //   val o = new JSLiteral { val a = x + 2.0 }
  //   o.a
  // }
+
+trait FunProg { this: JSFunctions =>
+  def test(x: Rep[Any]): Rep[Any] = {
+    val id = fun { x : Rep[Any] => x}
+    id(x)
+  }
 }
   
 object Main extends App {
@@ -158,6 +164,12 @@ object Main extends App {
   new LiteralProg with JSLiteralExp with ArithExpOpt { self =>
     val codegen = new JSGenLiteral with JSGenArith { val IR: self.type = self }
     val f = (x: Rep[Double]) => test(x)
+    codegen.emitSource(f, "main", new PrintWriter(System.out))
+  }
+
+  new FunProg with JSFunctionsExp { self =>
+    val codegen = new JSGenFunctions { val IR: self.type = self }
+    val f = (x: Rep[Any]) => test(x)
     codegen.emitSource(f, "main", new PrintWriter(System.out))
   }
 }
