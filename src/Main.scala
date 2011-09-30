@@ -3,17 +3,6 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 
-
-trait JSGenEqual extends JSGenBase {
-  val IR: EqualExp
-  import IR._
-  
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case Equal(a,b) =>  emitValDef(sym, "" + quote(a) + "==" + quote(b))
-    case _ => super.emitNode(sym, rhs)
-  }
-}
-
 trait Print extends Base {
   implicit def unit(s: String): Rep[String]
   def print(s: Rep[Any]): Rep[Unit]
