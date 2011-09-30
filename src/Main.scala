@@ -115,6 +115,13 @@ trait FunProg { this: JSFunctions =>
     id(x)
   }
 }
+
+trait SomeProg { this: JS =>
+  def test(x: Rep[Any]): Rep[Any] = {
+    val id = fun { x : Rep[Any] => x }
+    id(x)
+  }
+}
   
 object Main extends App {
   println("-- begin")
@@ -159,6 +166,12 @@ object Main extends App {
 
   new FunProg with JSFunctionsExp { self =>
     val codegen = new JSGenFunctions { val IR: self.type = self }
+    val f = (x: Rep[Any]) => test(x)
+    codegen.emitSource(f, "main", new PrintWriter(System.out))
+  }
+
+  new SomeProg with JSExp { self =>
+    val codegen = new JSGen { val IR: self.type = self }
     val f = (x: Rep[Any]) => test(x)
     codegen.emitSource(f, "main", new PrintWriter(System.out))
   }
