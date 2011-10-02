@@ -29,8 +29,9 @@ class Project(info: ProjectInfo) extends DefaultProject(info)
   // target directory layout (standard for now)
   
   // dependencies
-  val scalaToolsSnapshots = ScalaToolsSnapshots
-  val scalatest = "org.scalatest" % "scalatest" % "1.4-SNAPSHOT" //% "test"
+  //val scalaToolsSnapshots = ScalaToolsSnapshots
+  val dropbox = "Dropbox" at "http://dl.dropbox.com/u/12870350/scala-virtualized"
+  val scalatest = "org.scalatest" % "scalatest_2.10.0-virtualized-SNAPSHOT" % "1.6.1-SNAPSHOT" % "test"
   val virtualization_lms_core = "scala" % "virtualization-lms-core_2.9.x-virtualized-SNAPSHOT" % "0.1"
 
   // compile options
