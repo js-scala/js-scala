@@ -14,7 +14,7 @@ class Project(info: ProjectInfo) extends DefaultProject(info)
   
   // use the local scala-virtualized compiler and library
   override def localScala =
-    defineScala("2.9.x-virtualized-SNAPSHOT", new File(local.scalaVirtualizedHome.get.getOrElse {
+    defineScala("2.10.x-virtualized-SNAPSHOT", new File(local.scalaVirtualizedHome.get.getOrElse {
       log.error("scala.virtualized.home needs to be defined in local.properties and "+
       "must point to a valid scala-virtualized home directory"); "<undefined>"
     }))::Nil
