@@ -16,6 +16,11 @@ trait JSCodegen extends GenericCodegen {
     stream.flush
   }
 
+  def emitSource0[B](f: () => Exp[B], methName: String, stream: PrintWriter)(implicit mB: Manifest[B]): Unit = {
+    val y = f()
+    emitSourceAnyArity(Nil, y, methName, stream)
+  }
+
   def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)(implicit mA: Manifest[A], mB: Manifest[B]): Unit = {
     val x = fresh[A]
     val y = f(x)
@@ -68,6 +73,10 @@ trait JSCodegen extends GenericCodegen {
 
 trait JSNestedCodegen extends GenericNestedCodegen with JSCodegen {
   import IR._
+
+  override def emitSource0[B](f: () => Exp[B], methName: String, stream: PrintWriter)(implicit mB: Manifest[B]): Unit = {
+    super.emitSource0(() => reifyEffects(f()), methName, stream)
+  }
 
   // TODO: we shouldn't need the manifests here (aks)
   override def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)
