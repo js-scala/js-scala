@@ -59,6 +59,11 @@ trait JSCodegen extends GenericCodegen {
   def emitValDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit = {
     stream.println("var " + quote(sym) + " = " + rhs)
   }
+
+  override def quote(x: Exp[Any]) : String = x match {
+    case Const(()) => "undefined"
+    case _ => super.quote(x)
+  }
 }
 
 trait JSNestedCodegen extends GenericNestedCodegen with JSCodegen {
