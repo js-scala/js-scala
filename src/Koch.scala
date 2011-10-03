@@ -17,7 +17,7 @@ object Koch {
           c.lineTo(len, 0);   //   Just draw a horizontal line
         }                     //                                       _  _
         else {                // Recursive case: draw 4 sub-legs like:  \/
-          c.scale(1/3,1/3);   // Sub-legs are 1/3rd the size of this leg
+          c.scale(1.0/3,1.0/3);   // Sub-legs are 1/3rd the size of this leg
           leg(n-1);           // Recurse for the first sub-leg
           c.rotate(60*deg);   // Turn 60 degrees clockwise
           leg(n-1);           // Second sub-leg
