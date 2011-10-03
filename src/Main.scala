@@ -118,7 +118,7 @@ trait FunProg { this: JSFunctions =>
 
 trait SomeProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {
-    lazy val id: Rep[Any => Any] = fun { x : Rep[Any] => id(x) }
+    val id = fun { x : Rep[Any] => x }
     id(x)
   }
 }
