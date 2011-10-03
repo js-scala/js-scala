@@ -118,7 +118,10 @@ trait FunProg { this: JSFunctions =>
 
 trait SomeProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {
-    lazy val id: Rep[Any => Any] = fun { x : Rep[Any] => id(x) }
+    lazy val id: Rep[Any => Any] = fun { x : Rep[Any] =>
+      dynamic(x).foo.bar()
+      id(x)
+    }
     id(x)
   }
 }
