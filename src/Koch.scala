@@ -63,4 +63,26 @@ object Koch {
       codegen.emitSource0(draw _, "draw", pw)
     }
   }
+
+  def genHtml = {
+    <html>
+      <head>
+        <title>Koch</title>
+        <script type="text/javascript">
+          {
+            val writer = new java.io.StringWriter
+            codegen(new java.io.PrintWriter(writer))
+            scala.xml.Unparsed(writer.toString)
+          }
+        </script>
+      </head>
+      <body onLoad="draw();">
+        <canvas id="canvas" width="1000" height="500"></canvas>
+      </body>
+    </html>
+  }
+
+  def writeHtml(filename: String) = {
+    scala.xml.XML.save(filename, genHtml)
+  }
 }

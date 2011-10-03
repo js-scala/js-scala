@@ -179,5 +179,5 @@ object Main extends App {
     codegen.emitSource(f, "main", new PrintWriter(System.out))
   }
 
-  Koch.codegen(new PrintWriter(System.out))
+  Koch.writeHtml("koch.html")
 }
