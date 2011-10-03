@@ -178,4 +178,6 @@ object Main extends App {
     val f = (x: Rep[Any]) => test(x)
     codegen.emitSource(f, "main", new PrintWriter(System.out))
   }
+
+  Koch.codegen(new PrintWriter(System.out))
 }
