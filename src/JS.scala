@@ -4,6 +4,6 @@ trait JS extends Arith with Equal with IfThenElse with DynamicBase with JSFuncti
 
 trait JSExp extends JS with ArithExpOpt with EqualExp with IfThenElseExp with DynamicExp with JSFunctionsExp with JSLiteralExp
 
-trait JSGen extends JSGenArith with JSGenEqual with JSGenIfThenElse with JSGenDynamic with JSGenFunctions with JSGenLiteral {
+trait JSGen extends JSGenArith with JSGenEqual with JSGenIfThenElse with JSGenDynamic with JSGenFunctions with JSGenLiteral with JSGenEffect {
   val IR: JSExp
 }
