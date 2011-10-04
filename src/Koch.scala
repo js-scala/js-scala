@@ -5,8 +5,7 @@ object Koch {
   trait KochProg { this: JS with Doms =>
     val deg = Math.PI/180;    // For converting degrees to radians
 
-    def snowflake(c_ : Rep[Any], n : Rep[Double], x : Rep[Double], y : Rep[Double], len : Rep[Double]) {
-      val c = dynamic(c_)
+    def snowflake(c : DynamicRep, n : Rep[Double], x : Rep[Double], y : Rep[Double], len : Rep[Double]) {
       // Draw a single leg of a level-n Koch snowflake.
       // This function leaves the current point at the end of the leg it has
       // drawn and translates the coordinate system so the current point is (0,0).
@@ -58,7 +57,7 @@ object Koch {
     new KochProg with JSExp with DomsExp { self =>
       val codegen = new JSGen with GenDoms { val IR: self.type = self }
       //codegen.emitSource5(snowflake _, "snowflake", pw)
-      //It's enough to emit draw, it will call snowFlake and will inline
+      //It's enough to emit draw, it will call snowflake and will inline
       //what's needed. It's quite amazing, actually.
       codegen.emitSource0(draw _, "draw", pw)
     }
