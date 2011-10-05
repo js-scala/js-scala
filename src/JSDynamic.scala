@@ -3,12 +3,12 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 
 trait DynamicBase extends Base {
-  protected type DynamicRep <: DynamicRepImpl with Rep[Any]
-  protected trait DynamicRepImpl extends Dynamic {
+  type DynamicRep <: DynamicRepImpl with Rep[Any]
+  trait DynamicRepImpl extends Dynamic {
     def applyDynamic(method: String)(args: Rep[Any]*): DynamicRep
     def selectDynamic(field: String): DynamicRep
   }
-  protected def dynamic(x: Rep[Any]): DynamicRep
+  def dynamic(x: Rep[Any]): DynamicRep
 }
 
 trait DynamicExp extends DynamicBase with EffectExp {
