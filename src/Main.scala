@@ -128,7 +128,7 @@ trait SomeProg { this: JS =>
 
 trait AllocProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {
-    val f = fun { y : Rep[Any] => new JSLiteral { val a = dynamic(x).alloc() } }
+    val f = fun { y : Rep[Any] => new JSLiteral { val a = newDynamic("Foo")() } }
     f(x)
   }
 }
