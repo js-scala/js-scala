@@ -125,7 +125,14 @@ trait SomeProg { this: JS =>
     id(x)
   }
 }
-  
+
+trait AllocProg { this: JS =>
+  def test(x: Rep[Any]): Rep[Any] = {
+    val f = fun { y : Rep[Any] => new JSLiteral { val a = dynamic(x).alloc() } }
+    f(x)
+  }
+}
+
 object Main extends App {
   println("-- begin")
 
@@ -174,6 +181,12 @@ object Main extends App {
   }
 
   new SomeProg with JSExp { self =>
+    val codegen = new JSGen { val IR: self.type = self }
+    val f = (x: Rep[Any]) => test(x)
+    codegen.emitSource(f, "main", new PrintWriter(System.out))
+  }
+
+  new AllocProg with JSExp { self =>
     val codegen = new JSGen { val IR: self.type = self }
     val f = (x: Rep[Any]) => test(x)
     codegen.emitSource(f, "main", new PrintWriter(System.out))

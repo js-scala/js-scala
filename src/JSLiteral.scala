@@ -12,6 +12,13 @@ trait JSLiteral extends Base with EmbeddedControls {
     def selectDynamic[T](field: String): Rep[T]
   }
   implicit def jsLiteralOps(receiver: Rep[JSLiteral]): JSLiteralOps
+
+  // -- workaround --
+  // Since JSLiteral is abstract, it doesn't have a manifest, but one
+  // is required by the LMS core framework. For instance, this will be
+  // needed when returning a JSLiteral from a function abstraction.
+  implicit def jsLiteralManifest[T <: JSLiteral]: Manifest[T] =
+    implicitly[Manifest[AnyRef]].asInstanceOf[Manifest[T]]
 }
 
 trait JSLiteralExp extends JSLiteral with BaseExp {
