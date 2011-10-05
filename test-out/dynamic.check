@@ -1,7 +1,8 @@
 -- begin
 function main(x0) {
-var x1 = x0.foo()
+var x1 = x0.foo
 var x2 = x1.bar(x0)
-return x2
+var x3 = x2.baz()
+return x3
 }
 -- end
