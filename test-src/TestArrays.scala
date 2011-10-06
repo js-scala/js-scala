@@ -24,6 +24,12 @@ trait Prog { this: LiftNumeric with NumericOps with Arrays =>
     val b = for (el <- a) yield el+x
     b(0)
   }
+
+  def test4(x: Rep[Int]): Rep[Int] = {
+    val a = array(1, 2, 3)
+    val b = for (x1 <- a; x2 <- a) yield x1+x2
+    b(0)
+  }
 }
 
 class TestArrays extends FileDiffSuite {
@@ -48,6 +54,9 @@ class TestArrays extends FileDiffSuite {
         codegen.emitSource(test3 _, "main", new PrintWriter(System.out))
         println("-- end 3")
 
+	println("-- begin 4")
+        codegen.emitSource(test4 _, "main", new PrintWriter(System.out))
+        println("-- end 4")
       }
 
     }

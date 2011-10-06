@@ -34,3 +34,21 @@ var x22 = x21[0]
 return x22
 }
 -- end 3
+-- begin 4
+function main(x24) {
+var x25 = [1, 2, 3]
+var x30 = []
+for(var x33 = 0; x33< x25.length; x33++){
+x30.slice.apply(x30, [-1, 0].concat((function(x26){
+var x29=x25.map(
+function(x27){
+var x28 = x26 + x27
+x28
+})
+x29
+})(x25[x33])))
+}
+var x31 = x30[0]
+return x31
+}
+-- end 4
