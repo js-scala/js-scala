@@ -47,26 +47,11 @@ class TestArrays extends FileDiffSuite {
     
       new Prog with LiftNumeric with NumericOpsExpOpt with EqualExp with ArraysExp { self =>
         val codegen = new JSGenNumericOps with JSGenEqual with JSGenArrays { val IR: self.type = self }
-
-	println("-- begin 1")
-        codegen.emitSource(test1 _, "main", new PrintWriter(System.out))
-        println("-- end 1")
-
-	println("-- begin 2")
-        codegen.emitSource(test2 _, "main", new PrintWriter(System.out))
-        println("-- end 2")
-
-	println("-- begin 3")
-        codegen.emitSource(test3 _, "main", new PrintWriter(System.out))
-        println("-- end 3")
-
-	println("-- begin 4")
-        codegen.emitSource(test4 _, "main", new PrintWriter(System.out))
-        println("-- end 4")
-
-	println("-- begin 5")
-        codegen.emitSource(test5 _, "main", new PrintWriter(System.out))
-        println("-- end 5")
+        codegen.emitSource(test1 _, "test1", new PrintWriter(System.out))
+        codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))
+        codegen.emitSource(test3 _, "test3", new PrintWriter(System.out))
+        codegen.emitSource(test4 _, "test4", new PrintWriter(System.out))
+        codegen.emitSource(test5 _, "test5", new PrintWriter(System.out))
       }
 
     }

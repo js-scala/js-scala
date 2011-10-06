@@ -1,5 +1,4 @@
--- begin 1
-function main(x0) {
+function test1(x0) {
 var x1 = [1, 2, 3]
 var x2 = x1[1] = 4
 var x3 = x1.length
@@ -8,9 +7,7 @@ var x5 = x3 + x4
 var x6 = x5 + x0
 return x6
 }
--- end 1
--- begin 2
-function main(x8) {
+function test2(x8) {
 var x9 = [1, 2, 3]
 var x10 = [4, 5, 6]
 var x14=x9.forEach(
@@ -21,9 +18,7 @@ x12
 var x15 = x10[0]
 return x15
 }
--- end 2
--- begin 3
-function main(x17) {
+function test3(x17) {
 var x18 = [1, 2, 3]
 var x21=x18.map(
 function(x19){
@@ -33,27 +28,23 @@ x20
 var x22 = x21[0]
 return x22
 }
--- end 3
--- begin 4
-function main(x24) {
+function test4(x24) {
 var x25 = [1, 2, 3]
-var x30 = []
-for(var x33 = 0; x33< x25.length; x33++){
-x30.slice.apply(x30, [-1, 0].concat((function(x26){
+var x31 = []
+for(var x34 = 0; x34< x25.length; x34++){
+x31.slice.apply(x31, [-1, 0].concat((function(x26){
 var x29=x25.map(
 function(x27){
 var x28 = x26 + x27
 x28
 })
 x29
-})(x25[x33])))
+})(x25[x34])))
 }
-var x31 = x30[0]
-return x31
+var x32 = x31[0]
+return x32
 }
--- end 4
--- begin 5
-function main(x35) {
+function test5(x35) {
 var x36 = [1, 2, 3]
 var x39=x36.filter(
 function(x37,i_,a_){
@@ -67,4 +58,3 @@ x40
 var x42 = x41[0]
 return x42
 }
--- end 5
