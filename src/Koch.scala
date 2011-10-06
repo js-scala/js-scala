@@ -5,13 +5,13 @@ object Koch {
   trait KochProg { this: JS with Doms =>
     val deg = Math.PI/180;    // For converting degrees to radians
 
-    def snowflake(c_ : Rep[Any], n : Rep[Double], x : Rep[Double], y : Rep[Double], len : Rep[Double]) {
+    def snowflake(c_ : Rep[Any], n : Rep[Int], x : Rep[Int], y : Rep[Int], len : Rep[Int]) {
       val c = dynamic(c_)
       // Draw a single leg of a level-n Koch snowflake.
       // This function leaves the current point at the end of the leg it has
       // drawn and translates the coordinate system so the current point is (0,0).
       // This means you can easily call rotate() after drawing a leg.
-      def leg: Rep[Double => Any] = fun { n : Rep[Double] =>
+      def leg: Rep[Int => Any] = fun { n : Rep[Int] =>
         c.save();             // Save the current transformation
         if (n == 0) {         // Nonrecursive case:
           c.lineTo(len, 0);   //   Just draw a horizontal line

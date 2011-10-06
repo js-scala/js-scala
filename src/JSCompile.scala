@@ -139,3 +139,16 @@ trait JSGenArith extends JSGenBase { // TODO: define a generic one
     case _ => super.emitNode(sym, rhs)
   }
 } 
+
+trait JSGenNumericOps extends JSGenBase {
+  val IR: NumericOpsExp
+  import IR._
+
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+    case NumericPlus(a,b) => emitValDef(sym, quote(a) + " + " + quote(b))
+    case NumericMinus(a,b) => emitValDef(sym, quote(a) + " - " + quote(b))
+    case NumericTimes(a,b) => emitValDef(sym, quote(a) + " * " + quote(b))
+    case NumericDivide(a,b) => emitValDef(sym, quote(a) + " / " + quote(b))
+    case _ => super.emitNode(sym, rhs)
+  }
+}
