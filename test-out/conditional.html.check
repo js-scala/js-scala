@@ -13,7 +13,7 @@ x21=13.0
 }
 var x22 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yyy"))
 var x23 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yoyo"))
-var x24 = x21+11.0
+var x24 = x21 + 11.0
 return x24
 }
 </script><body onload="main(0)">
