@@ -14,8 +14,6 @@ trait PrintExp extends Print with EffectExp {
   def print(s: Rep[Any]) = reflectEffect(Print(s))
 }
 
-
-
 trait ScalaGenPrint extends ScalaGenEffect {
   val IR: PrintExp
   import IR._
@@ -38,21 +36,7 @@ trait JSGenPrint extends JSGenEffect {
   }
 }
 
-
-
-trait Dom extends Base {
-  // not used yet...
-  type DOMObjectInternal
-  type DOMObject = Rep[DOMObjectInternal]
-  def document: DOMObject
-  def infix_getElementById(s: Rep[String])
-}
-
-
-
-
-
-trait ConditionalProg { this: Arith with Equal with Print with IfThenElse =>
+trait ConditionalProg { this: LiftNumeric with NumericOps with Equal with Print with IfThenElse =>
 
   def test2(x: Rep[Double]): Rep[Double] = {
     val z = 1
@@ -87,7 +71,7 @@ trait DynamicProg { this: DynamicBase =>
   }
 }
 
-trait LiteralProg { this: Arith with JSLiteral =>
+trait LiteralProg { this: JSLiteral with LiftNumeric with NumericOps =>
   def test(x: Rep[Double]): Rep[Double] = {
     val o = new JSLiteral {
       val a = x
@@ -104,7 +88,7 @@ trait LiteralProg { this: Arith with JSLiteral =>
   }
 
   def test3(x: Rep[Double]): Rep[Double] = {
-    val o = new JSLiteral { val a = x + 2 }
+    val o = new JSLiteral { val a = x + 2.0 }
     o.a
   }
 }
@@ -127,56 +111,32 @@ trait SomeProg { this: JS =>
 }
 
 object Main extends App {
-  println("-- begin")
+  new ConditionalProg with IfThenElseExp with LiftNumeric with NumericOpsExp with EqualExp with PrintExp { self =>
+    val codegenScala = new ScalaGenIfThenElse with ScalaGenNumericOps with ScalaGenEqual with ScalaGenPrint { val IR: self.type = self }
+    codegenScala.emitSource(test _, "Test", new PrintWriter(System.out))
+    val codegenJS = new JSGenIfThenElse with JSGenNumericOps with JSGenEqual with JSGenPrint { val IR: self.type = self }
+    codegenJS.emitSource(test _, "main", new PrintWriter(System.out))
+    codegenJS.emitSource(test2 _, "main", new PrintWriter(System.out))
+  }
 
-  new ConditionalProg with ArithExpOpt with EqualExp with PrintExp
-  with IfThenElseExp with CompileScala { self =>
-    val codegen = new ScalaGenIfThenElse with ScalaGenArith 
-    with ScalaGenEqual with ScalaGenPrint { val IR: self.type = self }
-        
-    val f = (x: Rep[Double]) => test(x)
-    codegen.emitSource(f, "Test", new PrintWriter(System.out))
-    val g = compile(f)
-    println(g(7))
-  }
-    
-  new ConditionalProg with IfThenElseExp with ArithExpOpt with EqualExp
-  with PrintExp { self =>
-    val codegen = new JSGenIfThenElse with JSGenArith 
-    with JSGenEqual with JSGenPrint { val IR: self.type = self }
-        
-    val f = (x: Rep[Double]) => test(x)
-    codegen.emitSource(f, "main", new PrintWriter(System.out))
-//    codegen.emitHTMLPage(() => f(7), new PrintWriter(System.out))
-    
-    val f2 = (x: Rep[Double]) => test2(x)
-    codegen.emitSource(f2, "main", new PrintWriter(System.out))
-  }
- 
   new DynamicProg with DynamicExp { self =>
     val codegen = new JSGenDynamic { val IR: self.type = self }
-    val f = (x: Rep[Any]) => test(x)
-    codegen.emitSource(f, "main", new PrintWriter(System.out))
+    codegen.emitSource(test _, "main", new PrintWriter(System.out))
   }
 
-  println("-- end")
-  
-  new LiteralProg with JSLiteralExp with ArithExpOpt { self =>
-    val codegen = new JSGenLiteral with JSGenArith { val IR: self.type = self }
-    val f = (x: Rep[Double]) => test(x)
-    codegen.emitSource(f, "main", new PrintWriter(System.out))
+  new LiteralProg with JSLiteralExp with LiftNumeric with NumericOpsExp { self =>
+    val codegen = new JSGenLiteral with JSGenNumericOps { val IR: self.type = self }
+    codegen.emitSource(test _, "main", new PrintWriter(System.out))
   }
 
   new FunProg with JSFunctionsExp { self =>
     val codegen = new JSGenFunctions { val IR: self.type = self }
-    val f = (x: Rep[Any]) => test(x)
-    codegen.emitSource(f, "main", new PrintWriter(System.out))
+    codegen.emitSource(test _, "main", new PrintWriter(System.out))
   }
 
   new SomeProg with JSExp { self =>
     val codegen = new JSGen { val IR: self.type = self }
-    val f = (x: Rep[Any]) => test(x)
-    codegen.emitSource(f, "main", new PrintWriter(System.out))
+    codegen.emitSource(test _, "main", new PrintWriter(System.out))
   }
 
   Koch.writeHtml("koch.html")
