@@ -3,7 +3,7 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 
-trait Prog { this: LiftNumeric with NumericOps with Arrays =>
+trait Prog { this: LiftNumeric with NumericOps with Equal with Arrays =>
   def test1(x: Rep[Int]): Rep[Int] = {
     val a = array(1, 2, 3)
     a(1) = 4
@@ -30,6 +30,12 @@ trait Prog { this: LiftNumeric with NumericOps with Arrays =>
     val b = for (x1 <- a; x2 <- a) yield x1+x2
     b(0)
   }
+
+  def test5(x: Rep[Int]): Rep[Int] = {
+    val a = array(1, 2, 3)
+    val b = for (el <- a; if (el == x)) yield el
+    b(0)
+  }
 }
 
 class TestArrays extends FileDiffSuite {
@@ -39,8 +45,8 @@ class TestArrays extends FileDiffSuite {
   def testArrays = {
     withOutFile(prefix+"arrays") {
     
-      new Prog with LiftNumeric with NumericOpsExpOpt with ArraysExp { self =>
-        val codegen = new JSGenNumericOps with JSGenArrays { val IR: self.type = self }
+      new Prog with LiftNumeric with NumericOpsExpOpt with EqualExp with ArraysExp { self =>
+        val codegen = new JSGenNumericOps with JSGenEqual with JSGenArrays { val IR: self.type = self }
 
 	println("-- begin 1")
         codegen.emitSource(test1 _, "main", new PrintWriter(System.out))
@@ -57,6 +63,10 @@ class TestArrays extends FileDiffSuite {
 	println("-- begin 4")
         codegen.emitSource(test4 _, "main", new PrintWriter(System.out))
         println("-- end 4")
+
+	println("-- begin 5")
+        codegen.emitSource(test5 _, "main", new PrintWriter(System.out))
+        println("-- end 5")
       }
 
     }

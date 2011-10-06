@@ -52,3 +52,19 @@ var x31 = x30[0]
 return x31
 }
 -- end 4
+-- begin 5
+function main(x35) {
+var x36 = [1, 2, 3]
+var x39=x36.filter(
+function(x37,i_,a_){
+var x38 = x37==x35
+x38
+})
+var x41=x39.map(
+function(x40){
+x40
+})
+var x42 = x41[0]
+return x42
+}
+-- end 5

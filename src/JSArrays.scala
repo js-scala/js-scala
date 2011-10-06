@@ -12,6 +12,7 @@ trait Arrays extends Base {
     def foreach(block: Rep[T] => Rep[Unit]) = array_foreach(a, block)
     def map[U:Manifest](block: Rep[T] => Rep[U]) = array_map(a, block)
     def flatMap[U:Manifest](block: Rep[T] => Rep[Array[U]]) = array_flatMap(a, block)
+    def filter(block: Rep[T] => Rep[Boolean]) = array_filter(a, block)
   }
 
   def array[T:Manifest](xs: Rep[T]*): Rep[Array[T]]
@@ -21,6 +22,7 @@ trait Arrays extends Base {
   def array_foreach[T:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[Unit]): Rep[Unit]
   def array_map[T:Manifest,U:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[U]): Rep[Array[U]]
   def array_flatMap[T:Manifest,U:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[Array[U]]): Rep[Array[U]]
+  def array_filter[T:Manifest,U:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[Boolean]): Rep[Array[T]]
 }
 
 trait ArraysExp extends Arrays with EffectExp {
@@ -31,6 +33,7 @@ trait ArraysExp extends Arrays with EffectExp {
   case class ArrayForeach[T:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[Unit]) extends Def[Unit]
   case class ArrayMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[U]) extends Def[Array[U]]
   case class ArrayFlatMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[Array[U]]) extends Def[Array[U]]
+  case class ArrayFilter[T:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[Boolean]) extends Def[Array[T]]
 
   def array[T:Manifest](xs: Exp[T]*) = reflectEffect(ArrayLiteral(xs.toList), Alloc())
   def array_apply[T:Manifest](a: Exp[Array[T]], i: Exp[Int]) = ArrayApply(a, i)
@@ -44,19 +47,24 @@ trait ArraysExp extends Arrays with EffectExp {
   def array_map[T:Manifest,U:Manifest](a: Exp[Array[T]], block: Exp[T] => Exp[U]) = {
     val x = fresh[T]
     val b = reifyEffects(block(x))
-    reflectEffect(ArrayMap(a, x, b), Alloc() orElse summarizeEffects(b).star)
+    reflectEffect(ArrayMap(a, x, b), Alloc() andAlso summarizeEffects(b).star)
   }
   def array_flatMap[T:Manifest,U:Manifest](a: Exp[Array[T]], block: Exp[T] => Exp[Array[U]]) = {
     val x = fresh[T]
     val b = reifyEffects(block(x))
-    reflectEffect(ArrayFlatMap(a, x, b), Alloc() orElse summarizeEffects(b).star)
+    reflectEffect(ArrayFlatMap(a, x, b), Alloc() andAlso summarizeEffects(b).star)
   }
-
+  def array_filter[T:Manifest,U:Manifest](a: Exp[Array[T]], block: Exp[T] => Exp[Boolean]) = {
+    val x = fresh[T]
+    val b = reifyEffects(block(x))
+    reflectEffect(ArrayFilter(a, x, b), Alloc() andAlso summarizeEffects(b).star)
+  }
 
   override def syms(e: Any): List[Sym[Any]] = e match {
     case ArrayForeach(a, x, body) => syms(a):::syms(body)
     case ArrayMap(a, x, body) => syms(a):::syms(body)
     case ArrayFlatMap(a, x, body) => syms(a):::syms(body)
+    case ArrayFilter(a, x, body) => syms(a):::syms(body)
     case _ => super.syms(e)
   }
 
@@ -64,6 +72,7 @@ trait ArraysExp extends Arrays with EffectExp {
     case ArrayForeach(a, x, body) => x :: effectSyms(body)
     case ArrayMap(a, x, body) => x :: effectSyms(body)
     case ArrayFlatMap(a, x, body) => x :: effectSyms(body)
+    case ArrayFilter(a, x, body) => x :: effectSyms(body)
     case _ => super.boundSyms(e)
   }
 
@@ -71,6 +80,7 @@ trait ArraysExp extends Arrays with EffectExp {
     case ArrayForeach(a, x, body) => freqNormal(a):::freqHot(body)
     case ArrayMap(a, x, body) => freqNormal(a):::freqHot(body)
     case ArrayFlatMap(a, x, body) => freqHot(a):::freqHot(body)
+    case ArrayFilter(a, x, body) => freqNormal(a):::freqHot(body)
     case _ => super.symsFreq(e)
   }
 }
@@ -105,6 +115,12 @@ trait JSGenArrays extends JSGenEffect {
       stream.println(quote(getBlockResult(block)))
       stream.println("})(" + quote(a) + "[" + quote(i) + "])))")
       stream.println("}")
+    case ArrayFilter(a, x, block) =>
+      stream.println("var " + quote(sym) + "=" + quote(a) + ".filter(")
+      stream.println("function(" + quote(x) + ",i_,a_){")
+      emitBlock(block)
+      stream.println(quote(getBlockResult(block)))
+      stream.println("})")
     case _ => super.emitNode(sym, rhs)
   }
 }
