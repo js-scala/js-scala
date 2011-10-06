@@ -22,3 +22,15 @@ var x15 = x10[0]
 return x15
 }
 -- end 2
+-- begin 3
+function main(x17) {
+var x18 = [1, 2, 3]
+var x21=x18.map(
+function(x19){
+var x20 = x19 + x17
+x20
+})
+var x22 = x21[0]
+return x22
+}
+-- end 3
