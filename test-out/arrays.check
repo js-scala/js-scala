@@ -9,3 +9,16 @@ var x6 = x5 + x0
 return x6
 }
 -- end 1
+-- begin 2
+function main(x8) {
+var x9 = [1, 2, 3]
+var x10 = [4, 5, 6]
+var x14=x9.forEach(
+function(x11,i_,a_){
+var x12 = x10[0] = x11
+x12
+})
+var x15 = x10[0]
+return x15
+}
+-- end 2
