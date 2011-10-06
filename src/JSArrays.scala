@@ -98,28 +98,28 @@ trait JSGenArrays extends JSGenEffect {
       stream.println("var " + quote(sym) + "=" + quote(a) + ".forEach(")
       stream.println("function(" + quote(x) + ",i_,a_){")
       emitBlock(block)
-      stream.println(quote(getBlockResult(block)))
+      stream.println("return " + quote(getBlockResult(block)))
       stream.println("})")
     case ArrayMap(a, x, block) =>
       stream.println("var " + quote(sym) + "=" + quote(a) + ".map(")
       stream.println("function(" + quote(x) + "){")
       emitBlock(block)
-      stream.println(quote(getBlockResult(block)))
+      stream.println("return " + quote(getBlockResult(block)))
       stream.println("})")
     case ArrayFlatMap(a, x, block) =>
       emitValDef(sym, "[]")
       val i = fresh[Int]
       stream.println("for(var " + quote(i) + " = 0; " + quote(i) + "< " + quote(a) + ".length; " + quote(i) + "++){")
-      stream.println(quote(sym) + ".slice.apply(" + quote(sym) + ", [-1, 0].concat((function(" + quote(x) + "){")
+      stream.println(quote(sym) + ".splice.apply(" + quote(sym) + ", [-1, 0].concat((function(" + quote(x) + "){")
       emitBlock(block)
-      stream.println(quote(getBlockResult(block)))
+      stream.println("return " + quote(getBlockResult(block)))
       stream.println("})(" + quote(a) + "[" + quote(i) + "])))")
       stream.println("}")
     case ArrayFilter(a, x, block) =>
       stream.println("var " + quote(sym) + "=" + quote(a) + ".filter(")
       stream.println("function(" + quote(x) + ",i_,a_){")
       emitBlock(block)
-      stream.println(quote(getBlockResult(block)))
+      stream.println("return " + quote(getBlockResult(block)))
       stream.println("})")
     case _ => super.emitNode(sym, rhs)
   }

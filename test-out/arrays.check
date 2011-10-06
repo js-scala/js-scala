@@ -13,7 +13,7 @@ var x10 = [4, 5, 6]
 var x14=x9.forEach(
 function(x11,i_,a_){
 var x12 = x10[0] = x11
-x12
+return x12
 })
 var x15 = x10[0]
 return x15
@@ -23,7 +23,7 @@ var x18 = [1, 2, 3]
 var x21=x18.map(
 function(x19){
 var x20 = x19 + x17
-x20
+return x20
 })
 var x22 = x21[0]
 return x22
@@ -32,13 +32,13 @@ function test4(x24) {
 var x25 = [1, 2, 3]
 var x31 = []
 for(var x34 = 0; x34< x25.length; x34++){
-x31.slice.apply(x31, [-1, 0].concat((function(x26){
+x31.splice.apply(x31, [-1, 0].concat((function(x26){
 var x29=x25.map(
 function(x27){
 var x28 = x26 + x27
-x28
+return x28
 })
-x29
+return x29
 })(x25[x34])))
 }
 var x32 = x31[0]
@@ -49,11 +49,11 @@ var x36 = [1, 2, 3]
 var x39=x36.filter(
 function(x37,i_,a_){
 var x38 = x37==x35
-x38
+return x38
 })
 var x41=x39.map(
 function(x40){
-x40
+return x40
 })
 var x42 = x41[0]
 return x42
