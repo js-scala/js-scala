@@ -111,7 +111,7 @@ trait SomeProg { this: JS =>
 }
 
 object Main extends App {
-  new ConditionalProg with IfThenElseExp with LiftNumeric with NumericOpsExp with EqualExp with PrintExp { self =>
+  new ConditionalProg with IfThenElseExp with LiftNumeric with NumericOpsExpOpt with EqualExp with PrintExp { self =>
     val codegenScala = new ScalaGenIfThenElse with ScalaGenNumericOps with ScalaGenEqual with ScalaGenPrint { val IR: self.type = self }
     codegenScala.emitSource(test _, "Test", new PrintWriter(System.out))
     val codegenJS = new JSGenIfThenElse with JSGenNumericOps with JSGenEqual with JSGenPrint { val IR: self.type = self }
@@ -124,7 +124,7 @@ object Main extends App {
     codegen.emitSource(test _, "main", new PrintWriter(System.out))
   }
 
-  new LiteralProg with JSLiteralExp with LiftNumeric with NumericOpsExp { self =>
+  new LiteralProg with JSLiteralExp with LiftNumeric with NumericOpsExpOpt { self =>
     val codegen = new JSGenLiteral with JSGenNumericOps { val IR: self.type = self }
     codegen.emitSource(test _, "main", new PrintWriter(System.out))
   }

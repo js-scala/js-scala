@@ -1,11 +1,11 @@
 -- begin 1
 function main(x0) {
-var x1 = [1.0, 2.0, 3.0]
-var x2 = x1[1] = 4.0
+var x1 = [1, 2, 3]
+var x2 = x1[1] = 4
 var x3 = x1.length
 var x4 = x1[1]
-var x5 = x3+x4
-var x6 = x5+x0
+var x5 = x3 + x4
+var x6 = x5 + x0
 return x6
 }
 -- end 1
