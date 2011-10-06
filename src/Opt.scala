@@ -6,8 +6,8 @@ trait NumericOpsExpOpt extends NumericOpsExp {
     val t = implicitly[Numeric[T]]
     (x, y) match {
       case (Const(x), Const(y)) => Const(t.plus(x, y))
-      //case (x, Const(t.zero) | Const(t.negate(t.zero))) => x
-      //case (Const(t.zero) | Const(t.negate(t.zero)), y) => y
+      case (x, Const(y)) if y == t.zero  => x
+      case (Const(x), y) if x == t.zero => y
       case _ => super.numeric_plus(x, y)
     }
   }
@@ -16,7 +16,7 @@ trait NumericOpsExpOpt extends NumericOpsExp {
     val t = implicitly[Numeric[T]]
     (x, y) match {
       case (Const(x), Const(y)) => Const(t.minus(x, y))
-      //case (x, Const(t.zero) | Const(t.negate(t.zero))) => x
+      case (x, Const(y)) if y == t.zero  => x
       case _ => super.numeric_minus(x, y)
     }
   }
@@ -25,10 +25,10 @@ trait NumericOpsExpOpt extends NumericOpsExp {
     val t = implicitly[Numeric[T]]
     (x, y) match {
       case (Const(x), Const(y)) => Const(t.times(x,y))
-      //case (x, Const(t.one)) => x
-      //case (Const(t.one), y) => y
-      //case (x, Const(t.zero) | Const(t.negate(t.zero))) => Const(t.zero)
-      //case ((Const(t.zero) | Const(t.negate(t.zero))), y) => Const(t.zero)
+      case (x, Const(y)) if y == t.one => x
+      case (Const(x), y) if x == t.one => y
+      case (x, Const(y)) if y == t.zero  => Const(t.zero)
+      case (Const(x), y) if x == t.zero => Const(t.zero)
       case _ => super.numeric_times(x, y)
     }
   }
@@ -37,7 +37,7 @@ trait NumericOpsExpOpt extends NumericOpsExp {
     val t = implicitly[Numeric[T]]
     (x, y) match {
       // case (Const(x), Const(y)) => Const(x / y)
-      //case (x, Const(t.one)) => x
+      case (x, Const(y)) if y == t.zero => x
       case _ => super.numeric_divide(x, y)
     }
   }
