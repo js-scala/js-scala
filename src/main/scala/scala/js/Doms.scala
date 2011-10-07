@@ -1,3 +1,5 @@
+package scala.js
+
 trait Doms extends DynamicBase {
   val document: DynamicRep
 }

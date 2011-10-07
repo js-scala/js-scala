@@ -1,3 +1,5 @@
+package scala.js
+
 import scala.virtualization.lms.common._
 
 trait NumericOpsExpOpt extends NumericOpsExp {

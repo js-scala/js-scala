@@ -1,3 +1,5 @@
+package scala.js
+
 import java.io.PrintWriter
 
 object Koch {

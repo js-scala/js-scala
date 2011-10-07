@@ -1,3 +1,5 @@
+package scala.js
+
 import scala.virtualization.lms.common._
 
 trait JS extends LiftNumeric with NumericOps with Equal with IfThenElse with LiftString with DynamicBase with JSFunctions with JSLiteral
