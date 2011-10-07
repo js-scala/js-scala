@@ -22,31 +22,20 @@ class TestDynamic extends FileDiffSuite {
   
   def testDynamic = {
     withOutFile(prefix+"dynamic") {
-    
-      println("-- begin")
-
       new DynamicProg with DynamicExp { self =>
         val codegen = new JSGenDynamic { val IR: self.type = self }
-        val f = (x: Rep[Any]) => test(x)
-        codegen.emitSource(f, "main", new PrintWriter(System.out))
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
-
-      println("-- end")
     }
     assertFileEqualsCheck(prefix+"dynamic")
   }
 
   def testAlloc = {
     withOutFile(prefix+"dynamic_alloc") {
-
-      println("-- begin")
       new AllocProg with JSExp { self =>
         val codegen = new JSGen { val IR: self.type = self }
-        val f = (x: Rep[Any]) => test(x)
-        codegen.emitSource(f, "main", new PrintWriter(System.out))
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
-
-      println("-- end")
     }
     assertFileEqualsCheck(prefix+"dynamic_alloc")
   }

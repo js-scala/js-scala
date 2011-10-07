@@ -1,5 +1,3 @@
--- begin
 function main(x0) {
 return undefined
 }
--- end

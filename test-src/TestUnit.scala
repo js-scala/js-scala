@@ -10,21 +10,14 @@ trait UnitProg { this: JS =>
 }
 
 class TestUnit extends FileDiffSuite {
-  
   val prefix = "test-out/"
   
   def testUnit = {
     withOutFile(prefix+"unit") {
-    
-      println("-- begin")
-
       new UnitProg with JSExp { self =>
         val codegen = new JSGen { val IR: self.type = self }
-        val f = (x: Rep[Any]) => test(x)
-        codegen.emitSource(f, "main", new PrintWriter(System.out))
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
-
-      println("-- end")
     }
     assertFileEqualsCheck(prefix+"unit")
   }
