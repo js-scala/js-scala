@@ -3,7 +3,7 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 
-trait ConditionalProg { this: Arith with Equal with Print with IfThenElse =>
+trait ConditionalProg { this: LiftNumeric with NumericOps with Equal with Print with IfThenElse =>
   
   def test(x: Rep[Double]): Rep[Double] = {
     
@@ -35,25 +35,19 @@ class TestConditional extends FileDiffSuite {
     
       println("-- begin")
 
-      new ConditionalProg with ArithExpOpt with EqualExp with PrintExp
-      with IfThenElseExp with CompileScala { self =>
-        val codegen = new ScalaGenIfThenElse with ScalaGenArith 
-        with ScalaGenEqual with ScalaGenPrint { val IR: self.type = self }
-        
+      new ConditionalProg with LiftNumeric with NumericOpsExpOpt with EqualExp with PrintExp with IfThenElseExp with CompileScala { self =>
+        val codegen = new ScalaGenIfThenElse with ScalaGenNumericOps with ScalaGenEqual with ScalaGenPrint { val IR: self.type = self }
         val f = (x: Rep[Double]) => test(x)
         codegen.emitSource(f, "Test", new PrintWriter(System.out))
         val g = compile(f)
-        println(g(7))
+        println(g(7.0))
       }
     
-      new ConditionalProg with IfThenElseExp with ArithExpOpt with EqualExp
-      with PrintExp { self =>
-        val codegen = new JSGenIfThenElse with JSGenArith 
-        with JSGenEqual with JSGenPrint { val IR: self.type = self }
-        
+      new ConditionalProg with LiftNumeric with NumericOpsExpOpt with EqualExp with PrintExp with IfThenElseExp { self =>
+        val codegen = new JSGenIfThenElse with JSGenNumericOps with JSGenEqual with JSGenPrint { val IR: self.type = self }
         val f = (x: Rep[Double]) => test(x)
         codegen.emitSource(f, "main", new PrintWriter(System.out))
-        codegen.emitHTMLPage(() => f(7), new PrintWriter(new FileOutputStream(prefix+"conditional.html")))
+        codegen.emitHTMLPage(() => f(7.0), new PrintWriter(new FileOutputStream(prefix+"conditional.html")))
       }
 
       println("-- end")

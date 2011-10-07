@@ -3,12 +3,13 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 
 trait DynamicBase extends Base {
-  protected type DynamicRep <: DynamicRepImpl with Rep[Any]
-  protected trait DynamicRepImpl extends Dynamic {
+  type DynamicRep <: DynamicRepImpl with Rep[Any]
+  trait DynamicRepImpl extends Dynamic {
     def applyDynamic(method: String)(args: Rep[Any]*): DynamicRep
     def selectDynamic(field: String): DynamicRep
   }
-  protected def dynamic(x: Rep[Any]): DynamicRep
+  def dynamic(x: Rep[Any]): DynamicRep
+  def newDynamic(constructor: String)(args: Rep[Any]*): DynamicRep
 }
 
 trait DynamicExp extends DynamicBase with EffectExp {
@@ -17,19 +18,25 @@ trait DynamicExp extends DynamicBase with EffectExp {
 
   case class DynamicCall(receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[Any]
   case class DynamicSelect(receiver: Exp[Any], field: String) extends Def[Any]
-  
+  case class DynamicNew(constructor: String, args: List[Exp[Any]]) extends Def[Any]
+
   case class DynamicExp(receiver: Exp[Any]) extends Exp[Any] with DynamicRepImpl {
     override def applyDynamic(method: String)(args: Exp[Any]*): DynamicExp =
       dynamic(reflectEffect(DynamicCall(receiver, method, args.toList)))
 
     override def selectDynamic(field: String): DynamicExp =
-      //no call to reflectEffect at the moment because selecting field is not sideeffecting operation
-      //probably we need some other way of expressing the effect (like reading effect)
+      // No call to reflectEffect at the moment because selecting a
+      // field is not _really_ a side-effecting operation. However, we
+      // might still want to express that this operation causes a read
+      // on the field of the receiver (TODO before attempting
+      // optimizations).
       dynamic(DynamicSelect(receiver, field))
   }
   
   def dynamic(x: Exp[Any]) = DynamicExp(x)
 
+  def newDynamic(constructor: String)(args: Exp[Any]*): DynamicExp =
+    dynamic(reflectEffect(DynamicNew(constructor, args.toList), Alloc))
 }
 
 trait JSGenDynamic extends JSGenEffect {
@@ -41,6 +48,8 @@ trait JSGenDynamic extends JSGenEffect {
       quote(receiver) + "." + method + args.map(quote).mkString("(", ",", ")"))
     case DynamicSelect(receiver, field) =>
       emitValDef(sym, quote(receiver) + "." + field)
+    case DynamicNew(constructor, args) => emitValDef(sym,
+      "new " + constructor + args.map(quote).mkString("(", ",", ")"))
     case _ => super.emitNode(sym, rhs)
   }
   
