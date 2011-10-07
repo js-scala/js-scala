@@ -38,35 +38,6 @@ trait JSGenPrint extends JSGenEffect {
   }
 }
 
-trait ConditionalProg { this: LiftNumeric with NumericOps with Equal with Print with IfThenElse =>
-
-  def test2(x: Rep[Double]): Rep[Double] = {
-    val z = 1
-    val y = z+1
-    x + y
-  }
-    
-  def test(x: Rep[Double]): Rep[Double] = {
-    
-    print("yoyo")
-    
-    val z = if (x == x) {
-      print("yoyo")
-      print("xxx")
-      print("yoyo")
-      (x+4)
-    } else {
-      (x+6)
-    }
-    
-    print("yyy")
-    print("yoyo")
-    
-    z + (x + 4)
-  }
-  
-}
-
 trait FunProg { this: JSFunctions =>
   def test(x: Rep[Any]): Rep[Any] = {
     val id = fun { x : Rep[Any] => x }
@@ -85,13 +56,6 @@ trait SomeProg { this: JS =>
 }
 
 object Main extends App {
-  new ConditionalProg with IfThenElseExp with LiftNumeric with NumericOpsExpOpt with EqualExp with PrintExp { self =>
-    val codegenScala = new ScalaGenIfThenElse with ScalaGenNumericOps with ScalaGenEqual with ScalaGenPrint { val IR: self.type = self }
-    codegenScala.emitSource(test _, "Test", new PrintWriter(System.out))
-    val codegenJS = new JSGenIfThenElse with JSGenNumericOps with JSGenEqual with JSGenPrint { val IR: self.type = self }
-    codegenJS.emitSource(test _, "main", new PrintWriter(System.out))
-    codegenJS.emitSource(test2 _, "main", new PrintWriter(System.out))
-  }
 
   new FunProg with JSFunctionsExp { self =>
     val codegen = new JSGenFunctions { val IR: self.type = self }
