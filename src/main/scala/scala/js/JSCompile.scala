@@ -67,6 +67,14 @@ trait JSCodegen extends GenericCodegen {
     stream.println("var " + quote(sym) + " = " + rhs)
   }
 
+  def emitVarDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit = {
+    emitValDef(sym, rhs)
+  }
+
+  def emitAssignment(lhs: String, rhs: String)(implicit stream: PrintWriter): Unit = {
+    stream.println(lhs + " = " + rhs)
+  }
+
   override def quote(x: Exp[Any]) : String = x match {
     case Const(()) => "undefined"
     case _ => super.quote(x)
