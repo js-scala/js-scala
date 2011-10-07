@@ -4,9 +4,9 @@ import java.io.PrintWriter
   
 trait JSLiteral extends Base with EmbeddedControls {
   type JSLiteral <: Row[Rep]
-  override def __new[T, R[x]](args: (String, R[T] => (R[t] forSome{type t}))*): R[T] =
-    newJSLiteral(args.map(_.asInstanceOf[(String, Rep[JSLiteral] => (Rep[t] forSome{type t}))]): _*).asInstanceOf[R[T]]
-  def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): Rep[JSLiteral]
+  def __new[T](args: (String, Rep[T] => Rep[_])*): Rep[T] =
+    newJSLiteral(args.map(_.asInstanceOf[(String, Rep[JSLiteral] => Rep[_])]): _*).asInstanceOf[Rep[T]]
+  def newJSLiteral(args: (String, Rep[JSLiteral] => Rep[_])*): Rep[JSLiteral]
   
   abstract class JSLiteralOps {
     def selectDynamic[T](field: String): Rep[T]
