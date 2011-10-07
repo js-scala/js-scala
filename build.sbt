@@ -6,19 +6,6 @@ version := "0.1"
 
 scalaVersion := "2.10.0-virtualized-SNAPSHOT"
 
-//--- Paths
-
-// set the main Scala source directory to be <base>/src
-scalaSource in Compile <<= baseDirectory(_ / "src")
-
-resourceDirectory in Compile <<= baseDirectory(_ / "resources")
-
-scalaSource in Test <<= baseDirectory(_ / "test-src")
-
-resourceDirectory in Test <<= baseDirectory(_ / "test-resources")
-
-//--- End of Paths
-
 //--- Dependencies
 
 resolvers ++= Seq(
