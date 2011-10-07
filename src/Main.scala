@@ -65,12 +65,6 @@ trait ConditionalProg { this: LiftNumeric with NumericOps with Equal with Print 
   
 }
 
-trait DynamicProg { this: DynamicBase =>
-  def test(x: Rep[Any]): Rep[Any] = {
-    dynamic(x).foo_field.foo_fun().bar(x)
-  }
-}
-
 trait LiteralProg { this: JSLiteral with LiftNumeric with NumericOps =>
   def test(x: Rep[Double]): Rep[Double] = {
     val o = new JSLiteral {
@@ -118,11 +112,6 @@ object Main extends App {
     val codegenJS = new JSGenIfThenElse with JSGenNumericOps with JSGenEqual with JSGenPrint { val IR: self.type = self }
     codegenJS.emitSource(test _, "main", new PrintWriter(System.out))
     codegenJS.emitSource(test2 _, "main", new PrintWriter(System.out))
-  }
-
-  new DynamicProg with DynamicExp { self =>
-    val codegen = new JSGenDynamic { val IR: self.type = self }
-    codegen.emitSource(test _, "main", new PrintWriter(System.out))
   }
 
   new LiteralProg with JSLiteralExp with LiftNumeric with NumericOpsExpOpt { self =>
