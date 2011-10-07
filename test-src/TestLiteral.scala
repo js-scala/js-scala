@@ -26,7 +26,7 @@ class TestLiteral extends FileDiffSuite {
     withOutFile(prefix+"literal") {
       new LiteralProg with JSLiteralExp with LiftNumeric with NumericOpsExpOpt { self =>
         val codegen = new JSGenLiteral with JSGenNumericOps { val IR: self.type = self }
-        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+        codegen.emitSource(test _, "test", new PrintWriter(System.out))
       }
     }
     assertFileEqualsCheck(prefix+"literal")
