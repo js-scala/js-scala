@@ -94,9 +94,8 @@ trait JSTupledCodegen extends JSCodegen {
 
   override def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)(implicit mA: Manifest[A], mB: Manifest[B]): Unit = {
     def tupledManifest[T](m: Manifest[T]): Boolean = m.erasure.getName startsWith "scala.Tuple"
-    val m = implicitly[Manifest[A]]
-    val (args, x) = if (tupledManifest(m)) {
-      val args = m.typeArguments.map(fresh(_))
+      val (args, x) = if (tupledManifest(mA)) {
+      val args = mA.typeArguments.map(fresh(_))
       (args, UnboxedTuple[A](args))
     } else {
       val x = fresh[A]
