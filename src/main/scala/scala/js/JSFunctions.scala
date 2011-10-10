@@ -20,12 +20,6 @@ trait JSGenFunctions extends JSGenEffect with BaseGenFunctions {
       stream.println("return " + quote(getBlockResult(y)))
       stream.println("}")
 
-    case e@Lambda2(fun, x1, x2, y) =>
-      stream.println("var " + quote(sym) + " = function(" + quote(x1) + ", " + quote(x2) + ") {")
-      emitBlock(y)
-      stream.println("return " + quote(getBlockResult(y)))
-      stream.println("}")
-
     case Apply(fun, arg) =>
       emitValDef(sym, quote(fun) + "(" + quote(arg) + ")")
 
