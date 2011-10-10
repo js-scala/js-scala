@@ -5,7 +5,7 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 
-trait Prog { this: LiftNumeric with NumericOps with Equal with Arrays =>
+trait ArraysProg { this: LiftNumeric with NumericOps with Equal with Arrays =>
   def test1(x: Rep[Int]): Rep[Int] = {
     val a = array(1, 2, 3)
     a(1) = 4
@@ -72,7 +72,7 @@ class TestArrays extends FileDiffSuite {
   def testArrays = {
     withOutFile(prefix+"arrays") {
     
-      new Prog with LiftNumeric with NumericOpsExpOpt with EqualExp with ArraysExp { self =>
+      new ArraysProg with LiftNumeric with NumericOpsExpOpt with EqualExp with ArraysExp { self =>
         val codegen = new JSGenNumericOps with JSGenEqual with JSGenArrays { val IR: self.type = self }
         codegen.emitSource(test1 _, "test1", new PrintWriter(System.out))
         codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))

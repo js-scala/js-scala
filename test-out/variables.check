@@ -1,0 +1,7 @@
+function test(x0) {
+var x1 = 0
+x1 = x0
+var x3 = x1 += 1
+var x4 = x1
+return x4
+}
