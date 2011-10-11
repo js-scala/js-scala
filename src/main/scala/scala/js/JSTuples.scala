@@ -5,9 +5,9 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 
 trait JSTupledFunctions extends JSFunctions with TupleOps {
-  implicit def fun2[A1:Manifest,A2:Manifest,B:Manifest](f: (Rep[A1],Rep[A2]) => Rep[B]) = {//: Rep[(A1,A2)=>B] = {
+  implicit def fun[A1:Manifest,A2:Manifest,B:Manifest](f: (Rep[A1],Rep[A2]) => Rep[B]) : Rep[((A1,A2))=>B] = {
     val f1 = (t: Rep[(A1,A2)]) => f(tuple2_get1(t), tuple2_get2(t))
-    fun(f1)
+    super.fun(f1)
   }
 }
 

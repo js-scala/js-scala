@@ -13,7 +13,7 @@ trait TwoArgsProg { this: NumericOps =>
 
 trait TwoArgsFunProg { this: JSTupledFunctions with NumericOps =>
   def test(x: Rep[Int]): Rep[Int] = {
-    val f = fun2 { (a : Rep[Int], b : Rep[Int]) => a + b }
+    val f = fun { (a : Rep[Int], b : Rep[Int]) => a + b }
     f(x, x)
   }
 }
