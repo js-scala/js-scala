@@ -11,11 +11,17 @@ trait TwoArgsProg { this: NumericOps =>
   }
 }
 
+trait TwoArgsFunProg { this: JSTupledFunctions with NumericOps =>
+  def test(x: Rep[Int]): Rep[Int] = {
+    val f = fun2 { (a : Rep[Int], b : Rep[Int]) => a + b }
+    f(x, x)
+  }
+}
 class TestTuple extends FileDiffSuite {
 
   val prefix = "test-out/"
 
-  def testTwoArg = {
+  def testTwoArgs = {
     withOutFile(prefix+"tuple") {
       new TwoArgsProg with TupleOpsExp with NumericOpsExpOpt { self =>
         val codegen = new JSTupledCodegen with JSGenNumericOps { val IR: self.type = self }
@@ -23,5 +29,15 @@ class TestTuple extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"tuple")
+  }
+
+  def testTwoArgsFun = {
+    withOutFile(prefix+"tuplefun") {
+      new TwoArgsFunProg with JSTupledFunctionsExp with NumericOpsExpOpt { self =>
+        val codegen = new JSGenFunctions with JSGenTupleOps with JSGenNumericOps { val IR: self.type = self }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"tuplefun")
   }
 }
