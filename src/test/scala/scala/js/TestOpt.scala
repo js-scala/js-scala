@@ -10,8 +10,12 @@ trait OptProg { this: JS =>
     val x_ = dynamic(x)
     x_.foo()
     x_.bar.baz()
-    if (x_.test().asInstanceOf[Rep[Boolean]]) x_.ok()
-    else x_.boo()
+    if (x_.test().asInstanceOf[Rep[Boolean]]) {
+      x_.something().extra()
+      x_.ok()
+    } else {
+      x_.boo()
+    }
     x_.ret
   }
 }
