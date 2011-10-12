@@ -6,6 +6,6 @@ trait JS extends LiftNumeric with NumericOps with Equal with IfThenElse with Lif
 
 trait JSExp extends JS with NumericOpsExpOpt with EqualExp with IfThenElseExp with DynamicExp with ArraysExp with VariablesExp with JSFunctionsExp with JSLiteralExp
 
-trait JSGen extends JSGenNumericOps with JSGenEqual with JSGenIfThenElse with JSGenDynamic with JSGenArrays with JSGenVariables with JSGenFunctions with JSGenLiteral {
+trait JSGen extends JSGenNumericOps with JSGenEqual with JSGenIfThenElse with JSGenDynamic with JSGenArrays with JSGenVariables with JSGenFunctions with JSGenLiteral with JSGenTupleOps with GenericGenUnboxedTupleAccess {
   val IR: JSExp
 }
