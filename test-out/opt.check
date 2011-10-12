@@ -1,0 +1,16 @@
+function main(x0) {
+x0.foo()
+var x2 = x0.bar
+x2.baz()
+var x4 = x0.test()
+var x9
+if (x4) {
+var x5 = x0.ok()
+x9=x5
+} else {
+var x7 = x0.boo()
+x9=x7
+}
+var x10 = x0.ret
+return x10
+}
