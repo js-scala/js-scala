@@ -9,3 +9,5 @@ trait JSExp extends JS with NumericOpsExpOpt with EqualExp with IfThenElseExp wi
 trait JSGen extends JSGenNumericOps with JSGenEqual with JSGenIfThenElse with JSGenDynamic with JSGenArrays with JSGenVariables with JSGenFunctions with JSGenLiteral with JSGenTupleOps with GenericGenUnboxedTupleAccess {
   val IR: JSExp
 }
+
+trait JSGenOpt extends JSGen with JSCodegenOpt

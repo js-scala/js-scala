@@ -56,7 +56,6 @@ trait SomeProg { this: JS =>
 }
 
 object Main extends App {
-
   new FunProg with JSFunctionsExp { self =>
     val codegen = new JSGenFunctions { val IR: self.type = self }
     codegen.emitSource(test _, "main", new PrintWriter(System.out))

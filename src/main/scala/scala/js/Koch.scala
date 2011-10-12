@@ -57,7 +57,7 @@ object Koch {
 
   def codegen(pw: PrintWriter) {
     new KochProg with JSExp with DomsExp { self =>
-      val codegen = new JSGen with GenDoms { val IR: self.type = self }
+      val codegen = new JSGenOpt with GenDoms { val IR: self.type = self }
       //codegen.emitSource5(snowflake _, "snowflake", pw)
       //It's enough to emit draw, it will call snowflake and will inline
       //what's needed. It's quite amazing, actually.

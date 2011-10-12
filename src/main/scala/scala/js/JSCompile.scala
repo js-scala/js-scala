@@ -7,7 +7,7 @@ import java.io.PrintWriter
 
 trait JSCodegen extends GenericCodegen {
   import IR._
-  
+
   def emitHTMLPage[B](f: () => Exp[B], stream: PrintWriter)(implicit mB: Manifest[B]): Unit = {
     stream.println("<html><head><title>Scala2JS</title><script type=\"text/JavaScript\">")
 
