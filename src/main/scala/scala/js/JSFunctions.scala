@@ -5,7 +5,6 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 
 trait JSFunctions extends Functions {
-  implicit def fun[A:Manifest,B:Manifest](f: Rep[A] => Rep[B]): Rep[A=>B] = doLambda(f)
 }
 
 trait JSFunctionsExp extends JSFunctions with FunctionsRecursiveExp
