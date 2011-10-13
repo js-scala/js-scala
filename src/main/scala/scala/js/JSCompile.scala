@@ -156,3 +156,19 @@ trait JSGenNumericOps extends JSGenBase {
     case _ => super.emitNode(sym, rhs)
   }
 }
+
+trait JSGenOrderingOps extends JSGenBase {
+  val IR: OrderingOpsExp
+  import IR._
+
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+    case OrderingLT(a,b) => emitValDef(sym, quote(a) + " < " + quote(b))
+    case OrderingLTEQ(a,b) => emitValDef(sym, quote(a) + " <= " + quote(b))
+    case OrderingGT(a,b) => emitValDef(sym, quote(a) + " > " + quote(b))
+    case OrderingGTEQ(a,b) => emitValDef(sym, quote(a) + " >= " + quote(b))
+    case OrderingEquiv(a,b) => emitValDef(sym, quote(a) + " == " + quote(b))
+    case OrderingMax(a,b) => emitValDef(sym, "Math.max(" + quote(a) + ", " + quote(b) + ")")
+    case OrderingMin(a,b) => emitValDef(sym, "Math.min(" + quote(a) + ", " + quote(b) + ")")
+    case _ => super.emitNode(sym, rhs)
+  }
+}
