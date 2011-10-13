@@ -18,6 +18,14 @@ trait AllocProg { this: JS =>
   }
 }
 
+trait DynamicUpdateProg { this: DynamicBase =>
+  def test(x: Rep[Any]): Rep[Any] = {
+    val x_ = dynamic(x)
+    x_.foo = x
+    x_.foo
+  }
+}
+
 class TestDynamic extends FileDiffSuite {
   
   val prefix = "test-out/"
@@ -41,4 +49,15 @@ class TestDynamic extends FileDiffSuite {
     }
     assertFileEqualsCheck(prefix+"dynamic_alloc")
   }
+
+  def testDynamicUpdate = {
+    withOutFile(prefix+"dynamicupdate") {
+      new DynamicUpdateProg with DynamicExp { self =>
+        val codegen = new JSGenDynamic { val IR: self.type = self }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"dynamicupdate")
+  }
+
 }
