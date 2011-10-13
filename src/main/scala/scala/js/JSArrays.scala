@@ -174,6 +174,7 @@ trait JSGenArrays extends JSGenEffect {
       stream.println("return " + quote(getBlockResult(block)))
       stream.println("})")
     case RangeForeach(Range(a, b), i, block) =>
+      emitValDef(sym, "undefined")
       stream.println("for(var " + quote(i) + "=" + quote(a) + ";" + quote(i) + "<" + quote(b) + ";" + quote(i) + "++){")
       emitBlock(block)
       stream.println("}")
