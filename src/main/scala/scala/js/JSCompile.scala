@@ -190,3 +190,15 @@ trait JSGenWhile extends JSGenEffect with BaseGenWhile {
     case _ => super.emitNode(sym, rhs)
   }
 }
+
+trait JSGenBooleanOps extends JSGenBase {
+  val IR: BooleanOpsExp
+  import IR._
+
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+    case BooleanNegate(b) => emitValDef(sym, "!" + quote(b))
+    case BooleanAnd(lhs,rhs) => emitValDef(sym, quote(lhs) + " && " + quote(rhs))
+    case BooleanOr(lhs,rhs) => emitValDef(sym, quote(lhs) + " || " + quote(rhs))
+    case _ => super.emitNode(sym,rhs)
+  }
+}
