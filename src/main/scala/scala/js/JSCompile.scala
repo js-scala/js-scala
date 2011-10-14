@@ -172,3 +172,21 @@ trait JSGenOrderingOps extends JSGenBase {
     case _ => super.emitNode(sym, rhs)
   }
 }
+
+trait JSGenWhile extends JSGenEffect with BaseGenWhile {
+  import IR._
+
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+    case While(c,b) =>
+      emitValDef(sym, "undefined")
+      val cond_fun = "cond_" + quote(sym)
+      stream.println("function " + cond_fun + "() {")
+      emitBlock(c)
+      stream.println("return " + quote(getBlockResult(c)))
+      stream.println("}")
+      stream.println("while (" + cond_fun + "()) {")
+      emitBlock(b)
+      stream.println("}")
+    case _ => super.emitNode(sym, rhs)
+  }
+}
