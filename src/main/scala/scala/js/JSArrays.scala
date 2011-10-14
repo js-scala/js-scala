@@ -15,6 +15,7 @@ trait Arrays extends Base {
     def map[U:Manifest](block: Rep[T] => Rep[U]) = array_map(a, block)
     def flatMap[U:Manifest](block: Rep[T] => Rep[Array[U]]) = array_flatMap(a, block)
     def filter(block: Rep[T] => Rep[Boolean]) = array_filter(a, block)
+    def join(s: Rep[String]) = array_join(a, s)
   }
 
   def array[T:Manifest](xs: Rep[T]*): Rep[Array[T]]
@@ -25,6 +26,7 @@ trait Arrays extends Base {
   def array_map[T:Manifest,U:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[U]): Rep[Array[U]]
   def array_flatMap[T:Manifest,U:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[Array[U]]): Rep[Array[U]]
   def array_filter[T:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[Boolean]): Rep[Array[T]]
+  def array_join[T:Manifest](a: Rep[Array[T]], s: Rep[String]): Rep[String]
 
   case class Range(a: Rep[Int], b: Rep[Int]) {
     def foreach(block: Rep[Int] => Rep[Unit]) = range_foreach(this, block)
@@ -40,7 +42,7 @@ trait Arrays extends Base {
 }
 
 trait ArraysExp extends Arrays with EffectExp {
-  case class ArrayLiteral[T:Manifest](xs: List[Rep[T]]) extends Def[Array[T]]
+  case class ArrayLiteral[T:Manifest](xs: List[Exp[T]]) extends Def[Array[T]]
   case class ArrayApply[T:Manifest](a: Exp[Array[T]], i: Exp[Int]) extends Def[T]
   case class ArrayLength[T:Manifest](a: Exp[Array[T]]) extends Def[Int]
   case class ArrayUpdate[T:Manifest](a: Exp[Array[T]], i: Exp[Int], x: Exp[T]) extends Def[Unit]
@@ -48,6 +50,7 @@ trait ArraysExp extends Arrays with EffectExp {
   case class ArrayMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[U]) extends Def[Array[U]]
   case class ArrayFlatMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[Array[U]]) extends Def[Array[U]]
   case class ArrayFilter[T:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[Boolean]) extends Def[Array[T]]
+  case class ArrayJoin[T:Manifest](a: Exp[Array[T]], s: Exp[String]) extends Def[String]
   case class RangeForeach(r: Range, i: Sym[Int], block: Exp[Unit]) extends Def[Unit]
   case class RangeMap[U:Manifest](r: Range, i: Sym[Int], block: Exp[U]) extends Def[Array[U]]
   case class RangeFlatMap[U:Manifest](r: Range, i: Sym[Int], block: Exp[Array[U]]) extends Def[Array[U]]
@@ -77,22 +80,23 @@ trait ArraysExp extends Arrays with EffectExp {
     val b = reifyEffects(block(x))
     reflectEffect(ArrayFilter(a, x, b), Alloc() andAlso summarizeEffects(b).star)
   }
-  def range_foreach(r: Range, block: Rep[Int] => Rep[Unit]) = {
+  def array_join[T:Manifest](a: Exp[Array[T]], s: Exp[String]) = ArrayJoin(a, s)
+  def range_foreach(r: Range, block: Exp[Int] => Exp[Unit]) = {
     val i = fresh[Int]
     val b = reifyEffects(block(i))
     reflectEffect(RangeForeach(r, i, b), summarizeEffects(b).star)
   }
-  def range_map[U:Manifest](r: Range, block: Rep[Int] => Rep[U]) = {
+  def range_map[U:Manifest](r: Range, block: Exp[Int] => Exp[U]) = {
     val i = fresh[Int]
     val b = reifyEffects(block(i))
     reflectEffect(RangeMap(r, i, b), Alloc() andAlso summarizeEffects(b).star)
   }
-  def range_flatMap[U:Manifest](r: Range, block: Rep[Int] => Rep[Array[U]]) = {
+  def range_flatMap[U:Manifest](r: Range, block: Exp[Int] => Exp[Array[U]]) = {
     val i = fresh[Int]
     val b = reifyEffects(block(i))
     reflectEffect(RangeFlatMap(r, i, b), Alloc() andAlso summarizeEffects(b).star)
   }
-  def range_filter(r: Range, block: Rep[Int] => Rep[Boolean]) = {
+  def range_filter(r: Range, block: Exp[Int] => Exp[Boolean]) = {
     val i = fresh[Int]
     val b = reifyEffects(block(i))
     reflectEffect(RangeFilter(r, i, b), Alloc() andAlso summarizeEffects(b).star)
@@ -173,6 +177,7 @@ trait JSGenArrays extends JSGenEffect {
       emitBlock(block)
       stream.println("return " + quote(getBlockResult(block)))
       stream.println("})")
+    case ArrayJoin(a, s) => emitValDef(sym, quote(a) + ".join(" + quote(s) + ")")
     case RangeForeach(Range(a, b), i, block) =>
       emitValDef(sym, "undefined")
       stream.println("for(var " + quote(i) + "=" + quote(a) + ";" + quote(i) + "<" + quote(b) + ";" + quote(i) + "++){")

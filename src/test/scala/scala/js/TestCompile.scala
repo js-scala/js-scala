@@ -13,6 +13,12 @@ trait WhileProg { this: JS =>
   }
 }
 
+trait SplitJoinProg { this: JS =>
+  def test(s: Rep[String]): Rep[String] = {
+    (for (x <- s.split(" ")) yield (x + 1)).join(" ")
+  }
+}
+
 class TestCompile extends FileDiffSuite {
   val prefix = "test-out/"
   
@@ -25,4 +31,15 @@ class TestCompile extends FileDiffSuite {
     }
     assertFileEqualsCheck(prefix+"while")
   }
+
+  def testSplitJoin = {
+    withOutFile(prefix+"splitjoin") {
+      new SplitJoinProg with JSExp { self =>
+        val codegen = new JSGen { val IR: self.type = self }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"splitjoin")
+  }
+
 }
