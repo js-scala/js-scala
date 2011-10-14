@@ -159,7 +159,7 @@ trait JSGenArrays extends JSGenEffect {
       stream.println("return " + quote(getBlockResult(block)))
       stream.println("})")
     case ArrayFlatMap(a, x, block) =>
-      emitValDef(sym, "[]")
+      stream.println("var " + quote(sym) + " = []")
       val i = fresh[Int]
       stream.println("for(var " + quote(i) + " = 0; " + quote(i) + "< " + quote(a) + ".length; " + quote(i) + "++){")
       stream.println(quote(sym) + ".splice.apply(" + quote(sym) + ", [" + quote(sym) + ".length, 0].concat((function(" + quote(x) + "){")
@@ -179,19 +179,19 @@ trait JSGenArrays extends JSGenEffect {
       emitBlock(block)
       stream.println("}")
     case RangeMap(Range(a, b), i, block) =>
-      emitValDef(sym, "[]")
+      stream.println("var " + quote(sym) + " = []")
       stream.println("for(var " + quote(i) + "=" + quote(a) + ";" + quote(i) + "<" + quote(b) + ";" + quote(i) + "++){")
       emitBlock(block)
       stream.println(quote(sym) + "[" + quote(i) + "]=" + quote(getBlockResult(block)))
       stream.println("}")
     case RangeFlatMap(Range(a, b), i, block) =>
-      emitValDef(sym, "[]")
+      stream.println("var " + quote(sym) + " = []")
       stream.println("for(var " + quote(i) + "=" + quote(a) + ";" + quote(i) + "<" + quote(b) + ";" + quote(i) + "++){")
       emitBlock(block)
       stream.println(quote(sym) + ".splice.apply(" + quote(sym) + ", [" + quote(sym) + ".length,0].concat(" + quote(getBlockResult(block)) + "))")
       stream.println("}")
     case RangeFilter(Range(a, b), i, block) =>
-      emitValDef(sym, "[]")
+      stream.println("var " + quote(sym) + " = []")
       stream.println("for(var " + quote(i) + "=" + quote(a) + ";" + quote(i) + "<" + quote(b) + ";" + quote(i) + "++){")
       emitBlock(block)
       stream.println("if (" + quote(getBlockResult(block)) + ") {")
