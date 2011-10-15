@@ -7,7 +7,7 @@ import java.io.PrintWriter
 
 trait JSCodegen extends GenericCodegen {
   import IR._
-  
+
   def emitHTMLPage[B](f: () => Exp[B], stream: PrintWriter)(implicit mB: Manifest[B]): Unit = {
     stream.println("<html><head><title>Scala2JS</title><script type=\"text/JavaScript\">")
 
@@ -156,3 +156,63 @@ trait JSGenNumericOps extends JSGenBase {
     case _ => super.emitNode(sym, rhs)
   }
 }
+
+trait JSGenOrderingOps extends JSGenBase {
+  val IR: OrderingOpsExp
+  import IR._
+
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+    case OrderingLT(a,b) => emitValDef(sym, quote(a) + " < " + quote(b))
+    case OrderingLTEQ(a,b) => emitValDef(sym, quote(a) + " <= " + quote(b))
+    case OrderingGT(a,b) => emitValDef(sym, quote(a) + " > " + quote(b))
+    case OrderingGTEQ(a,b) => emitValDef(sym, quote(a) + " >= " + quote(b))
+    case OrderingEquiv(a,b) => emitValDef(sym, quote(a) + " == " + quote(b))
+    case OrderingMax(a,b) => emitValDef(sym, "Math.max(" + quote(a) + ", " + quote(b) + ")")
+    case OrderingMin(a,b) => emitValDef(sym, "Math.min(" + quote(a) + ", " + quote(b) + ")")
+    case _ => super.emitNode(sym, rhs)
+  }
+}
+
+trait JSGenWhile extends JSGenEffect with BaseGenWhile {
+  import IR._
+
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+    case While(c,b) =>
+      emitValDef(sym, "undefined")
+      val cond_fun = "cond_" + quote(sym)
+      stream.println("function " + cond_fun + "() {")
+      emitBlock(c)
+      stream.println("return " + quote(getBlockResult(c)))
+      stream.println("}")
+      stream.println("while (" + cond_fun + "()) {")
+      emitBlock(b)
+      stream.println("}")
+    case _ => super.emitNode(sym, rhs)
+  }
+}
+
+trait JSGenBooleanOps extends JSGenBase {
+  val IR: BooleanOpsExp
+  import IR._
+
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+    case BooleanNegate(b) => emitValDef(sym, "!" + quote(b))
+    case BooleanAnd(lhs,rhs) => emitValDef(sym, quote(lhs) + " && " + quote(rhs))
+    case BooleanOr(lhs,rhs) => emitValDef(sym, quote(lhs) + " || " + quote(rhs))
+    case _ => super.emitNode(sym,rhs)
+  }
+}
+
+trait JSGenStringOps extends JSGenBase {
+  val IR: StringOpsExp
+  import IR._
+  
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+    case StringPlus(s1,s2) => emitValDef(sym, "%s+%s".format(quote(s1), quote(s2)))
+    case StringTrim(s) => emitValDef(sym, "%s.trim()".format(quote(s)))
+    case StringSplit(s, sep) => emitValDef(sym, "%s.split(%s)".format(quote(s), quote(sep)))
+    case StringValueOf(a) => emitValDef(sym, "String(%s)".format(quote(a)))
+    case _ => super.emitNode(sym, rhs)
+  }
+}
+

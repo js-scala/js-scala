@@ -4,21 +4,29 @@ import scala.virtualization.lms.common._
 
 import java.io.PrintWriter
 
-trait JSFunctions extends Functions {
-  implicit def fun[A:Manifest,B:Manifest](f: Rep[A] => Rep[B]): Rep[A=>B] = doLambda(f)
-}
+trait JSFunctions extends TupledFunctions
 
-trait JSFunctionsExp extends JSFunctions with FunctionsRecursiveExp
+trait JSFunctionsExp extends JSFunctions with TupledFunctionsRecursiveExp
 
 trait JSGenFunctions extends JSGenEffect with BaseGenFunctions {
+  val IR: TupledFunctionsExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case e@Lambda(fun, x, y) =>
+    case Lambda(fun, UnboxedTuple(xs), y) =>
+      stream.println("var " + quote(sym) + " = function" + xs.map(quote).mkString("(", ",", ")") + " {")
+      emitBlock(y)
+      stream.println("return " + quote(getBlockResult(y)))
+      stream.println("}")
+
+    case Lambda(fun, x, y) =>
       stream.println("var " + quote(sym) + " = function(" + quote(x) + ") {")
       emitBlock(y)
       stream.println("return " + quote(getBlockResult(y)))
       stream.println("}")
+
+    case Apply(fun, UnboxedTuple(args)) =>
+      emitValDef(sym, quote(fun) + args.map(quote).mkString("(", ",", ")"))
 
     case Apply(fun, arg) =>
       emitValDef(sym, quote(fun) + "(" + quote(arg) + ")")

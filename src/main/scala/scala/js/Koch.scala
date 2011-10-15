@@ -7,7 +7,7 @@ object Koch {
   trait KochProg { this: JS with Doms =>
     val deg = Math.PI/180;    // For converting degrees to radians
 
-    def snowflake(c : Rep[Context], n : Rep[Int], x : Rep[Int], y : Rep[Int], len : Rep[Int]) {
+    def snowflake = fun { (c : Rep[Context], n : Rep[Int], x : Rep[Int], y : Rep[Int], len : Rep[Int]) =>
       // Draw a single leg of a level-n Koch snowflake.
       // This function leaves the current point at the end of the leg it has
       // drawn and translates the coordinate system so the current point is (0,0).
@@ -46,21 +46,18 @@ object Koch {
     def draw() {
       val canvas = document.getElementById("canvas").as[Canvas];
       val c = canvas.getContext("2d");
-      snowflake(c,0,5,115,125);    // A level-0 snowflake is an equilateral triangle
-      snowflake(c,1,145,115,125);  // A level-1 snowflake is a 6-sided star
-      snowflake(c,2,285,115,125);  // etc.
-      snowflake(c,3,425,115,125);
-      snowflake(c,4,565,115,125);  // A level-4 snowflake looks like a snowflake!
+      snowflake(make_tuple5(c,0,5,115,125));    // A level-0 snowflake is an equilateral triangle
+      snowflake(make_tuple5(c,1,145,115,125));  // A level-1 snowflake is a 6-sided star
+      snowflake(make_tuple5(c,2,285,115,125));  // etc.
+      snowflake(make_tuple5(c,3,425,115,125));
+      snowflake(make_tuple5(c,4,565,115,125));  // A level-4 snowflake looks like a snowflake!
       c.stroke();                  // Stroke this very complicated path
     }
   }
 
   def codegen(pw: PrintWriter) {
     new KochProg with JSExp with DomsExp { self =>
-      val codegen = new JSGen with GenDoms { val IR: self.type = self }
-      //codegen.emitSource5(snowflake _, "snowflake", pw)
-      //It's enough to emit draw, it will call snowflake and will inline
-      //what's needed. It's quite amazing, actually.
+      val codegen = new JSGenOpt with GenDoms { val IR: self.type = self }
       codegen.emitSource0(draw _, "draw", pw)
     }
   }

@@ -57,6 +57,7 @@ return x39
 }
 function test6(x41) {
 var x42 = []
+var x46 = undefined
 for(var x43=0;x43<x41;x43++){
 var x44 = x42[x43] = x43
 }

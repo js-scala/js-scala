@@ -1,0 +1,10 @@
+function main(x0) {
+var x1 = x0.split(" ")
+var x4=x1.map(
+function(x2){
+var x3 = x2+1
+return x3
+})
+var x5 = x4.join(" ")
+return x5
+}
