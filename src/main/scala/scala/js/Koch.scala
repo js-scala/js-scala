@@ -7,7 +7,7 @@ object Koch {
   trait KochProg { this: JS with Doms =>
     val deg = Math.PI/180;    // For converting degrees to radians
 
-    def snowflake(c : DynamicRep, n : Rep[Int], x : Rep[Int], y : Rep[Int], len : Rep[Int]) {
+    def snowflake(c : Rep[Context], n : Rep[Int], x : Rep[Int], y : Rep[Int], len : Rep[Int]) {
       // Draw a single leg of a level-n Koch snowflake.
       // This function leaves the current point at the end of the leg it has
       // drawn and translates the coordinate system so the current point is (0,0).
@@ -44,7 +44,7 @@ object Koch {
     }
 
     def draw() {
-      val canvas = document.getElementById("canvas");
+      val canvas = document.getElementById("canvas").as[Canvas];
       val c = canvas.getContext("2d");
       snowflake(c,0,5,115,125);    // A level-0 snowflake is an equilateral triangle
       snowflake(c,1,145,115,125);  // A level-1 snowflake is a 6-sided star

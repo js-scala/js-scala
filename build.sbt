@@ -16,11 +16,12 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
     "org.scalatest" % "scalatest_2.10.0-virtualized-SNAPSHOT" % "1.6.1-SNAPSHOT" % "test",
-    "scala" % "virtualization-lms-core_2.10.0-virtualized-SNAPSHOT" % "0.1")
+    "scala" % "virtualization-lms-core_2.10.0-virtualized-SNAPSHOT" % "0.1",
+    "org.scala-lang" % "scala-compiler" % "2.10.0-virtualized-SNAPSHOT")
     
 //--- End of Dependencies
 
-scalacOptions ++= Seq("-deprecation", "-Xexperimental")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental")
 
 //Our tests are not threadsafe so disabling parallel execution for now
 parallelExecution in Test := false

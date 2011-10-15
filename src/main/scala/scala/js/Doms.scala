@@ -1,19 +1,55 @@
 package scala.js
 
-trait Doms extends DynamicBase {
-  val document: DynamicRep
+trait Doms extends JSProxyBase {
+  trait Element
+  trait ElementOps {
+    def getElementById(id: Rep[String]): Rep[Element]
+  }
+  trait Canvas
+  trait CanvasOps {
+    def getContext(context: Rep[String]): Rep[Context]
+  }
+  trait Context extends Element
+  trait ContextOps extends ElementOps {
+    def save(): Rep[Unit]
+    def lineTo(x: Rep[Int], y: Rep[Int]): Rep[Unit]
+    def scale(x1: Rep[Double], x2: Rep[Double]): Rep[Unit]
+    def rotate(x: Rep[Double]): Rep[Unit]
+    def restore(): Rep[Unit]
+    def translate(x: Rep[Int], y: Rep[Int]): Rep[Unit]
+    def moveTo(x: Rep[Int], y: Rep[Int])
+    def closePath(): Rep[Unit]
+    def stroke(): Rep[Unit]
+  }
+  trait AsOps {
+    def as[T]: Rep[T]
+  }
+  val document: Rep[Element]
+  implicit def elementOps(x: Rep[Element]): ElementOps
+  implicit def canvasOps(x: Rep[Canvas]): CanvasOps
+  implicit def contextOps(x: Rep[Context]): ContextOps
+  implicit def asOps(x: Rep[_]): AsOps
 }
 
-trait DomsExp extends Doms with DynamicExp {
-  case object Document extends Exp[Any]
-  val document = dynamic(Document)
+trait DomsExp extends Doms with JSProxyExp {
+  case object DocumentVar extends Exp[Element]
+  val document = DocumentVar
+  implicit def elementOps(x: Rep[Element]): ElementOps =
+    proxyOps[Element,ElementOps](x)
+  implicit def canvasOps(x: Rep[Canvas]): CanvasOps =
+    proxyOps[Canvas,CanvasOps](x)
+  implicit def contextOps(x: Rep[Context]): ContextOps =
+    proxyOps[Context,ContextOps](x)
+  implicit def asOps(x: Rep[_]): AsOps = new AsOps {
+    def as[T]: Rep[T] = x.asInstanceOf[Rep[T]]
+  }
 }
 
-trait GenDoms extends JSGenBase {
+trait GenDoms extends JSGenProxy {
   val IR: DomsExp
   import IR._
   override def quote(x: Exp[Any]) : String = x match {
-    case Document => "document"
+    case DocumentVar => "document"
     case _ => super.quote(x)
   }
 }
