@@ -20,6 +20,15 @@ trait LiteralProg { this: JSLiteral with LiftNumeric with NumericOps =>
   }
 }
 
+trait LiteralFunProg { this: JS =>
+  def test(x: Rep[Int]): Rep[Int] = {
+    val o = new JSLiteral {
+      val a = x + 2
+      val f = fun { (y : Rep[Int]) => y + a }
+    }
+    o.f(x)
+  }
+}
 
 class TestLiteral extends FileDiffSuite {
   val prefix = "test-out/"
@@ -33,4 +42,15 @@ class TestLiteral extends FileDiffSuite {
     }
     assertFileEqualsCheck(prefix+"literal")
   }
+
+  def testLiteralFun = {
+    withOutFile(prefix+"literalfun") {
+      new LiteralFunProg with JSExp { self =>
+        val codegen = new JSGen { val IR: self.type = self }
+        codegen.emitSource(test _, "test", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"literalfun")
+  }
+
 }

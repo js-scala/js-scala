@@ -1,0 +1,15 @@
+function test(x0) {
+var x1 = x0 + 2
+var x2 = function(x3) {
+var x4 = x3 + x1
+return x4
+}
+var x8 = function(x5) {
+var x6 = x2(x5)
+return x6
+}
+var x9 = {'a' : x1,'f' : x8}
+var x10 = x9.f
+var x11 = x10(x0)
+return x11
+}

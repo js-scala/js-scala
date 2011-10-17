@@ -12,6 +12,7 @@ trait JSLiteral extends Base with EmbeddedControls {
   
   abstract class JSLiteralOps {
     def selectDynamic[T](field: String): Rep[T]
+    def applyDynamic[T](field: String) = selectDynamic[T](field)
   }
   implicit def jsLiteralOps(receiver: Rep[JSLiteral]): JSLiteralOps
 
@@ -28,7 +29,7 @@ trait JSLiteralExp extends JSLiteral with BaseExp {
 
   case class JSLiteralDef(members: List[(String, Exp[Any])]) extends Def[JSLiteral]
   case class MemberSelect(receiver: Exp[Any], field: String) extends Def[Any]
-  private class Self(members: Map[String, Exp[JSLiteral] => Exp[Any]]) extends Exp[JSLiteral] {
+  private class Self(members: Map[String, Exp[JSLiteral] => Exp[Any]]) extends Exp[JSLiteral] with Serializable {
     import scala.collection.mutable.{Map => MutMap}
     private val pending: MutMap[String, Exp[JSLiteral] => Exp[Any]] = MutMap(members.toSeq: _*)
     private val done: MutMap[String, Exp[Any]] = MutMap.empty
