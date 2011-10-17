@@ -16,6 +16,7 @@ trait DynamicBase extends Base {
   }
   def dynamic(x: Rep[Any]): DynamicRep
   def newDynamic(constructor: String)(args: Rep[Any]*): DynamicRep
+  def inlineDynamic(code: String): DynamicRep
 }
 
 trait DynamicExp extends DynamicBase with EffectExp {
@@ -26,6 +27,7 @@ trait DynamicExp extends DynamicBase with EffectExp {
   case class DynamicSelect(receiver: Exp[Any], field: String) extends Def[Any]
   case class DynamicUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
   case class DynamicNew(constructor: String, args: List[Exp[Any]]) extends Def[Any]
+  case class DynamicInline(code: String) extends Def[Any]
 
   case class ApplyDynamicSelectorImpl(receiver: Exp[Any], field: String) extends ApplyDynamicSelector {
     override def apply(args: Exp[Any]*): DynamicExp =
@@ -52,6 +54,9 @@ trait DynamicExp extends DynamicBase with EffectExp {
 
   def newDynamic(constructor: String)(args: Exp[Any]*): DynamicExp =
     dynamic(reflectEffect(DynamicNew(constructor, args.toList), Alloc))
+
+  def inlineDynamic(code: String): DynamicExp =
+    dynamic(reflectEffect(DynamicInline(code)))
 }
 
 trait JSGenDynamic extends JSGenEffect {
@@ -67,6 +72,7 @@ trait JSGenDynamic extends JSGenEffect {
       quote(receiver) + "." + field + " = " + quote(value))
     case DynamicNew(constructor, args) => emitValDef(sym,
       "new " + constructor + args.map(quote).mkString("(", ",", ")"))
+    case DynamicInline(code) => emitValDef(sym, code)
     case _ => super.emitNode(sym, rhs)
   }
   
