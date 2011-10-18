@@ -53,7 +53,7 @@ trait DynamicExp extends DynamicBase with EffectExp {
   def dynamic(x: Exp[Any]) = DynamicExp(x)
 
   def newDynamic(constructor: String)(args: Exp[Any]*): DynamicExp =
-    dynamic(reflectEffect(DynamicNew(constructor, args.toList), Alloc))
+    dynamic(reflectEffect(DynamicNew(constructor, args.toList)))
 
   def inlineDynamic(code: String): DynamicExp =
     dynamic(reflectEffect(DynamicInline(code)))

@@ -18,6 +18,13 @@ trait AllocProg { this: JS =>
   }
 }
 
+trait NewDynamicInFunProg { this: JS =>
+  def test(x: Rep[Any]): Rep[Any] = {
+    val f = fun { y : Rep[Any] => newDynamic("Foo")() }
+    f(x)
+  }
+}
+
 trait DynamicUpdateProg { this: DynamicBase =>
   def test(x: Rep[Any]): Rep[Any] = {
     val x_ = dynamic(x)
@@ -56,6 +63,16 @@ class TestDynamic extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"dynamic_alloc")
+  }
+
+  def testNewDynamicInFun = {
+    withOutFile(prefix+"dynamic_newinfun") {
+      new NewDynamicInFunProg with JSExp { self =>
+        val codegen = new JSGen { val IR: self.type = self }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"dynamic_newinfun")
   }
 
   def testDynamicUpdate = {

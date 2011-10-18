@@ -1,0 +1,8 @@
+function main(x0) {
+var x1 = function(x2) {
+var x3 = new Foo()
+return x3
+}
+var x9 = x1(x0)
+return x9
+}
