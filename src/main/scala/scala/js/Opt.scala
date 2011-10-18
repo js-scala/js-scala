@@ -27,7 +27,7 @@ trait JSCodegenOpt extends JSNestedCodegen {
     case _ => readSyms(e)
   }
 
-  override def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): Unit = {
+  override def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
     buildDefUse(body)
     super.emitSourceAnyArity(args, body, methName, stream)
   }

@@ -18,19 +18,19 @@ trait JSCodegen extends GenericCodegen {
     stream.flush
   }
 
-  def emitSource0[B](f: () => Exp[B], methName: String, stream: PrintWriter)(implicit mB: Manifest[B]): Unit = {
+  def emitSource0[B](f: () => Exp[B], methName: String, stream: PrintWriter)(implicit mB: Manifest[B]): List[(Sym[Any], Any)] = {
     val y = f()
     emitSourceAnyArity(Nil, y, methName, stream)
   }
 
-  def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)(implicit mA: Manifest[A], mB: Manifest[B]): Unit = {
+  def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)(implicit mA: Manifest[A], mB: Manifest[B]): List[(Sym[Any], Any)] = {
     val x = fresh[A]
     val y = f(x)
 
     emitSourceAnyArity(List(x), y, methName, stream)
   }
 
-  def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): Unit = {
+  def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
     val argsStr = args.map(quote).mkString(", ")
     stream.println("function "+methName+"("+argsStr+") {")
 
@@ -39,6 +39,7 @@ trait JSCodegen extends GenericCodegen {
 
     stream.println("}")
     stream.flush
+    getFreeDataBlock(body)
   }
 
   def emitValDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit = {
@@ -62,13 +63,13 @@ trait JSCodegen extends GenericCodegen {
 trait JSNestedCodegen extends GenericNestedCodegen with JSCodegen {
   import IR._
 
-  override def emitSource0[B](f: () => Exp[B], methName: String, stream: PrintWriter)(implicit mB: Manifest[B]): Unit = {
+  override def emitSource0[B](f: () => Exp[B], methName: String, stream: PrintWriter)(implicit mB: Manifest[B]): List[(Sym[Any], Any)] = {
     super.emitSource0(() => reifyEffects(f()), methName, stream)
   }
 
   // TODO: we shouldn't need the manifests here (aks)
   override def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)
-      (implicit mA: Manifest[A], mB: Manifest[B]): Unit = {
+      (implicit mA: Manifest[A], mB: Manifest[B]): List[(Sym[Any], Any)] = {
     super.emitSource[A,B](x => reifyEffects(f(x)), methName, stream)
   }
 
@@ -92,7 +93,7 @@ trait JSTupledCodegen extends JSCodegen {
 
   case class UnboxedTuple[T: Manifest](val vars: List[Exp[Any]]) extends Exp[T]
 
-  override def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)(implicit mA: Manifest[A], mB: Manifest[B]): Unit = {
+  override def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)(implicit mA: Manifest[A], mB: Manifest[B]): List[(Sym[Any], Any)] = {
     def tupledManifest[T](m: Manifest[T]): Boolean = m.erasure.getName startsWith "scala.Tuple"
       val (args, x) = if (tupledManifest(mA)) {
       val args = mA.typeArguments.map(fresh(_))
