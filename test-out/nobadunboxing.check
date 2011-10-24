@@ -1,0 +1,8 @@
+function main(x0) {
+var x1 = function(x2) {
+return x2
+}
+var x7 = {_1:1,_2:2}
+var x8 = x1(x7)
+return x8
+}
