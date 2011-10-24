@@ -41,7 +41,7 @@ trait JSGenPrint extends JSGenEffect {
 trait FunProg { this: JSFunctions =>
   def test(x: Rep[Any]): Rep[Any] = {
     val id = fun { x : Rep[Any] => x }
-    id(x)
+    id.apply(x)
   }
 }
 
@@ -49,9 +49,9 @@ trait SomeProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {
     lazy val id: Rep[Any => Any] = fun { x : Rep[Any] =>
       dynamic(x).foo.bar()
-      id(x)
+      id.apply(x)
     }
-    id(x)
+    id.apply(x)
   }
 }
 

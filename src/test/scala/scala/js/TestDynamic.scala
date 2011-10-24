@@ -14,14 +14,14 @@ trait DynamicProg { this: DynamicBase =>
 trait AllocProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {
     val f = fun { y : Rep[Any] => new JSLiteral { val a = newDynamic("Foo")() } }
-    f(x)
+    f.apply(x)
   }
 }
 
 trait NewDynamicInFunProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {
     val f = fun { y : Rep[Any] => newDynamic("Foo")() }
-    f(x)
+    f.apply(x)
   }
 }
 
