@@ -52,7 +52,12 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
 
       def isFieldUpdate: Boolean =  isFieldUpdateMethod(m.getName) && args_.length == 1
 
-      if (isFieldAccess) FieldAccess[AnyRef](receiver, m.getName)
+      // We use reflectEffect for field access to ensure that reads
+      // are serialized with respect to updates.  TODO: Could we use
+      // something like reflectMutable and reflectWrite to achieve a
+      // finer-granularity? We will need a similar solution for
+      // reified new with vars and for dynamic select.
+      if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName))
       else if (isFieldUpdate) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0)))
       else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList))
     }
