@@ -38,7 +38,7 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
 	if (args != null) return false
 
 	try {
-	  m.getDeclaringClass.getField(m.getName)
+	  m.getDeclaringClass.getDeclaredField(m.getName)
 	  return true
 	} catch {
 	  case _ : NoSuchFieldException => return false
