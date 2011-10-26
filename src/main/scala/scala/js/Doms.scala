@@ -25,15 +25,21 @@ trait Doms extends JSProxyBase {
     def as[T]: Rep[T]
   }
   val document: Rep[Element]
-  implicit def elementOps(x: Rep[Element]): ElementOps = proxyOps(x)
-  implicit def canvasOps(x: Rep[Canvas]): CanvasOps = proxyOps(x)
-  implicit def contextOps(x: Rep[Context]): ContextOps = proxyOps(x)
+  implicit def elementOps(x: Rep[Element]): ElementOps
+  implicit def canvasOps(x: Rep[Canvas]): CanvasOps
+  implicit def contextOps(x: Rep[Context]): ContextOps
   implicit def asOps(x: Rep[_]): AsOps
 }
 
 trait DomsExp extends Doms with JSProxyExp {
   case object DocumentVar extends Exp[Element]
   val document = DocumentVar
+  implicit def elementOps(x: Rep[Element]): ElementOps =
+    proxyOps[Element,ElementOps](x)
+  implicit def canvasOps(x: Rep[Canvas]): CanvasOps =
+    proxyOps[Canvas,CanvasOps](x)
+  implicit def contextOps(x: Rep[Context]): ContextOps =
+    proxyOps[Context,ContextOps](x)
   implicit def asOps(x: Rep[_]): AsOps = new AsOps {
     def as[T]: Rep[T] = x.asInstanceOf[Rep[T]]
   }

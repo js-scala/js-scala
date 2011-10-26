@@ -17,6 +17,14 @@ trait TwoArgsFunProg { this: JSFunctions with NumericOps =>
     f(x, x)
   }
 }
+
+trait NoBadUnboxingProg { this: JS =>
+  def test(x: Rep[Any]): Rep[Any] = {
+    def f = fun { (a: Rep[Any]) => a }
+    f(make_tuple2[Int,Int](1, 2))
+  }
+}
+
 class TestTuple extends FileDiffSuite {
 
   val prefix = "test-out/"
@@ -39,5 +47,15 @@ class TestTuple extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"tuplefun")
+  }
+
+  def testNoBadUnboxing = {
+    withOutFile(prefix+"nobadunboxing") {
+      new NoBadUnboxingProg with JSExp { self =>
+        val codegen = new JSGen { val IR: self.type = self }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"nobadunboxing")
   }
 }
