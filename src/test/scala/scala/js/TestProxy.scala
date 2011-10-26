@@ -8,7 +8,6 @@ import java.io.FileOutputStream
 trait TestProxyDummy extends JSProxyBase {
   trait Dummy
   trait DummyOps {
-    val someVal: Rep[Int]
     var someVar: Rep[Int]
     def someMethod(n: Rep[Int]): Rep[Int]
     def someGetter(): Rep[Int]
@@ -24,7 +23,7 @@ trait TestProxyDummyExp extends TestProxyDummy with JSProxyExp {
 
 trait ProxyProg { this: JS with TestProxyDummy =>
   def test(x: Rep[Dummy]): Rep[Int] = {
-    x.someVar = x.someMethod(1) + x.someVal + x.someGetter()
+    x.someVar = x.someMethod(1) + x.someVar + x.someGetter()
     x.someVar
   }
 }

@@ -1,6 +1,6 @@
 function main(x0) {
 var x1 = x0.someMethod(1)
-var x2 = x0.someVal
+var x2 = x0.someVar
 var x4 = x0.someGetter()
 var x3 = x1 + x2
 var x5 = x3 + x4

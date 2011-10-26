@@ -27,6 +27,7 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
     private val fieldUpdateMarker = "_$eq"
     private def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
     private def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
+    private def updateMethodFromField(name: String) = name + fieldUpdateMarker
 
     def invoke(proxy: AnyRef, m: jreflect.Method, args: Array[AnyRef]): Exp[Any] = {
       //TODO: Make a check when constructing proxy, not when executing it. Also, check using
@@ -34,16 +35,21 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
       assert(args == null || args.forall(_.isInstanceOf[Exp[_]]), "At the moment only Exps can be passed as arguments.")
       val args_ : Array[Exp[Any]] = if (args == null) Array.empty else args.map(_.asInstanceOf[Exp[Any]])
 
+      // For now, we can only detect field access for vars, as we rely
+      // on the existence of the update method.  For vals, Java
+      // reflection gives us no way to distinguish abstract vals from
+      // 0-argument methods.
       def isFieldAccess: Boolean = {
 	if (args != null) return false
 
 	try {
-	  m.getDeclaringClass.getDeclaredField(m.getName)
+	  m.getDeclaringClass.getMethod(updateMethodFromField(m.getName), m.getReturnType)
 	  return true
 	} catch {
-	  case _ : NoSuchFieldException => return false
+	  case _ : NoSuchMethodException => return false
 	}
       }
+
       def isFieldUpdate: Boolean =  isFieldUpdateMethod(m.getName) && args_.length == 1
 
       if (isFieldAccess) FieldAccess[AnyRef](receiver, m.getName)
