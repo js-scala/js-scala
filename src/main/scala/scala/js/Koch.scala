@@ -46,11 +46,11 @@ object Koch {
     def draw() {
       val canvas = document.getElementById("canvas").as[Canvas];
       val c = canvas.getContext("2d");
-      snowflake(make_tuple5(c,0,5,115,125));    // A level-0 snowflake is an equilateral triangle
-      snowflake(make_tuple5(c,1,145,115,125));  // A level-1 snowflake is a 6-sided star
-      snowflake(make_tuple5(c,2,285,115,125));  // etc.
-      snowflake(make_tuple5(c,3,425,115,125));
-      snowflake(make_tuple5(c,4,565,115,125));  // A level-4 snowflake looks like a snowflake!
+      snowflake(c,0,5,115,125);    // A level-0 snowflake is an equilateral triangle
+      snowflake(c,1,145,115,125);  // A level-1 snowflake is a 6-sided star
+      snowflake(c,2,285,115,125);  // etc.
+      snowflake(c,3,425,115,125);
+      snowflake(c,4,565,115,125);  // A level-4 snowflake looks like a snowflake!
       c.stroke();                  // Stroke this very complicated path
     }
   }

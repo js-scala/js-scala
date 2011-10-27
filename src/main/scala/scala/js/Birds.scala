@@ -10,19 +10,19 @@ object Birds {
       val scope = self
       inlineDynamic("THREE.Geometry").call( self )
 
-      v(make_tuple3(   5,   0,   0 ))
-      v(make_tuple3( - 5, - 2,   1 ))
-      v(make_tuple3( - 5,   0,   0 ))
-      v(make_tuple3( - 5, - 2, - 1 ))
+      v(   5,   0,   0 )
+      v( - 5, - 2,   1 )
+      v( - 5,   0,   0 )
+      v( - 5, - 2, - 1 )
 
-      v(make_tuple3(   0,   2, - 6 ))
-      v(make_tuple3(   0,   2,   6 ))
-      v(make_tuple3(   2,   0,   0 ))
-      v(make_tuple3( - 3,   0,   0 ))
+      v(   0,   2, - 6 )
+      v(   0,   2,   6 )
+      v(   2,   0,   0 )
+      v( - 3,   0,   0 )
 
-      f3(make_tuple3( 0, 2, 1 ))
-      f3(make_tuple3( 4, 7, 6 ))
-      f3(make_tuple3( 5, 6, 7 ))
+      f3( 0, 2, 1 )
+      f3( 4, 7, 6 )
+      f3( 5, 6, 7 )
 
       self.computeCentroids()
       self.computeFaceNormals()
