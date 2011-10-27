@@ -25,6 +25,13 @@ trait NoBadUnboxingProg { this: JS =>
   }
 }
 
+trait UnboxedQuoteProg { this: JS =>
+  def test(x: Rep[Any]): Rep[Any] = {
+    def f = fun { (a: Rep[(Int, Int)]) => a }
+    f(make_tuple2[Int,Int](1, 2))
+  }
+}
+
 class TestTuple extends FileDiffSuite {
 
   val prefix = "test-out/"
@@ -58,4 +65,15 @@ class TestTuple extends FileDiffSuite {
     }
     assertFileEqualsCheck(prefix+"nobadunboxing")
   }
+
+  def testUnboxedQuote = {
+    withOutFile(prefix+"unboxedquote") {
+      new UnboxedQuoteProg with JSExp { self =>
+        val codegen = new JSGen { val IR: self.type = self }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"unboxedquote")
+  }
+
 }

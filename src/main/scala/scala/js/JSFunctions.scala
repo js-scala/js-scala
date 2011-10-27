@@ -33,4 +33,10 @@ trait JSGenFunctions extends JSGenEffect with BaseGenFunctions {
 
     case _ => super.emitNode(sym, rhs)
   }
+
+  override def quote(x: Exp[Any]) : String = x match {
+    case UnboxedTuple(args) =>
+      args.zipWithIndex.map( { case (v,i) => "_" + (i+1) + ":" + quote(v) } ).mkString("{", ",", "}")
+    case _ => super.quote(x)
+  }
 }
