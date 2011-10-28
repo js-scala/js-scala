@@ -6,8 +6,8 @@ import java.io.PrintWriter
   
 trait JSLiteral extends Base with EmbeddedControls {
   type JSLiteral <: Row[Rep]
-  def __new[T](args: (String, Rep[T] => Rep[_])*): Rep[T] =
-    newJSLiteral(args.map(_.asInstanceOf[(String, Rep[JSLiteral] => Rep[_])]): _*).asInstanceOf[Rep[T]]
+  def __new[T](args: (String, Boolean, Rep[T] => Rep[_])*): Rep[T] =
+    newJSLiteral(args.map(x => (x._1, x._3).asInstanceOf[(String, Rep[JSLiteral] => Rep[_])]): _*).asInstanceOf[Rep[T]]
   def newJSLiteral(args: (String, Rep[JSLiteral] => Rep[_])*): Rep[JSLiteral]
   
   abstract class JSLiteralOps {
