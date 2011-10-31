@@ -88,6 +88,28 @@ trait TupleOpsInScala extends TupleOps with InScala {
 }
 
 trait DomsInScala extends Doms with InScala {
+  import java.awt._
+  import java.awt.geom._
+  import javax.swing.JFrame
+
+  var graphics : Graphics2D = null
+  def init(draw: () => Unit) {
+    val frame = new JFrame() {
+      override def paint(g : Graphics) {
+	graphics = g.asInstanceOf[Graphics2D]
+	graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+	graphics.setPaint(Color.black)
+	graphics.draw(new Line2D.Double(1, 1, 200, 200))
+	draw()
+      }
+    }
+    frame.setBackground(Color.white)
+    frame.setForeground(Color.white)
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+    frame.setSize(1000, 500)
+    frame.setVisible(true)
+  }
+
   class ElementInScala extends Element with ElementOps {
     def getElementById(id: String) : ElementInScala = {
       println("getElementById(" + id + ")")

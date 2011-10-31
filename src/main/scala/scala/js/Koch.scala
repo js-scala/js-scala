@@ -64,7 +64,7 @@ object Koch {
 
   def run() {
     new KochProg with JSKInScala with DomsInScala { self =>
-      self.draw()
+      init(self.draw _)
     }
   }
 
