@@ -4,7 +4,7 @@ import java.io.PrintWriter
 
 object Koch {
 
-  trait KochProg { this: JS with Doms =>
+  trait KochProg { this: JSK with Doms =>
     val deg = Math.PI/180;    // For converting degrees to radians
 
     def snowflake = fun { (c : Rep[Context], n : Rep[Int], x : Rep[Int], y : Rep[Int], len : Rep[Int]) =>
@@ -56,9 +56,15 @@ object Koch {
   }
 
   def codegen(pw: PrintWriter) {
-    new KochProg with JSExp with DomsExp { self =>
-      val codegen = new JSGenOpt with GenDoms { val IR: self.type = self }
+    new KochProg with JSKExp with DomsExp { self =>
+      val codegen = new JSKGenOpt with GenDoms { val IR: self.type = self }
       codegen.emitSource0(draw _, "draw", pw)
+    }
+  }
+
+  def run() {
+    new KochProg with JSKInScala with DomsInScala { self =>
+      self.draw()
     }
   }
 

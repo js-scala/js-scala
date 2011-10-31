@@ -1,6 +1,8 @@
 package scala.js
 
-trait Doms extends JSProxyBase {
+import scala.virtualization.lms.common._
+
+trait Doms extends Base {
   trait Element
   trait ElementOps {
     def getElementById(id: Rep[String]): Rep[Element]
