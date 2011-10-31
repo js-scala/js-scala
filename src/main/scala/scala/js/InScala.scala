@@ -91,6 +91,11 @@ trait DomsInScala extends Doms with InScala {
   import java.awt._
   import java.awt.geom._
   import javax.swing.JFrame
+  import scala.collection.mutable.Stack
+
+  val transforms : Stack[AffineTransform] = new Stack()
+  var point : Point2D = new Point2D.Double(0, 0)
+  var pointTransform = new AffineTransform()
 
   var graphics : Graphics2D = null
   def init(draw: () => Unit) {
@@ -99,39 +104,48 @@ trait DomsInScala extends Doms with InScala {
 	graphics = g.asInstanceOf[Graphics2D]
 	graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 	graphics.setPaint(Color.black)
-	graphics.draw(new Line2D.Double(1, 1, 200, 200))
+	graphics.translate(0, 30)
 	draw()
       }
     }
     frame.setBackground(Color.white)
     frame.setForeground(Color.white)
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
-    frame.setSize(1000, 500)
+    frame.setSize(800, 300)
     frame.setVisible(true)
   }
 
   class ElementInScala extends Element with ElementOps {
-    def getElementById(id: String) : ElementInScala = {
-      println("getElementById(" + id + ")")
-      new CanvasInScala
-    }
+    def getElementById(id: String) : ElementInScala = new CanvasInScala
   }
   class CanvasInScala extends ElementInScala with Canvas with CanvasOps {
-    def getContext(context: String) : ContextInScala = {
-      println("getContext(" + context + ")")
-      new ContextInScala
-    }
+    def getContext(context: String) : ContextInScala = new ContextInScala
   }
   class ContextInScala extends ElementInScala with Context with ContextOps {
-    def save(): Unit = println("save()")
-    def lineTo(x: Int, y: Int): Unit = println("lineTo(" + x + "," + y + ")")
-    def scale(x1: Double, x2: Double): Unit = println("scale(" + x1 + "," + x2 + ")")
-    def rotate(x: Double): Unit = println("rotate(" + x + ")")
-    def restore(): Unit = println("restore()")
-    def translate(x: Int, y: Int): Unit = println("translate(" + x + "," + y + ")")
-    def moveTo(x: Int, y: Int) { println("moveTo(" + x + "," + y + ")") }
-    def closePath(): Unit = println("closePath()")
-    def stroke(): Unit = println("stroke()")
+    def save(): Unit =
+      transforms.push(graphics.getTransform)
+    def restore(): Unit =
+      graphics.setTransform(transforms.pop())
+    def moveTo(x: Int, y: Int) {
+      point = new Point2D.Double(x, y)
+      pointTransform = graphics.getTransform
+    }
+    def lineTo(x: Int, y: Int): Unit = {
+      val start = graphics.getTransform.inverseTransform(pointTransform.transform(point, null), null)
+      val end = new Point2D.Double(x, y)
+      graphics.draw(new Line2D.Double(start, end))
+
+      point = end
+      pointTransform = graphics.getTransform
+    }
+    def scale(sx: Double, sy: Double): Unit =
+      graphics.scale(sx, sy)
+    def rotate(theta: Double): Unit =
+      graphics.rotate(theta)
+    def translate(tx: Int, ty: Int): Unit =
+      graphics.translate(tx, ty)
+    def closePath(): Unit = {}
+    def stroke(): Unit = {}
   }
   val document = new ElementInScala
   implicit def elementOps(x: Element): ElementOps = new ElementInScala
