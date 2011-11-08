@@ -1,0 +1,22 @@
+function main(x0) {
+var x5 = function() { this.$init$(); this }
+x5.prototype.$init$ = function() {
+var x1 = this.someVar = 1
+return null
+}
+x5.prototype.someMethod = function() {
+return 1
+}
+x5.prototype.someOtherMethod = function(x3) {
+var x4 = x3 + 1
+return x4
+}
+var x6 = new x5()
+var x7 = x6.someMethod()
+var x9 = x6.someVar
+var x11 = x6.someOtherMethod(x0)
+var x8 = x7 + x0
+var x10 = x8 + x9
+var x12 = x10 + x11
+return x12
+}

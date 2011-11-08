@@ -17,19 +17,27 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
   case class FieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
 
   def proxyOps[T,Ops<:AnyRef](x: Rep[T])(implicit m: Manifest[Ops]): Ops = {
+    proxy[T,Ops](x, null)(m)
+  }
+
+  def proxyTrait[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
+    proxy[T,T](x, outer)(m)
+  }
+
+  def proxy[T,Ops<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[Ops]): Ops = {
     val clazz = m.erasure
-    val handler = new JSInvocationHandler(x)
+    val handler = new JSInvocationHandler(x, outer)
     val proxy = jreflect.Proxy.newProxyInstance(clazz.getClassLoader(), Array(clazz), handler)
     proxy.asInstanceOf[Ops]
   }
 
-  class JSInvocationHandler(receiver: Exp[Any]) extends jreflect.InvocationHandler {
+  class JSInvocationHandler(receiver: Exp[Any], outer: AnyRef) extends jreflect.InvocationHandler {
     private val fieldUpdateMarker = "_$eq"
     private def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
     private def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
     private def updateMethodFromField(name: String) = name + fieldUpdateMarker
 
-    def invoke(proxy: AnyRef, m: jreflect.Method, args: Array[AnyRef]): Exp[Any] = {
+    def invoke(proxy: AnyRef, m: jreflect.Method, args: Array[AnyRef]): AnyRef = {
       //TODO: Make a check when constructing proxy, not when executing it. Also, check using
       //reflection by enumerating all methods and checking their signatures
       assert(args == null || args.forall(_.isInstanceOf[Exp[_]]), "At the moment only Exps can be passed as arguments.")
@@ -52,14 +60,15 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
 
       def isFieldUpdate: Boolean =  isFieldUpdateMethod(m.getName) && args_.length == 1
 
+      if (m.getName.endsWith("$$$outer")) outer
       // We use reflectEffect for field access to ensure that reads
       // are serialized with respect to updates.  TODO: Could we use
       // something like reflectMutable and reflectWrite to achieve a
       // finer-granularity? We will need a similar solution for
       // reified new with vars and for dynamic select.
-      if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName))
-      else if (isFieldUpdate) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0)))
-      else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList))
+      else if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
+      else if (isFieldUpdate) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
+      else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList)) : Exp[Any]
     }
   }
 
