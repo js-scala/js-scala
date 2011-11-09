@@ -12,7 +12,7 @@ trait JSTraits extends JSProxyBase {
 }
 
 trait JSTraitsExp extends JSTraits with JSProxyExp {
-  trait Constructor[T]
+  trait Constructor[+T]
 
   case class MethodTemplate(name: String, params: List[Sym[Any]], body: Exp[Any])
   case class ParentTemplate(constructor: Exp[Any], instance: Exp[Any])
@@ -32,11 +32,18 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
   private def create[T<:AnyRef:Manifest](constructor: Exp[Constructor[T]]): Exp[T] =
     reflectEffect(New(constructor))
 
+  private var registered : Map[String, Exp[Constructor[Any]]] = Map()
   private def registerInternal[T<:AnyRef:Manifest](outer: AnyRef) : Exp[Constructor[T]] = {
     val m = implicitly[Manifest[T]]
     val traitClazz = m.erasure
-    val implClazz = Class.forName(traitClazz.getName + "$class")
+    val key = traitClazz.getName
 
+    registered.get(key) match {
+      case Some(constructor) => return constructor.asInstanceOf[Exp[Constructor[T]]]
+      case None => ()
+    }
+
+    val implClazz = Class.forName(traitClazz.getName + "$class")
     val parents = traitClazz.getInterfaces.filter(_ != implicitly[Manifest[scala.ScalaObject]].erasure)
     assert (parents.length < 2, "Only single inheritance is supported.")
     val parentConstructor = if (parents.length == 0) None else Some(registerInternal[AnyRef](outer)(Manifest.classType(parents(0))))
@@ -52,7 +59,9 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
 	  MethodTemplate(method.getName, params, reifyEffects(method.invoke(null, args: _*).asInstanceOf[Exp[Any]]))
 	}
 
-    ClassTemplate[T](parent, methods)
+    val constructor = ClassTemplate[T](parent, methods) : Exp[Constructor[T]]
+    registered = registered.updated(key, constructor)
+    constructor
   }
 
   
