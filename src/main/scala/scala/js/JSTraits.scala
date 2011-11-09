@@ -15,19 +15,34 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
   trait Constructor[T]
 
   case class MethodTemplate(name: String, params: List[Sym[Any]], body: Exp[Any])
+  case class ParentTemplate(constructor: Exp[Any], instance: Exp[Any])
 
   case class This[+T:Manifest]() extends Exp[T]
 
-  case class ClassTemplate[T:Manifest](methods: List[MethodTemplate]) extends Def[Constructor[T]]
+  case class ClassTemplate[T:Manifest](parent: Option[ParentTemplate], methods: List[MethodTemplate]) extends Def[Constructor[T]]
   case class New[T:Manifest](constructor: Exp[Constructor[T]]) extends Def[T]
 
   override def register[T<:AnyRef:Manifest](outer: AnyRef) = {
-    val self = proxyTrait[T](This[T](), outer)
+    val constructor = registerInternal[T](outer)
+    new Factory[T] {
+      override def apply() = create[T](constructor)
+    }
+  }
 
+  private def create[T<:AnyRef:Manifest](constructor: Exp[Constructor[T]]): Exp[T] =
+    reflectEffect(New(constructor))
+
+  private def registerInternal[T<:AnyRef:Manifest](outer: AnyRef) : Exp[Constructor[T]] = {
     val m = implicitly[Manifest[T]]
     val traitClazz = m.erasure
     val implClazz = Class.forName(traitClazz.getName + "$class")
 
+    val parents = traitClazz.getInterfaces.filter(_ != implicitly[Manifest[scala.ScalaObject]].erasure)
+    assert (parents.length < 2, "Only single inheritance is supported.")
+    val parentConstructor = if (parents.length == 0) None else Some(registerInternal[AnyRef](outer)(Manifest.classType(parents(0))))
+    val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c)))
+
+    val self = proxyTrait[T](This[T](), outer)
     val methods = 
       for (method <- implClazz.getDeclaredMethods.toList)
 	yield {
@@ -37,9 +52,7 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
 	  MethodTemplate(method.getName, params, reifyEffects(method.invoke(null, args: _*).asInstanceOf[Exp[Any]]))
 	}
 
-    new Factory[T] {
-      override def apply() = reflectEffect(New(ClassTemplate[T](methods)))
-    }
+    ClassTemplate[T](parent, methods)
   }
 
   
@@ -64,8 +77,12 @@ trait JSGenTraits extends JSGenBase with JSGenProxy {
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case ClassTemplate(methodTemplates) =>
-      emitValDef(sym, "function() { this.$init$(); this }")
+    case ClassTemplate(parentTemplate, methodTemplates) =>
+      stream.println("var " + quote(sym) + " = function() {")
+      parentTemplate.foreach(pt => stream.println("this.$super$ = " + quote(pt.constructor) + ".prototype"))
+      stream.println("this.$init$()")
+      stream.println("}")
+      parentTemplate.foreach(pt => stream.println(quote(sym) + ".prototype = " + quote(pt.instance)))
       for (MethodTemplate(name, params, body) <- methodTemplates) {
 	stream.println(quote(sym) + ".prototype." + name + " = function" + params.map(quote).mkString("(", ",", ")") + " {")
 	emitBlock(body)

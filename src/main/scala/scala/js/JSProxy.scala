@@ -13,6 +13,7 @@ trait JSProxyBase extends Base {
 trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
 
   case class MethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
+  case class SuperMethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
   case class FieldAccess[T](receiver: Exp[Any], field: String) extends Def[T]
   case class FieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
 
@@ -61,12 +62,15 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
       def isFieldUpdate: Boolean =  isFieldUpdateMethod(m.getName) && args_.length == 1
 
       if (m.getName.endsWith("$$$outer")) outer
+      else if (m.getName.contains("$$super$")) {
+	val methodName = m.getName.slice(m.getName.indexOf("$$super$") + "$$super$".length, m.getName.length)
+	reflectEffect(SuperMethodCall[AnyRef](receiver, methodName, args_.toList)) : Exp[Any]
       // We use reflectEffect for field access to ensure that reads
       // are serialized with respect to updates.  TODO: Could we use
       // something like reflectMutable and reflectWrite to achieve a
       // finer-granularity? We will need a similar solution for
       // reified new with vars and for dynamic select.
-      else if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
+      } else if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
       else if (isFieldUpdate) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
       else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList)) : Exp[Any]
     }
@@ -81,6 +85,8 @@ trait JSGenProxy extends JSGenBase with JSGenEffect {
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
     case MethodCall(receiver, method, args) =>  emitValDef(sym,
       quote(receiver) + "." + method + args.map(quote).mkString("(", ",", ")"))
+    case SuperMethodCall(receiver, method, args) =>  emitValDef(sym,
+      quote(receiver) + ".$super$." + method + ".call" + (receiver::args).map(quote).mkString("(", ",", ")"))
     case FieldAccess(receiver, field) =>  emitValDef(sym,
       quote(receiver) + "." + field)
     case FieldUpdate(receiver, field, value) =>  emitValDef(sym,

@@ -1,0 +1,58 @@
+function main(x0) {
+var x10 = function() {
+this.$init$()
+}
+x10.prototype.$init$ = function() {
+var x6 = this.someVar = 1
+return null
+}
+x10.prototype.someMethod = function() {
+return 1
+}
+x10.prototype.someOtherMethod = function(x8) {
+var x9 = x8 + 1
+return x9
+}
+var x11 = new x10()
+var x5 = function() {
+this.$init$()
+}
+x5.prototype.$init$ = function() {
+var x1 = this.someVar = 1
+return null
+}
+x5.prototype.someMethod = function() {
+return 1
+}
+x5.prototype.someOtherMethod = function(x3) {
+var x4 = x3 + 1
+return x4
+}
+var x19 = new x5()
+var x18 = function() {
+this.$super$ = x10.prototype
+this.$init$()
+}
+x18.prototype = x11
+x18.prototype.$init$ = function() {
+return null
+}
+x18.prototype.someMethod = function() {
+var x12 = this.$super$.someMethod.call(this)
+var x13 = this.someVar
+var x14 = x12 + x13
+return x14
+}
+x18.prototype.someNewMethod = function(x16) {
+var x17 = x16 * 2
+return x17
+}
+var x20 = new x18()
+var x21 = x20.someVar = 2
+var x22 = x20.someNewMethod(x0)
+var x23 = x20.someMethod()
+var x25 = x19.someVar
+var x24 = x22 + x23
+var x26 = x24 + x25
+return x26
+}

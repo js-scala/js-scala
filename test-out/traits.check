@@ -1,5 +1,7 @@
 function main(x0) {
-var x5 = function() { this.$init$(); this }
+var x5 = function() {
+this.$init$()
+}
 x5.prototype.$init$ = function() {
 var x1 = this.someVar = 1
 return null
