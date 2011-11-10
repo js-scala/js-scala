@@ -38,7 +38,7 @@ trait TraitsProg { this: JS with JSTraits =>
 trait TraitsProgInScala extends TraitsProg with JSInScala with JSTraitsInScala { self =>
   override def create[T<:AnyRef:Manifest](): T = {
     val m = implicitly[Manifest[T]]
-    if (m.equals(implicitly[Manifest[Foo]]))       (new Foo {}).asInstanceOf[T]
+    if      (m.equals(implicitly[Manifest[Foo]]))  (new Foo {}).asInstanceOf[T]
     else if (m.equals(implicitly[Manifest[Bar]]))  (new Bar {}).asInstanceOf[T]
     else super.create[T]()
   }
