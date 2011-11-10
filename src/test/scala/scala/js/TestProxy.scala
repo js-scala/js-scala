@@ -11,7 +11,7 @@ trait TestProxyDummy extends JSProxyBase {
     def someMethod(n: Rep[Int]): Rep[Int]
     def someGetter(): Rep[Int]
   }
-  implicit def repDummy(x: Rep[Dummy]): Dummy = repProxy[Dummy](x)
+  implicit def repToDummy(x: Rep[Dummy]): Dummy = repProxy[Dummy](x)
 }
 
 trait TestProxyDummyExp extends TestProxyDummy with JSProxyExp
