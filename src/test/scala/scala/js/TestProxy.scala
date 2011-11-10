@@ -6,20 +6,15 @@ import java.io.PrintWriter
 import java.io.FileOutputStream
 
 trait TestProxyDummy extends JSProxyBase {
-  trait Dummy
-  trait DummyOps {
+  trait Dummy {
     var someVar: Rep[Int]
     def someMethod(n: Rep[Int]): Rep[Int]
     def someGetter(): Rep[Int]
   }
-  implicit def dummyOps(x: Rep[Dummy]): DummyOps
+  implicit def repDummy(x: Rep[Dummy]): Dummy = repProxy[Dummy](x)
 }
 
-trait TestProxyDummyExp extends TestProxyDummy with JSProxyExp {
-  implicit def dummyOps(x: Rep[Dummy]): DummyOps =
-    proxyOps[Dummy,DummyOps](x)
-}
-
+trait TestProxyDummyExp extends TestProxyDummy with JSProxyExp
 
 trait ProxyProg { this: JS with TestProxyDummy =>
   def test(x: Rep[Dummy]): Rep[Int] = {

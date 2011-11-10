@@ -11,13 +11,13 @@ trait TraitsProg { this: JS with JSTraits =>
     def someMethod() : Rep[Int] = 1
     def someOtherMethod(i: Rep[Int]) : Rep[Int] = i+1
   }
-  implicit def proxyRepFoo(x: Rep[Foo]) = proxyOps[Foo,Foo](x)
+  implicit def proxyRepFoo(x: Rep[Foo]) = repProxy[Foo](x)
 
   trait Bar extends Foo {
     override def someMethod() : Rep[Int] = super.someMethod() + someVar
     def someNewMethod(i: Rep[Int]) : Rep[Int] = i*2
   }
-  implicit def proxyRepBar(x: Rep[Bar]) = proxyOps[Bar,Bar](x)
+  implicit def proxyRepBar(x: Rep[Bar]) = repProxy[Bar](x)
 
   def test(x: Rep[Int]): Rep[Int] = {
     val newFoo = register[Foo](this)
