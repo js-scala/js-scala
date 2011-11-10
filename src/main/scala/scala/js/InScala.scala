@@ -8,7 +8,7 @@ trait InScala extends Base {
   protected def unit[T:Manifest](x: T) = x
 }
 
-trait JSKInScala extends JSK with NumericOpsInScala with EqualInScala with IfThenElseInScala with JSFunctionsInScala with TupleOpsInScala
+trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala with WhileInScala with BooleanOpsInScala with StringOpsInScala with DynamicInScala with ArraysInScala with JSFunctionsInScala with JSLiteralInScala with TupleOpsInScala
 
 trait VariablesInScala extends Variables with ReadVarImplicit with InScala with ImplicitOpsInScala {
   implicit def readVar[T:Manifest](v: Var[T]) : T = ???
@@ -42,22 +42,102 @@ trait NumericOpsInScala extends NumericOps with VariablesInScala {
 
 }
 
+trait OrderingOpsInScala extends OrderingOps with VariablesInScala {
+  def ordering_lt[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+    val t = implicitly[Ordering[T]]
+    t.lt(lhs, rhs)
+  }
+  def ordering_lteq[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+    val t = implicitly[Ordering[T]]
+    t.lteq(lhs, rhs)
+  }
+  def ordering_gt[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+    val t = implicitly[Ordering[T]]
+    t.gt(lhs, rhs)
+  }
+  def ordering_gteq[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+    val t = implicitly[Ordering[T]]
+    t.gteq(lhs, rhs)
+  }
+  def ordering_equiv[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+    val t = implicitly[Ordering[T]]
+    t.equiv(lhs, rhs)
+  }
+  def ordering_max[T:Ordering:Manifest](lhs: T, rhs: T): T = {
+    val t = implicitly[Ordering[T]]
+    t.max(lhs, rhs)
+  }
+  def ordering_min[T:Ordering:Manifest](lhs: T, rhs: T): T = {
+    val t = implicitly[Ordering[T]]
+    t.min(lhs, rhs)
+  }
+}
+
 trait EqualInScala extends Equal with InScala {
   def equals[A:Manifest,B:Manifest](a: A, b: B) : Boolean = a.equals(b)
   def notequals[A:Manifest,B:Manifest](a: A, b: B) : Boolean = !a.equals(b)
+}
 
+object OriginalOps {
+  def ifThenElse[T](cond: Boolean, thenp: => T, elsep: => T): T =
+    if (cond) thenp else elsep
+  def boolean_negate(lhs: Boolean) : Boolean = !lhs
+  def boolean_and(lhs: Boolean, rhs: Boolean) : Boolean = lhs && rhs
+  def boolean_or(lhs: Boolean, rhs: Boolean) : Boolean = lhs || rhs  
 }
 
 trait IfThenElseInScala extends IfThenElse with InScala {
-  def __ifThenElse[T:Manifest](cond: Boolean, thenp: => T, elsep: => T): T = cond match {
-    case true => thenp
-    case false => elsep
-  }
+  def __ifThenElse[T:Manifest](cond: Boolean, thenp: => T, elsep: => T): T =
+    OriginalOps.ifThenElse[T](cond, thenp, elsep)
+}
+
+trait WhileInScala extends While with InScala {
+  def __whileDo(cond: => Boolean, body: => Unit) = ???
+}
+
+trait BooleanOpsInScala extends BooleanOps with InScala {
+  def boolean_negate(lhs: Boolean) : Boolean = OriginalOps.boolean_negate(lhs)
+  def boolean_and(lhs: Boolean, rhs: Boolean) : Boolean = OriginalOps.boolean_and(lhs, rhs)
+  def boolean_or(lhs: Boolean, rhs: Boolean) : Boolean = OriginalOps.boolean_or(lhs, rhs)
+}
+
+trait StringOpsInScala extends StringOps with InScala {
+  def string_plus(s: Any, o: Any): String = ???
+  def string_trim(s: String) : String = ???
+  def string_split(s: String, separators: String) : Array[String] = ???
+  def string_valueof(a: Any) = ???
+}
+
+trait DynamicInScala extends DynamicBase with InScala {
+  def dynamic(x: Rep[Any]) = ???
+  def newDynamic(constructor: String)(args: Rep[Any]*) = ???
+  def inlineDynamic(code: String) = ???
+}
+
+trait ArraysInScala extends Arrays with InScala {
+  def array[T:Manifest](xs: T*) = ???
+  def array_apply[T:Manifest](a: Array[T], i: Int) = ???
+  def array_length[T:Manifest](a: Array[T]) = ???
+  def array_update[T:Manifest](a: Array[T], i: Int, x: T) = ???
+  def array_foreach[T:Manifest](a: Array[T], block: T => Unit) = ???
+  def array_map[T:Manifest,U:Manifest](a: Array[T], block: T => U) = ???
+  def array_flatMap[T:Manifest,U:Manifest](a: Array[T], block: T => Array[U]) = ???
+  def array_filter[T:Manifest](a: Array[T], block: T => Boolean) = ???
+  def array_join[T:Manifest](a: Array[T], s: String) = ???
+  def range_foreach(r: Range, block: Int => Unit) = ???
+  def range_map[U:Manifest](r: Range, block: Int => U) = ???
+  def range_flatMap[U:Manifest](r: Range, block: Int => Array[U]) = ???
+  def range_filter(r: Range, block: Int => Boolean) = ???
 }
 
 trait JSFunctionsInScala extends JSFunctions with InScala {
   implicit def doLambda[A:Manifest,B:Manifest](fun: A => B): A => B = fun
   def doApply[A:Manifest,B:Manifest](fun: A => B, arg: A): B = fun(arg)
+}
+
+trait JSLiteralInScala extends JSLiteral with InScala {
+  def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): JSLiteral = ???
+  implicit def jsLiteralOps(receiver: JSLiteral): JSLiteralOps = ???
 }
 
 trait TupleOpsInScala extends TupleOps with InScala {
