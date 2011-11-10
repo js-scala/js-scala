@@ -67,6 +67,7 @@ object Main extends App {
   }
 
   Koch.writeHtml("koch.html")
-  Koch.run()
+  if (args.contains("graphics"))
+    Koch.run()
   Birds.writeJs("examples/birds/Bird_.js")
 }
