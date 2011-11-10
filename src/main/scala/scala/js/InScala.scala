@@ -182,7 +182,11 @@ trait TupleOpsInScala extends TupleOps with InScala {
   def tuple5_get5[E:Manifest](t: (_,_,_,_,E)) : E = t._5
 }
 
-trait DomsInScala extends Doms with InScala {
+trait JSProxyInScala extends JSProxyBase with InScala {
+  def repProxy[T<:AnyRef](x: Rep[T])(implicit m: Manifest[T]): T = x
+}
+
+trait DomsInScala extends Doms with JSProxyInScala {
   import java.awt._
   import java.awt.geom._
   import javax.swing.JFrame
@@ -243,10 +247,4 @@ trait DomsInScala extends Doms with InScala {
     def stroke(): Unit = {}
   }
   val document = new ElementInScala
-  implicit def repToElement(x: Element): Element = x
-  implicit def repToCanvas(x: Canvas): Canvas = x
-  implicit def repToContext(x: Context): Context = x
-  implicit def asRep(x: X forSome {type X}): AsRep = new AsRep {
-    def as[T]: T = x.asInstanceOf[T]
-  }
 }

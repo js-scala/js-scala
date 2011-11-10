@@ -2,7 +2,7 @@ package scala.js
 
 import scala.virtualization.lms.common._
 
-trait Doms extends Base {
+trait Doms extends JSProxyBase {
   trait Element {
     def getElementById(id: Rep[String]): Rep[Element]
   }
@@ -24,22 +24,17 @@ trait Doms extends Base {
     def as[T]: Rep[T]
   }
   val document: Rep[Element]
-  implicit def repToElement(x: Rep[Element]): Element
-  implicit def repToCanvas(x: Rep[Canvas]): Canvas
-  implicit def repToContext(x: Rep[Context]): Context
-  implicit def asRep(x: Rep[_]): AsRep
-}
-
-trait DomsExp extends Doms with JSProxyExp {
-  case object DocumentVar extends Exp[Element]
-  val document = DocumentVar
-
   implicit def repToElement(x: Rep[Element]): Element = repProxy[Element](x)
   implicit def repToCanvas(x: Rep[Canvas]): Canvas = repProxy[Canvas](x)
   implicit def repToContext(x: Rep[Context]): Context = repProxy[Context](x)
   implicit def asRep(x: Rep[_]): AsRep = new AsRep {
     def as[T]: Rep[T] = x.asInstanceOf[Rep[T]]
   }
+}
+
+trait DomsExp extends Doms with JSProxyExp {
+  case object DocumentVar extends Exp[Element]
+  val document = DocumentVar
 }
 
 trait GenDoms extends JSGenProxy {
