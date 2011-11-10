@@ -81,9 +81,26 @@ trait EqualInScala extends Equal with InScala {
 object OriginalOps {
   def ifThenElse[T](cond: Boolean, thenp: => T, elsep: => T): T =
     if (cond) thenp else elsep
+  def whileDo(cond: => Boolean, body: => Unit) =
+    while (cond) body
+
   def boolean_negate(lhs: Boolean) : Boolean = !lhs
   def boolean_and(lhs: Boolean, rhs: Boolean) : Boolean = lhs && rhs
-  def boolean_or(lhs: Boolean, rhs: Boolean) : Boolean = lhs || rhs  
+  def boolean_or(lhs: Boolean, rhs: Boolean) : Boolean = lhs || rhs
+
+  def string_plus(s: Any, o: Any): String = string_valueof(s) + string_valueof(o)
+  def string_trim(s: String) : String = s.trim()
+  def string_split(s: String, separators: String) : Array[String] = s.split(separators)
+  def string_valueof(a: Any) = String.valueOf(a)
+
+  def array[T:Manifest](xs: T*): Array[T] = Array(xs: _*)
+  def array_apply[T:Manifest](a: Array[T], i: Int): T = a(i)
+  def array_length[T:Manifest](a: Array[T]): Int = a.length
+  def array_update[T:Manifest](a: Array[T], i: Int, x: T): Unit = a(i) = x
+  def array_foreach[T:Manifest](a: Array[T], block: T => Unit): Unit = a.foreach(block)
+  def array_map[T:Manifest,U:Manifest](a: Array[T], block: T => U): Array[U] = a.map(block)
+  def array_flatMap[T:Manifest,U:Manifest](a: Array[T], block: T => Array[U]): Array[U] = a.flatMap(block andThen (x => x : scala.collection.GenTraversableOnce[U]))
+  def array_filter[T:Manifest](a: Array[T], block: T => Boolean): Array[T] = a.filter(block)
 }
 
 trait IfThenElseInScala extends IfThenElse with InScala {
@@ -92,7 +109,7 @@ trait IfThenElseInScala extends IfThenElse with InScala {
 }
 
 trait WhileInScala extends While with InScala {
-  def __whileDo(cond: => Boolean, body: => Unit) = ???
+  def __whileDo(cond: => Boolean, body: => Unit) = OriginalOps.whileDo(cond, body)
 }
 
 trait BooleanOpsInScala extends BooleanOps with InScala {
@@ -102,32 +119,32 @@ trait BooleanOpsInScala extends BooleanOps with InScala {
 }
 
 trait StringOpsInScala extends StringOps with InScala {
-  def string_plus(s: Any, o: Any): String = ???
-  def string_trim(s: String) : String = ???
-  def string_split(s: String, separators: String) : Array[String] = ???
-  def string_valueof(a: Any) = ???
+  def string_plus(s: Any, o: Any): String = OriginalOps.string_plus(s, o)
+  def string_trim(s: String) : String = OriginalOps.string_trim(s)
+  def string_split(s: String, separators: String) : Array[String] = OriginalOps.string_split(s, separators)
+  def string_valueof(a: Any) = OriginalOps.string_valueof(a)
 }
 
 trait DynamicInScala extends DynamicBase with InScala {
-  def dynamic(x: Rep[Any]) = ???
-  def newDynamic(constructor: String)(args: Rep[Any]*) = ???
+  def dynamic(x: Any) = ???
+  def newDynamic(constructor: String)(args: Any*) = ???
   def inlineDynamic(code: String) = ???
 }
 
 trait ArraysInScala extends Arrays with InScala {
-  def array[T:Manifest](xs: T*) = ???
-  def array_apply[T:Manifest](a: Array[T], i: Int) = ???
-  def array_length[T:Manifest](a: Array[T]) = ???
-  def array_update[T:Manifest](a: Array[T], i: Int, x: T) = ???
-  def array_foreach[T:Manifest](a: Array[T], block: T => Unit) = ???
-  def array_map[T:Manifest,U:Manifest](a: Array[T], block: T => U) = ???
-  def array_flatMap[T:Manifest,U:Manifest](a: Array[T], block: T => Array[U]) = ???
-  def array_filter[T:Manifest](a: Array[T], block: T => Boolean) = ???
-  def array_join[T:Manifest](a: Array[T], s: String) = ???
-  def range_foreach(r: Range, block: Int => Unit) = ???
-  def range_map[U:Manifest](r: Range, block: Int => U) = ???
-  def range_flatMap[U:Manifest](r: Range, block: Int => Array[U]) = ???
-  def range_filter(r: Range, block: Int => Boolean) = ???
+  def array[T:Manifest](xs: T*): Array[T] = OriginalOps.array(xs: _*)
+  def array_apply[T:Manifest](a: Array[T], i: Int): T = OriginalOps.array_apply(a, i)
+  def array_length[T:Manifest](a: Array[T]): Int = OriginalOps.array_length(a)
+  def array_update[T:Manifest](a: Array[T], i: Int, x: T): Unit = OriginalOps.array_update(a, i, x)
+  def array_foreach[T:Manifest](a: Array[T], block: T => Unit): Unit = OriginalOps.array_foreach(a, block)
+  def array_map[T:Manifest,U:Manifest](a: Array[T], block: T => U): Array[U] = OriginalOps.array_map(a, block)
+  def array_flatMap[T:Manifest,U:Manifest](a: Array[T], block: T => Array[U]): Array[U] = OriginalOps.array_flatMap(a, block)
+  def array_filter[T:Manifest](a: Array[T], block: T => Boolean): Array[T] = OriginalOps.array_filter(a, block)
+  def array_join[T:Manifest](a: Array[T], s: String): String = a.mkString(s)
+  def range_foreach(r: Range, block: Int => Unit): Unit = (r.a to r.b).foreach(block)
+  def range_map[U:Manifest](r: Range, block: Int => U): Array[U] = (r.a to r.b).map(block).toArray
+  def range_flatMap[U:Manifest](r: Range, block: Int => Array[U]): Array[U] = (r.a to r.b).flatMap(block andThen (x => x : scala.collection.GenTraversableOnce[U])).toArray
+  def range_filter(r: Range, block: Int => Boolean): Array[Int] = (r.a to r.b).filter(block).toArray
 }
 
 trait JSFunctionsInScala extends JSFunctions with InScala {
