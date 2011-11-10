@@ -12,7 +12,7 @@ trait JSKGen extends JSGenNumericOps with JSGenEqual with JSGenIfThenElse with J
 
 trait JSKGenOpt extends JSKGen with JSCodegenOpt
 
-trait JS extends LiftNumeric with NumericOps with OrderingOps with Equal with IfThenElse with While with LiftBoolean with BooleanOps with LiftString with StringOps with DynamicBase with Arrays with LiftVariables with Variables with JSFunctions with JSLiteral
+trait JS extends LiftNumeric with NumericOps with OrderingOps with Equal with IfThenElse with While with LiftBoolean with BooleanOps with LiftString with StringOps with DynamicBase with Arrays with Variables with JSFunctions with JSLiteral
 
 trait JSExp extends JS with NumericOpsExpOpt with OrderingOpsExp with EqualExp with IfThenElseExp with WhileExp with BooleanOpsExp with StringOpsExp with DynamicExp with ArraysExp with VariablesExp with JSFunctionsExp with JSLiteralExp
 
