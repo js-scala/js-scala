@@ -8,23 +8,21 @@ trait InScala extends Base {
   protected def unit[T:Manifest](x: T) = x
 }
 
-trait JSKInScala extends JSK with NumericOpsInScala with EqualInScala with IfThenElseInScala with JSFunctionsInScala with TupleOpsInScala {
+trait JSKInScala extends JSK with NumericOpsInScala with EqualInScala with IfThenElseInScala with JSFunctionsInScala with TupleOpsInScala
 
-
-  // Members declared in scala.virtualization.lms.common.ImplicitOps
-  def implicit_convert[X,Y](x: Rep[X])(implicit c: X => Y, mX: Manifest[X], mY: Manifest[Y]) : Rep[Y] = ???
-
-  // Members declared in scala.virtualization.lms.common.ReadVarImplicit
+trait VariablesInScala extends Variables with ReadVarImplicit with InScala with ImplicitOpsInScala {
   implicit def readVar[T:Manifest](v: Var[T]) : T = ???
-
-  // Members declared in scala.virtualization.lms.common.Variables
   def var_new[T:Manifest](init: T): Var[T] = ???
   def var_assign[T:Manifest](lhs: Var[T], rhs: T): Unit = ???
   def var_plusequals[T:Manifest](lhs: Var[T], rhs: T): Unit = ???
   def var_minusequals[T:Manifest](lhs: Var[T], rhs: T): Unit = ???
 }
 
-trait NumericOpsInScala extends NumericOps with InScala {
+trait ImplicitOpsInScala extends ImplicitOps with InScala {
+  def implicit_convert[X,Y](x: X)(implicit c: X => Y, mX: Manifest[X], mY: Manifest[Y]) : Y = c(x)
+}
+
+trait NumericOpsInScala extends NumericOps with VariablesInScala {
   def numeric_plus[T:Numeric:Manifest](lhs: T, rhs: T) : T = {
     val t = implicitly[Numeric[T]]
     t.plus(lhs, rhs)
