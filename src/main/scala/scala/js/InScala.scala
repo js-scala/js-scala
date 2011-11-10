@@ -186,6 +186,15 @@ trait JSProxyInScala extends JSProxyBase with InScala {
   def repProxy[T<:AnyRef](x: Rep[T])(implicit m: Manifest[T]): T = x
 }
 
+trait JSTraitsInScala extends JSTraits with JSProxyInScala {
+  def create[T<:AnyRef:Manifest](): T =
+    throw new RuntimeException("don't know how to create " + implicitly[Manifest[T]].erasure.getName)
+  def register[T<:AnyRef:Manifest](outer: AnyRef): Factory[T] =
+    new Factory[T] {
+      override def apply() = create[T]()
+    }
+}
+
 trait DomsInScala extends Doms with JSProxyInScala {
   import java.awt._
   import java.awt.geom._

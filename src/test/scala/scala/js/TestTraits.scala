@@ -35,6 +35,15 @@ trait TraitsProg { this: JS with JSTraits =>
   }
 }
 
+trait TraitsProgInScala extends TraitsProg with JSInScala with JSTraitsInScala { self =>
+  override def create[T<:AnyRef:Manifest](): T = {
+    val m = implicitly[Manifest[T]]
+    if (m.equals(implicitly[Manifest[Foo]]))       (new Foo {}).asInstanceOf[T]
+    else if (m.equals(implicitly[Manifest[Bar]]))  (new Bar {}).asInstanceOf[T]
+    else super.create[T]()
+  }
+}
+
 class TestTraits extends FileDiffSuite {
   val prefix = "test-out/"
   
@@ -56,5 +65,12 @@ class TestTraits extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"traits-extends")
+  }
+
+  def testTraitsInScala = {
+    new TraitsProgInScala { self =>
+      expect(9){test(3)}
+      expect(10){testExtends(3)}
+    }
   }
 }
