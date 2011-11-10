@@ -210,13 +210,13 @@ trait DomsInScala extends Doms with InScala {
     frame.setVisible(true)
   }
 
-  class ElementInScala extends Element with ElementOps {
+  class ElementInScala extends Element {
     def getElementById(id: String) : ElementInScala = new CanvasInScala
   }
-  class CanvasInScala extends ElementInScala with Canvas with CanvasOps {
+  class CanvasInScala extends ElementInScala with Canvas {
     def getContext(context: String) : ContextInScala = new ContextInScala
   }
-  class ContextInScala extends ElementInScala with Context with ContextOps {
+  class ContextInScala extends ElementInScala with Context {
     def save(): Unit =
       transforms.push(graphics.getTransform)
     def restore(): Unit =
@@ -243,10 +243,10 @@ trait DomsInScala extends Doms with InScala {
     def stroke(): Unit = {}
   }
   val document = new ElementInScala
-  implicit def elementOps(x: Element): ElementOps = new ElementInScala
-  implicit def canvasOps(x: Canvas): CanvasOps = new CanvasInScala
-  implicit def contextOps(x: Context): ContextOps = new ContextInScala
-  implicit def asOps(x: X forSome {type X}): AsOps = new AsOps {
+  implicit def repToElement(x: Element): Element = x
+  implicit def repToCanvas(x: Canvas): Canvas = x
+  implicit def repToContext(x: Context): Context = x
+  implicit def asRep(x: X forSome {type X}): AsRep = new AsRep {
     def as[T]: T = x.asInstanceOf[T]
   }
 }
