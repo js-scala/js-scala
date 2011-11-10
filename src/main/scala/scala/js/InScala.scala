@@ -153,7 +153,7 @@ trait JSFunctionsInScala extends JSFunctions with InScala {
 }
 
 trait JSLiteralInScala extends JSLiteral with InScala {
-  def newJSLiteral(args: (String, Rep[JSLiteral] => (Rep[t] forSome{type t}))*): JSLiteral = ???
+  def newJSLiteral(args: (String, JSLiteral => (t forSome{type t}))*): JSLiteral = ???
   implicit def jsLiteralOps(receiver: JSLiteral): JSLiteralOps = ???
 }
 
