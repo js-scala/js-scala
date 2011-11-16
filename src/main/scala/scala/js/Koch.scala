@@ -62,6 +62,12 @@ object Koch {
     }
   }
 
+  def run() {
+    new KochProg with JSInScala with DomsInScala { self =>
+      init(self.draw _)
+    }
+  }
+
   def genHtml = {
     <html>
       <head>

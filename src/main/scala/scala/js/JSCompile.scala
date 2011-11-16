@@ -5,7 +5,14 @@ import scala.virtualization.lms.internal._
 
 import java.io.PrintWriter
 
-trait JSCodegen extends GenericCodegen {
+trait Codegen extends GenericCodegen {
+  import IR._
+
+  def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)]
+  def emitValDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit
+}
+
+trait JSCodegen extends Codegen {
   import IR._
 
   def emitHTMLPage[B](f: () => Exp[B], stream: PrintWriter)(implicit mB: Manifest[B]): Unit = {
@@ -30,7 +37,7 @@ trait JSCodegen extends GenericCodegen {
     emitSourceAnyArity(List(x), y, methName, stream)
   }
 
-  def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
+  override def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
     val argsStr = args.map(quote).mkString(", ")
     stream.println("function "+methName+"("+argsStr+") {")
 
@@ -42,7 +49,7 @@ trait JSCodegen extends GenericCodegen {
     getFreeDataBlock(body)
   }
 
-  def emitValDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit = {
+  override def emitValDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit = {
     stream.println("var " + quote(sym) + " = " + rhs)
   }
 

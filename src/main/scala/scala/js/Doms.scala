@@ -1,16 +1,15 @@
 package scala.js
 
+import scala.virtualization.lms.common._
+
 trait Doms extends JSProxyBase {
-  trait Element
-  trait ElementOps {
+  trait Element {
     def getElementById(id: Rep[String]): Rep[Element]
   }
-  trait Canvas
-  trait CanvasOps {
+  trait Canvas {
     def getContext(context: Rep[String]): Rep[Context]
   }
-  trait Context extends Element
-  trait ContextOps extends ElementOps {
+  trait Context extends Element {
     def save(): Rep[Unit]
     def lineTo(x: Rep[Int], y: Rep[Int]): Rep[Unit]
     def scale(x1: Rep[Double], x2: Rep[Double]): Rep[Unit]
@@ -21,28 +20,21 @@ trait Doms extends JSProxyBase {
     def closePath(): Rep[Unit]
     def stroke(): Rep[Unit]
   }
-  trait AsOps {
+  trait AsRep {
     def as[T]: Rep[T]
   }
   val document: Rep[Element]
-  implicit def elementOps(x: Rep[Element]): ElementOps
-  implicit def canvasOps(x: Rep[Canvas]): CanvasOps
-  implicit def contextOps(x: Rep[Context]): ContextOps
-  implicit def asOps(x: Rep[_]): AsOps
+  implicit def repToElement(x: Rep[Element]): Element = repProxy[Element](x)
+  implicit def repToCanvas(x: Rep[Canvas]): Canvas = repProxy[Canvas](x)
+  implicit def repToContext(x: Rep[Context]): Context = repProxy[Context](x)
+  implicit def asRep(x: Rep[_]): AsRep = new AsRep {
+    def as[T]: Rep[T] = x.asInstanceOf[Rep[T]]
+  }
 }
 
 trait DomsExp extends Doms with JSProxyExp {
   case object DocumentVar extends Exp[Element]
   val document = DocumentVar
-  implicit def elementOps(x: Rep[Element]): ElementOps =
-    proxyOps[Element,ElementOps](x)
-  implicit def canvasOps(x: Rep[Canvas]): CanvasOps =
-    proxyOps[Canvas,CanvasOps](x)
-  implicit def contextOps(x: Rep[Context]): ContextOps =
-    proxyOps[Context,ContextOps](x)
-  implicit def asOps(x: Rep[_]): AsOps = new AsOps {
-    def as[T]: Rep[T] = x.asInstanceOf[Rep[T]]
-  }
 }
 
 trait GenDoms extends JSGenProxy {

@@ -5,7 +5,7 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 
-trait WhileProg { this: JS =>
+trait WhileProg { this: JS with LiftVariables =>
   def test(n: Rep[Int]): Rep[Int] = {
     var x = 0
     while(x < n) { x += 1 }
@@ -24,7 +24,7 @@ class TestCompile extends FileDiffSuite {
   
   def testWhile = {
     withOutFile(prefix+"while") {
-      new WhileProg with JSExp { self =>
+      new WhileProg with JSExp with LiftVariables { self =>
         val codegen = new JSGen { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }

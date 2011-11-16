@@ -1,10 +1,11 @@
 package scala.js
 
 import scala.virtualization.lms.common._
+import scala.virtualization.lms.internal._
 
 import java.io.PrintWriter
 
-trait JSCodegenOpt extends JSNestedCodegen {
+trait NestedCodegenOpt extends GenericNestedCodegen with Codegen {
   import IR._
 
   val defUseMap : scala.collection.mutable.Map[Sym[_], Int] = new scala.collection.mutable.HashMap
@@ -27,16 +28,18 @@ trait JSCodegenOpt extends JSNestedCodegen {
     case _ => readSyms(e)
   }
 
-  override def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
+  abstract override def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
     buildDefUse(body)
     super.emitSourceAnyArity(args, body, methName, stream)
   }
 
-  override def emitValDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit = {
+  abstract override def emitValDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit = {
     if (defUse(sym) == 0) stream.println(rhs)
     else super.emitValDef(sym, rhs)
   }
 }
+
+trait JSCodegenOpt extends JSNestedCodegen with NestedCodegenOpt
 
 trait NumericOpsExpOpt extends NumericOpsExp {
 

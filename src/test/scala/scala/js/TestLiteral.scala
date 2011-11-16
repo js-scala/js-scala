@@ -10,9 +10,7 @@ trait LiteralProg { this: JSLiteral with LiftNumeric with NumericOps =>
     val o = new JSLiteral {
       val a = x
       val b = x + 2.0
-      // TODO: A bug in reified new logic. We need explicit an type
-      //       annotation for now.
-      val c: Double = 1.0
+      val c = 1.0
       val d = a + b
       val e = c + 2.0
     }

@@ -9,10 +9,12 @@ trait DynamicBase extends Base {
   trait DynamicRepImpl extends Dynamic {
     def applyDynamic(field: String): ApplyDynamicSelector
     def selectDynamic(field: String): DynamicRep
+    def updateDynamic(field: String)(value: Rep[Any]): Rep[Unit]
   }
   trait ApplyDynamicSelector {
     def apply(args: Rep[Any]*): DynamicRep
-    def update(value: Rep[Any]): Rep[Unit]
+    // TODO: array-like update
+    //def update(values: Rep[Any]*): Rep[Unit]
   }
   def dynamic(x: Rep[Any]): DynamicRep
   def newDynamic(constructor: String)(args: Rep[Any]*): DynamicRep
@@ -32,9 +34,6 @@ trait DynamicExp extends DynamicBase with EffectExp {
   case class ApplyDynamicSelectorImpl(receiver: Exp[Any], field: String) extends ApplyDynamicSelector {
     override def apply(args: Exp[Any]*): DynamicExp =
       dynamic(reflectEffect(DynamicCall(receiver, field, args.toList)))
-
-    override def update(value: Exp[Any]): Exp[Unit] =
-      reflectEffect(DynamicUpdate(receiver, field, value))
   }
 
   case class DynamicExp(receiver: Exp[Any]) extends Exp[Any] with DynamicRepImpl {
@@ -48,6 +47,9 @@ trait DynamicExp extends DynamicBase with EffectExp {
       // on the field of the receiver (TODO before attempting
       // optimizations).
       dynamic(DynamicSelect(receiver, field))
+
+    override def updateDynamic(field: String)(value: Exp[Any]): Exp[Unit] =
+      reflectEffect(DynamicUpdate(receiver, field, value))
   }
 
   def dynamic(x: Exp[Any]) = DynamicExp(x)
