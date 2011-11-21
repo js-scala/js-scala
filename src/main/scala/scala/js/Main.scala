@@ -70,4 +70,5 @@ object Main extends App {
   if (args.contains("graphics"))
     Koch.run()
   Birds.writeJs("examples/birds/Bird_.js")
+  Mice.writeJs("src/main/webapp/mice_.js")
 }
