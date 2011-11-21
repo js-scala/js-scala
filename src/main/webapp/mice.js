@@ -1,4 +1,3 @@
-var timeouts = {};
 var socket = new WebSocket(document.location.toString().replace('http://','ws://').replace('https://','wss://'));
 socket.onmessage=function(m){
     data = JSON.parse(m.data);
