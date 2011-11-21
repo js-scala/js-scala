@@ -4,7 +4,7 @@ import scala.virtualization.lms.common._
 
 import java.io.PrintWriter
 
-trait MiceApi extends JSProxyBase with JSLiteral with DynamicBase {
+trait MiceApi extends JSProxyBase with JSLiteral {
   val document: Rep[Any]
   val window: Rep[Any]
 
@@ -28,10 +28,23 @@ trait MiceApi extends JSProxyBase with JSLiteral with DynamicBase {
   }
   implicit def repToJSON(x: Rep[JSON]): JSON = repProxy[JSON](x)
 
-  def jQuery(x: Rep[Any]): DynamicRep
+  def jQuery(x: Rep[Any]): Rep[JQuery]
+  trait JQuery {
+    var length: Rep[Int]
+
+    def width(): Rep[Int]
+    def height(): Rep[Int]
+
+    def append(s: Rep[String]): Rep[JQuery]
+    def css(o: Rep[JSLiteral]): Rep[JQuery]
+    def mousemove(fn: Rep[JQueryEvent => Any]): Rep[JQuery]
+    def remove(): Rep[JQuery]
+  }
+  implicit def repToJQuery(x: Rep[JQuery]): JQuery = repProxy[JQuery](x)
+  type JQueryEvent = JSLiteral {val pageX: Int; val pageY: Int}
 }
 
-trait MiceApiExp extends MiceApi with JSProxyExp with JSLiteralExp with DynamicExp {
+trait MiceApiExp extends MiceApi with JSProxyExp with JSLiteralExp {
   case object DocumentVar extends Exp[Any]
   val document = DocumentVar
 
@@ -47,11 +60,11 @@ trait MiceApiExp extends MiceApi with JSProxyExp with JSLiteralExp with DynamicE
   case object JSONVar extends Exp[JSON]
   val json = JSONVar
 
-  case class JQueryCall(x: Exp[Any]) extends Def[Any]
-  def jQuery(x: Exp[Any]) = dynamic(JQueryCall(x))
+  case class JQueryCall(x: Exp[Any]) extends Def[JQuery]
+  def jQuery(x: Exp[Any]) = JQueryCall(x)
 }
 
-trait JSGenMiceApi extends JSGenProxy with JSGenLiteral with JSGenDynamic {
+trait JSGenMiceApi extends JSGenProxy with JSGenLiteral {
   val IR: MiceApiExp
   import IR._
 
@@ -85,9 +98,9 @@ object Mice {
 	})
       }
 
-      val ratelimit = fun { (fn: Rep[Any => Any], ms: Rep[Int]) =>
+      val ratelimit = fun { (fn: Rep[JQueryEvent => Any], ms: Rep[Int]) =>
 	var last = currentTime()
-        fun { (e: Rep[Any]) =>
+        fun { (e: Rep[JQueryEvent]) =>
 	  val now = currentTime()
 	  if (now - last > ms) {
 	    last = now
@@ -106,8 +119,7 @@ object Mice {
       }
 
       jQuery(document).mousemove(
-	ratelimit((fun { (_e: Rep[Any]) =>
-	  val e = dynamic(_e)
+	ratelimit((fun { (e: Rep[JQueryEvent]) =>
 	  socket.send(json.stringify(new JSLiteral {
 	    val action = "move"
 	    val cx = e.pageX
