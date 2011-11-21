@@ -24,8 +24,8 @@ function move(mouse){
 	$('body').append('<span class="mouse" id="mouse_'+mouse['id']+'"><span style="display:none;" class="chat"/></span>');
     }
     $('#mouse_'+mouse['id']).css({
-	'left' : (($(window).width() - mouse['w']) / 2 + mouse['x']) + 'px',
-	'top' : mouse['y'] + 'px'
+	'left' : (($(window).width() - mouse['w']) / 2 + mouse['cx']) + 'px',
+	'top' : mouse['cy'] + 'px'
     })
 };
 
@@ -33,8 +33,8 @@ $(document).mousemove(
     ratelimit(function(e){
 	socket.send(JSON.stringify({
 	    action: 'move',
-	    x: e.pageX,
-	    y: e.pageY,
+	    cx: e.pageX,
+	    cy: e.pageY,
 	    w: $(window).width(),
 	    h: $(window).height()
 	}))
