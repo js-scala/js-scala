@@ -98,13 +98,14 @@ object Mice {
         })
       }
 
-      val ratelimit = fun { (fn: Rep[JQueryEvent => Any], ms: Rep[Int]) =>
-        var last = currentTime()
-        fun { (e: Rep[JQueryEvent]) =>
-          val now = currentTime()
-          if (now - last > ms) {
-            last = now
-            fn(e)
+      val ratelimit = fun { (ms: Rep[Int]) => fun { (fn: Rep[JQueryEvent => Any]) =>
+          var last = currentTime()
+          fun { (e: Rep[JQueryEvent]) =>
+            val now = currentTime()
+            if (now - last > ms) {
+              last = now
+              fn(e)
+            }
           }
         }
       }
@@ -118,8 +119,8 @@ object Mice {
           move(data.asInstanceOf[Rep[MoveLiteral]])
       }
 
-      jQuery(document).mousemove(
-        ratelimit((fun { (e: Rep[JQueryEvent]) =>
+      jQuery(document).mousemove {
+        ratelimit(40) { (e: Rep[JQueryEvent]) =>
           socket.send(json.stringify(new JSLiteral {
             val action = "move"
             val cx = e.pageX
@@ -127,8 +128,8 @@ object Mice {
             val w = jQuery(window).width()
             val h = jQuery(window).height()
           }))
-        }), 40)
-      )
+        }
+      }
     }
   }
 
