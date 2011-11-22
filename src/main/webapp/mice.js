@@ -25,7 +25,8 @@ function move(mouse){
     }
     $('#mouse_'+mouse['id']).css({
 	'left' : (($(window).width() - mouse['w']) / 2 + mouse['cx']) + 'px',
-	'top' : mouse['cy'] + 'px'
+	'top' : mouse['cy'] + 'px',
+        'background-color' : mouse['color']
     })
 };
 

@@ -17,7 +17,7 @@ trait MiceApi extends JSProxyBase with JSLiteral {
   implicit def repToSocket(x: Rep[WebSocket]): WebSocket = repProxy[WebSocket](x)
 
   type ActionLiteral = JSLiteral {val action: String; val id: String}
-  type MoveLiteral = JSLiteral {val id: String; val cx: Int; val cy: Int; val w: Int; val h: Int}
+  type MoveLiteral = JSLiteral {val id: String; val cx: Int; val cy: Int; val w: Int; val h: Int; val color: String}
 
   def currentTime(): Rep[Int]
 
@@ -95,6 +95,7 @@ object Mice {
         jQuery("#mouse_"+mouse.id).css(new JSLiteral {
           val left = ((jQuery(window).width().asInstanceOf[Rep[Int]] - mouse.w) / 2 + mouse.cx) + "px"
           val top = mouse.cy + "px"
+          val `background-color` = mouse.color
         })
       }
 

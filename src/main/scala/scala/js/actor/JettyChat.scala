@@ -12,6 +12,7 @@ import org.eclipse.jetty.websocket.WebSocketServlet
 import scala.collection.JavaConversions._
 
 class WebSocketChatServlet extends WebSocketServlet {
+  private val colors = Array("red", "blue", "yellow", "green", "purple", "orange")
   private var _count = 0;
   private val _members = new CopyOnWriteArraySet[ChatWebSocket]();
 
@@ -38,7 +39,7 @@ class WebSocketChatServlet extends WebSocketServlet {
     }
 
     private def broadcast(data: String) {
-      val xdata = data.replace("{", "{\"id\":" + _id + ",")
+      val xdata = data.replace("{", "{\"id\":" + _id + "," + "\"color\":\"" + colors(_id % colors.length) + "\",")
       for (member <- _members) {
         member._connection.sendMessage(xdata);
       }
