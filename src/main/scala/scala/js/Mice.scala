@@ -91,7 +91,7 @@ object Mice {
     def main() {
       val move = fun { (mouse: Rep[MoveLiteral]) =>
         if (jQuery("#mouse_"+mouse.id).length == 0)
-          jQuery("body").append("<span class=\\\"mouse\\\" id=\\\"mouse_"+mouse.id+"\\\"><span style=\\\"display:none;\\\" class=\\\"chat\\\"/></span>")
+          jQuery("body").append("<span class='mouse' id='mouse_"+mouse.id+"'><span style='display:none;' class='chat'/></span>")
         jQuery("#mouse_"+mouse.id).css(new JSLiteral {
           val left = ((jQuery(window).width().asInstanceOf[Rep[Int]] - mouse.w) / 2 + mouse.cx) + "px"
           val top = mouse.cy + "px"
