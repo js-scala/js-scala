@@ -90,44 +90,45 @@ object Mice {
   trait MiceProg { this: JS with MiceApi with LiftVariables =>
     def main() {
       val move = fun { (mouse: Rep[MoveLiteral]) =>
-	if (jQuery("#mouse_"+mouse.id).length == 0)
-	  jQuery("body").append("<span class=\\\"mouse\\\" id=\\\"mouse_"+mouse.id+"\\\"><span style=\\\"display:none;\\\" class=\\\"chat\\\"/></span>")
-	jQuery("#mouse_"+mouse.id).css(new JSLiteral {
-	  val left = ((jQuery(window).width().asInstanceOf[Rep[Int]] - mouse.w) / 2 + mouse.cx) + "px"
-	  val top = mouse.cy + "px"
-	})
+        if (jQuery("#mouse_"+mouse.id).length == 0)
+          jQuery("body").append("<span class=\\\"mouse\\\" id=\\\"mouse_"+mouse.id+"\\\"><span style=\\\"display:none;\\\" class=\\\"chat\\\"/></span>")
+        jQuery("#mouse_"+mouse.id).css(new JSLiteral {
+          val left = ((jQuery(window).width().asInstanceOf[Rep[Int]] - mouse.w) / 2 + mouse.cx) + "px"
+          val top = mouse.cy + "px"
+        })
       }
 
       val ratelimit = fun { (fn: Rep[JQueryEvent => Any], ms: Rep[Int]) =>
-	var last = currentTime()
+        var last = currentTime()
         fun { (e: Rep[JQueryEvent]) =>
-	  val now = currentTime()
-	  if (now - last > ms) {
-	    last = now
-	    fn(e)
-	  }
+          val now = currentTime()
+          if (now - last > ms) {
+            last = now
+            fn(e)
+          }
         }
       }
 
       val socket = initWebSocket()
       socket.onmessage = fun { (m: Rep[DataLiteral]) =>
-	val data = json.parse(m.data).asInstanceOf[Rep[ActionLiteral]]
+        val data = json.parse(m.data).asInstanceOf[Rep[ActionLiteral]]
         if (data.action == "close")
-	  jQuery("#mouse_"+data.id).remove()
-	else if (data.action == "move")
-	  move(data.asInstanceOf[Rep[MoveLiteral]])
+          jQuery("#mouse_"+data.id).remove()
+        else if (data.action == "move")
+          move(data.asInstanceOf[Rep[MoveLiteral]])
       }
 
       jQuery(document).mousemove(
-	ratelimit((fun { (e: Rep[JQueryEvent]) =>
-	  socket.send(json.stringify(new JSLiteral {
-	    val action = "move"
-	    val cx = e.pageX
-	    val cy = e.pageY
-	    val w = jQuery(window).width()
-	    val h = jQuery(window).height()
-	  }))
-        }), 40))
+        ratelimit((fun { (e: Rep[JQueryEvent]) =>
+          socket.send(json.stringify(new JSLiteral {
+            val action = "move"
+            val cx = e.pageX
+            val cy = e.pageY
+            val w = jQuery(window).width()
+            val h = jQuery(window).height()
+          }))
+        }), 40)
+      )
     }
   }
 
