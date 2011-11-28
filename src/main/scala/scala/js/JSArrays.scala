@@ -5,7 +5,7 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 
 trait Arrays extends Base {
-  implicit def repArrayToArrayOps[T:Manifest](a: Rep[Array[T]]) = new ArrayOps(a)
+  implicit def repArrayToArrayOps[T:Manifest](a: Rep[Array[T]]): ArrayOps[T] = new ArrayOps(a)
 
   class ArrayOps[T:Manifest](a: Rep[Array[T]]) {
     def apply(i: Rep[Int]) = array_apply(a, i)
