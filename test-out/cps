@@ -1,0 +1,96 @@
+function test1(x0) {
+var x1 = [1, 2, 3]
+var x2 = 0
+var x12 = function() {
+var x13 = x2
+var x14 = x1.length
+var x15 = x13 < x14
+var x28
+if (x15) {
+var x16 = x1[x13]
+var x17 = console.log("slept for a while...")
+var x18 = String(x16)
+var x19 = console.log(x18)
+var x20 = x2 += 1
+var x24 = x12()
+x28=x24
+} else {
+var x26 = console.log("done")
+x28=x26
+}
+return x28
+}
+var x3 = function() {
+var x4 = x2
+var x5 = x1.length
+var x6 = x4 < x5
+var x37
+if (x6) {
+var x7 = x1[x4]
+var x8 = console.log("slept for a while...")
+var x9 = String(x7)
+var x10 = console.log(x9)
+var x11 = x2 += 1
+var x33 = x12()
+x37=x33
+} else {
+var x35 = console.log("done")
+x37=x35
+}
+return x37
+}
+var x42 = x3()
+return x42
+}
+function test2(x44) {
+var x45 = [4, 5, 6]
+var x46 = []
+var x47 = 0
+var x48 = 0
+var x60 = function() {
+var x61 = x48
+var x62 = x45.length
+var x63 = x61 < x62
+var x79
+if (x63) {
+var x64 = x45[x61]
+var x65 = console.log("slept for a while...")
+var x67 = x47
+var x66 = x64 + 1
+var x68 = x46[x67] = x66
+var x69 = x47 += 1
+var x70 = x48 += 1
+var x74 = x60()
+x79=x74
+} else {
+var x76 = String(x46)
+var x77 = console.log(x76)
+x79=x77
+}
+return x79
+}
+var x49 = function() {
+var x50 = x48
+var x51 = x45.length
+var x52 = x50 < x51
+var x89
+if (x52) {
+var x53 = x45[x50]
+var x54 = console.log("slept for a while...")
+var x56 = x47
+var x55 = x53 + 1
+var x57 = x46[x56] = x55
+var x58 = x47 += 1
+var x59 = x48 += 1
+var x84 = x60()
+x89=x84
+} else {
+var x86 = String(x46)
+var x87 = console.log(x86)
+x89=x87
+}
+return x89
+}
+var x94 = x49()
+return x94
+}
