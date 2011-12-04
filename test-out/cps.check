@@ -94,3 +94,66 @@ return x89
 var x94 = x49()
 return x94
 }
+function test3(x96) {
+var x97 = [1, 2, 3]
+var x105=x97.map(
+function(x98){
+var x99 = new cell()
+var x100 = console.log("slept for a while...")
+var x101 = String(x98)
+var x102 = console.log(x101)
+var x103 = x99.set(x102)
+return x99
+})
+var x106 = 0
+var x119 = function() {
+var x120 = x106 += 1
+var x124 = x114()
+return x124
+}
+var x128 = function() {
+var x126 = x119()
+return x126
+}
+var x114 = function() {
+var x115 = x106
+var x116 = x105.length
+var x117 = x115 < x116
+var x133
+if (x117) {
+var x118 = x105[x115]
+var x129 = x118.get(x128)
+x133=undefined
+} else {
+var x131 = console.log("done")
+x133=x131
+}
+return x133
+}
+var x112 = function() {
+var x113 = x106 += 1
+var x138 = x114()
+return x138
+}
+var x142 = function() {
+var x140 = x112()
+return x140
+}
+var x107 = function() {
+var x108 = x106
+var x109 = x105.length
+var x110 = x108 < x109
+var x147
+if (x110) {
+var x111 = x105[x108]
+var x143 = x111.get(x142)
+x147=undefined
+} else {
+var x145 = console.log("done")
+x147=x145
+}
+return x147
+}
+var x152 = x107()
+return x152
+}

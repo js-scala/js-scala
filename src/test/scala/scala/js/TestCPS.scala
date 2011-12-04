@@ -30,6 +30,15 @@ trait CPSProg { this: LiftNumeric with Arrays with JSDebug with LiftString with 
     }
     alert(String.valueOf(ys))
   }
+  
+  def test3(x: Rep[Int]): Rep[Unit] = reset {
+    val xs = array(1, 2, 3)
+      for (x <- richArray(xs).parSuspendable) {
+        sleep(0)
+        alert(String.valueOf(x))
+      }
+    alert("done")
+  }
 
 }
 
@@ -41,9 +50,10 @@ class TestCPS extends FileDiffSuite {
     withOutFile(prefix+"cps") {
 
       new CPSProg with LiftNumeric with ArraysExp with JSDebugExp with LiftString with CPSExp with JSExp { self =>
-        val codegen = new JSGenArrays with JSGenDebug with JSGenVariables with JSGen { val IR: self.type = self }
+        val codegen = new JSGenArrays with JSGenDebug with JSGenVariables with JSGen with GenCPS { val IR: self.type = self }
         codegen.emitSource(test1 _, "test1", new PrintWriter(System.out))
         codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))
+        codegen.emitSource(test3 _, "test3", new PrintWriter(System.out))
       }
 
     }

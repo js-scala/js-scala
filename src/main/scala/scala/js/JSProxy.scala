@@ -32,7 +32,7 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
     proxy.asInstanceOf[T]
   }
 
-  class JSInvocationHandler(receiver: Exp[Any], outer: AnyRef) extends jreflect.InvocationHandler {
+  class JSInvocationHandler(receiver: Exp[Any], outer: AnyRef) extends jreflect.InvocationHandler with java.io.Serializable {
     private val fieldUpdateMarker = "_$eq"
     private def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
     private def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
