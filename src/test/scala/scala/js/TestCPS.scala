@@ -40,6 +40,16 @@ trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax =>
       }
     log("done")
   }
+
+  def test3b(x: Rep[Int]): Rep[Unit] = reset {
+    val xs = array(3, 2, 1)
+    val ys = for (x <- richArray(xs).parSuspendable) yield {
+        sleep(x * 1000)
+        log(String.valueOf(x))
+        x+1
+      }
+    log(String.valueOf(ys))
+  }
   
   def test4(x: Rep[Int]): Rep[Unit] = reset {
     for (user <- array("gkossakowski", "odersky", "adriaanm").parSuspendable) {
@@ -76,6 +86,7 @@ class TestCPS extends FileDiffSuite {
         codegen.emitSource(test1 _, "test1", new PrintWriter(System.out))
         codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))
         codegen.emitSource(test3 _, "test3", new PrintWriter(System.out))
+        codegen.emitSource(test3b _, "test3b", new PrintWriter(System.out))
         codegen.emitSource(test4 _, "test4", new PrintWriter(System.out))
       }
 

@@ -33,10 +33,8 @@ trait CPS extends JS with LiftVariables with Arrays with JSProxyBase {
       futures.suspendable.foreach(_.apply())
     }
     def map[B: Manifest](f: Rep[A] => Rep[B] @suspendable): Rep[Array[B]] @suspendable = {
-      val ys = array[B]()
-      var i = 0
-      for (x <- xs.suspendable) { ys(i) = f(x); i += 1 }
-      ys
+      val futures = xs.map(x => future(f(x))) // sequential list of futures
+      futures.suspendable.map(_.apply())
     }
   }
   
