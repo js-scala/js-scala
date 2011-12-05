@@ -6,38 +6,39 @@ import scala.util.continuations._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 
-trait CPSProg { this: LiftNumeric with Arrays with JSDebug with LiftString with CPS =>
+trait CPSProg { this: JS with JSDebug with JSLib with CPS =>
 
-  def sleep(delay: Int) = shift { retrn: (Rep[Unit]=>Rep[Unit]) =>
-    alert("slept for a while...")
-    retrn()
+  def sleep(delay: Rep[Int]) = shift { retrn: (Rep[Unit]=>Rep[Unit]) =>
+    log("sleeping for " + delay)
+    window.setTimeout(retrn, delay)
+    unit(())
   }
 
   def test1(x: Rep[Int]): Rep[Unit] = reset {
     val xs = array(1, 2, 3)
       for (x <- richArray(xs).suspendable) {
-        sleep(0)
-        alert(String.valueOf(x))
+        sleep(x * 1000)
+        log(String.valueOf(x))
       }
-    alert("done")
+    log("done")
   }
   
   def test2(x: Rep[Int]): Rep[Unit] = reset {
    val xs = array(4, 5, 6)
    val ys = for (x <- richArray(xs).suspendable) yield {
-     sleep(0)
+     sleep(x * 1000)
      x+1
     }
-    alert(String.valueOf(ys))
+    log(String.valueOf(ys))
   }
   
   def test3(x: Rep[Int]): Rep[Unit] = reset {
     val xs = array(1, 2, 3)
       for (x <- richArray(xs).parSuspendable) {
-        sleep(0)
-        alert(String.valueOf(x))
+        sleep(x * 1000)
+        log(String.valueOf(x))
       }
-    alert("done")
+    log("done")
   }
 
 }
@@ -49,8 +50,8 @@ class TestCPS extends FileDiffSuite {
   def testArrays = {
     withOutFile(prefix+"cps") {
 
-      new CPSProg with LiftNumeric with ArraysExp with JSDebugExp with LiftString with CPSExp with JSExp { self =>
-        val codegen = new JSGenArrays with JSGenDebug with JSGenVariables with JSGen with GenCPS { val IR: self.type = self }
+      new CPSProg with JSExp with JSDebugExp with JSLibExp with CPSExp { self =>
+        val codegen = new JSGen with JSGenDebug with JSGenLib with GenCPS { val IR: self.type = self }
         codegen.emitSource(test1 _, "test1", new PrintWriter(System.out))
         codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))
         codegen.emitSource(test3 _, "test3", new PrintWriter(System.out))

@@ -1,159 +1,209 @@
 function test1(x0) {
 var x1 = [1, 2, 3]
 var x2 = 0
-var x12 = function() {
-var x13 = x2
-var x14 = x1.length
-var x15 = x13 < x14
-var x28
-if (x15) {
-var x16 = x1[x13]
-var x17 = console.log("slept for a while...")
-var x18 = String(x16)
-var x19 = console.log(x18)
-var x20 = x2 += 1
-var x24 = x12()
-x28=x24
-} else {
-var x26 = console.log("done")
-x28=x26
+var x15 = function() {
+var x16 = x2
+var x17 = x1.length
+var x18 = x16 < x17
+var x39
+if (x18) {
+var x19 = x1[x16]
+var x20 = x19 * 1000
+var x21 = "sleeping for "+x20
+var x22 = console.log(x21)
+var x24 = String(x19)
+var x23 = function() {
+var x25 = console.log(x24)
+var x26 = x2 += 1
+var x30 = x15()
+return x30
 }
-return x28
+var x34 = function() {
+var x32 = x23()
+return x32
+}
+var x35 = window.setTimeout(x34,x20)
+x39=undefined
+} else {
+var x37 = console.log("done")
+x39=x37
+}
+return x39
 }
 var x3 = function() {
 var x4 = x2
 var x5 = x1.length
 var x6 = x4 < x5
-var x37
+var x53
 if (x6) {
 var x7 = x1[x4]
-var x8 = console.log("slept for a while...")
-var x9 = String(x7)
+var x8 = x7 * 1000
+var x9 = "sleeping for "+x8
 var x10 = console.log(x9)
-var x11 = x2 += 1
-var x33 = x12()
-x37=x33
+var x12 = String(x7)
+var x11 = function() {
+var x13 = console.log(x12)
+var x14 = x2 += 1
+var x44 = x15()
+return x44
+}
+var x48 = function() {
+var x46 = x11()
+return x46
+}
+var x49 = window.setTimeout(x48,x8)
+x53=undefined
 } else {
-var x35 = console.log("done")
-x37=x35
+var x51 = console.log("done")
+x53=x51
 }
-return x37
+return x53
 }
-var x42 = x3()
-return x42
+var x58 = x3()
+return x58
 }
-function test2(x44) {
-var x45 = [4, 5, 6]
-var x46 = []
-var x47 = 0
-var x48 = 0
-var x60 = function() {
-var x61 = x48
-var x62 = x45.length
-var x63 = x61 < x62
-var x79
-if (x63) {
-var x64 = x45[x61]
-var x65 = console.log("slept for a while...")
-var x67 = x47
-var x66 = x64 + 1
-var x68 = x46[x67] = x66
-var x69 = x47 += 1
-var x70 = x48 += 1
-var x74 = x60()
-x79=x74
+function test2(x60) {
+var x61 = [4, 5, 6]
+var x62 = []
+var x63 = 0
+var x64 = 0
+var x79 = function() {
+var x80 = x64
+var x81 = x61.length
+var x82 = x80 < x81
+var x106
+if (x82) {
+var x83 = x61[x80]
+var x84 = x83 * 1000
+var x85 = "sleeping for "+x84
+var x86 = console.log(x85)
+var x88 = x83 + 1
+var x87 = function() {
+var x89 = x63
+var x90 = x62[x89] = x88
+var x91 = x63 += 1
+var x92 = x64 += 1
+var x96 = x79()
+return x96
+}
+var x100 = function() {
+var x98 = x87()
+return x98
+}
+var x101 = window.setTimeout(x100,x84)
+x106=undefined
 } else {
-var x76 = String(x46)
-var x77 = console.log(x76)
-x79=x77
+var x103 = String(x62)
+var x104 = console.log(x103)
+x106=x104
 }
-return x79
+return x106
 }
-var x49 = function() {
-var x50 = x48
-var x51 = x45.length
-var x52 = x50 < x51
-var x89
-if (x52) {
-var x53 = x45[x50]
-var x54 = console.log("slept for a while...")
-var x56 = x47
-var x55 = x53 + 1
-var x57 = x46[x56] = x55
-var x58 = x47 += 1
-var x59 = x48 += 1
-var x84 = x60()
-x89=x84
+var x65 = function() {
+var x66 = x64
+var x67 = x61.length
+var x68 = x66 < x67
+var x121
+if (x68) {
+var x69 = x61[x66]
+var x70 = x69 * 1000
+var x71 = "sleeping for "+x70
+var x72 = console.log(x71)
+var x74 = x69 + 1
+var x73 = function() {
+var x75 = x63
+var x76 = x62[x75] = x74
+var x77 = x63 += 1
+var x78 = x64 += 1
+var x111 = x79()
+return x111
+}
+var x115 = function() {
+var x113 = x73()
+return x113
+}
+var x116 = window.setTimeout(x115,x70)
+x121=undefined
 } else {
-var x86 = String(x46)
-var x87 = console.log(x86)
-x89=x87
+var x118 = String(x62)
+var x119 = console.log(x118)
+x121=x119
 }
-return x89
+return x121
 }
-var x94 = x49()
-return x94
-}
-function test3(x96) {
-var x97 = [1, 2, 3]
-var x105=x97.map(
-function(x98){
-var x99 = new cell()
-var x100 = console.log("slept for a while...")
-var x101 = String(x98)
-var x102 = console.log(x101)
-var x103 = x99.set(x102)
-return x99
-})
-var x106 = 0
-var x119 = function() {
-var x120 = x106 += 1
-var x124 = x114()
-return x124
-}
-var x128 = function() {
-var x126 = x119()
+var x126 = x65()
 return x126
 }
-var x114 = function() {
-var x115 = x106
-var x116 = x105.length
-var x117 = x115 < x116
-var x133
-if (x117) {
-var x118 = x105[x115]
-var x129 = x118.get(x128)
-x133=undefined
-} else {
-var x131 = console.log("done")
-x133=x131
-}
-return x133
-}
-var x112 = function() {
-var x113 = x106 += 1
-var x138 = x114()
+function test3(x128) {
+var x129 = [1, 2, 3]
+var x145=x129.map(
+function(x130){
+var x131 = new cell()
+var x132 = x130 * 1000
+var x133 = "sleeping for "+x132
+var x134 = console.log(x133)
+var x136 = String(x130)
+var x135 = function() {
+var x137 = console.log(x136)
+var x138 = x131.set(x137)
 return x138
 }
 var x142 = function() {
-var x140 = x112()
+var x140 = x135()
 return x140
 }
-var x107 = function() {
-var x108 = x106
-var x109 = x105.length
-var x110 = x108 < x109
-var x147
-if (x110) {
-var x111 = x105[x108]
-var x143 = x111.get(x142)
-x147=undefined
+var x143 = window.setTimeout(x142,x132)
+return x131
+})
+var x146 = 0
+var x159 = function() {
+var x160 = x146 += 1
+var x164 = x154()
+return x164
+}
+var x168 = function() {
+var x166 = x159()
+return x166
+}
+var x154 = function() {
+var x155 = x146
+var x156 = x145.length
+var x157 = x155 < x156
+var x173
+if (x157) {
+var x158 = x145[x155]
+var x169 = x158.get(x168)
+x173=undefined
 } else {
-var x145 = console.log("done")
-x147=x145
+var x171 = console.log("done")
+x173=x171
 }
-return x147
+return x173
 }
-var x152 = x107()
-return x152
+var x152 = function() {
+var x153 = x146 += 1
+var x178 = x154()
+return x178
+}
+var x182 = function() {
+var x180 = x152()
+return x180
+}
+var x147 = function() {
+var x148 = x146
+var x149 = x145.length
+var x150 = x148 < x149
+var x187
+if (x150) {
+var x151 = x145[x148]
+var x183 = x151.get(x182)
+x187=undefined
+} else {
+var x185 = console.log("done")
+x187=x185
+}
+return x187
+}
+var x192 = x147()
+return x192
 }

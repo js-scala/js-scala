@@ -5,15 +5,15 @@ import java.io.PrintWriter
 
 trait JSDebug extends Base {
 
-  def alert(s: Rep[String]): Rep[Unit]
+  def log(s: Rep[String]): Rep[Unit]
 
 }
 
 trait JSDebugExp extends JSDebug with EffectExp {
 
-  case class Alert(s: Rep[String]) extends Def[Unit]
+  case class Log(s: Rep[String]) extends Def[Unit]
 
-  def alert(s: Rep[String]): Rep[Unit] = reflectEffect(Alert(s))
+  def log(s: Rep[String]): Rep[Unit] = reflectEffect(Log(s))
 
 }
 
@@ -22,7 +22,7 @@ trait JSGenDebug extends JSGenEffect {
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case Alert(s) => emitValDef(sym, "console.log(" + quote(s) + ")")
+    case Log(s) => emitValDef(sym, "console.log(" + quote(s) + ")")
     case _ => super.emitNode(sym, rhs)
   }
 
