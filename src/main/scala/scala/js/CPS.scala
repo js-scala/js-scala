@@ -90,7 +90,7 @@ trait GenCPS extends JSGenProxy {
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case CellNode() => emitValDef(sym, "new cell()")
+    case CellNode() => emitValDef(sym, "new Cell()")
     case _ => super.emitNode(sym, rhs)
   }
 }
