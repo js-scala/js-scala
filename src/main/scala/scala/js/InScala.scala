@@ -229,7 +229,7 @@ trait DomsInScala extends Doms with JSProxyInScala {
   class CanvasInScala extends ElementInScala with Canvas {
     def getContext(context: String) : ContextInScala = new ContextInScala
   }
-  class ContextInScala extends ElementInScala with Context {
+  class ContextInScala extends Context {
     def save(): Unit =
       transforms.push(graphics.getTransform)
     def restore(): Unit =
