@@ -291,81 +291,154 @@ return x268
 var x273 = x216()
 return x273
 }
-function test4(x275) {
-var x276 = ["gkossakowski", "odersky", "adriaanm"]
-var x299=x276.map(
+function test3c(x275) {
+var x276 = [3, 2, 1]
+var x292=x276.map(
 function(x277){
 var x278 = new Cell()
-var x279 = "fetching "+x277
-var x280 = console.log(x279)
-var x281 = {'screen_name' : x277,'include_rts' : true,'count' : 5,'include_entities' : true}
-var x282 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x281}
-var x283 = function(x284) {
-var x290=x284.forEach(
-function(x285,i_,a_){
-var x286 = x285.text
-var x287 = "fetched "+x286
-var x288 = console.log(x287)
-return x288
-})
-var x291 = x278.set(x290)
-return x291
+var x279 = x277 * 1000
+var x280 = "sleeping for "+x279
+var x281 = console.log(x280)
+var x283 = String(x277)
+var x282 = function() {
+var x284 = console.log(x283)
+var x285 = x278.set(x284)
+return x285
 }
-var x296 = function(x293) {
-var x294 = x283(x293)
-return x294
+var x289 = function() {
+var x287 = x282()
+return x287
 }
-x282.success = x296
-var x297 = $.ajax(x282)
+var x290 = window.setTimeout(x289,x279)
 return x278
 })
-var x300 = 0
-var x313 = function() {
-var x314 = x300 += 1
-var x318 = x308()
-return x318
-}
-var x322 = function() {
-var x320 = x313()
-return x320
-}
-var x308 = function() {
-var x309 = x300
-var x310 = x299.length
-var x311 = x309 < x310
-var x325
-if (x311) {
-var x312 = x299[x309]
-var x323 = x312.get(x322)
-x325=undefined
-} else {
-x325=undefined
-}
-return x325
-}
+var x293 = 0
 var x306 = function() {
-var x307 = x300 += 1
-var x330 = x308()
-return x330
+var x307 = x293 += 1
+var x311 = x301()
+return x311
 }
-var x334 = function() {
-var x332 = x306()
-return x332
+var x315 = function() {
+var x313 = x306()
+return x313
 }
 var x301 = function() {
-var x302 = x300
-var x303 = x299.length
+var x302 = x293
+var x303 = x292.length
 var x304 = x302 < x303
-var x337
+var x320
 if (x304) {
-var x305 = x299[x302]
-var x335 = x305.get(x334)
-x337=undefined
+var x305 = x292[x302]
+var x316 = x305.get(x315)
+x320=undefined
 } else {
-x337=undefined
+var x318 = console.log("done")
+x320=x318
 }
-return x337
+return x320
 }
-var x342 = x301()
-return x342
+var x299 = function() {
+var x300 = x293 += 1
+var x325 = x301()
+return x325
+}
+var x329 = function() {
+var x327 = x299()
+return x327
+}
+var x294 = function() {
+var x295 = x293
+var x296 = x292.length
+var x297 = x295 < x296
+var x334
+if (x297) {
+var x298 = x292[x295]
+var x330 = x298.get(x329)
+x334=undefined
+} else {
+var x332 = console.log("done")
+x334=x332
+}
+return x334
+}
+var x339 = x294()
+return x339
+}
+function test4(x341) {
+var x342 = ["gkossakowski", "odersky", "adriaanm"]
+var x365=x342.map(
+function(x343){
+var x344 = new Cell()
+var x345 = "fetching "+x343
+var x346 = console.log(x345)
+var x347 = {'screen_name' : x343,'include_rts' : true,'count' : 5,'include_entities' : true}
+var x348 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x347}
+var x349 = function(x350) {
+var x356=x350.forEach(
+function(x351,i_,a_){
+var x352 = x351.text
+var x353 = "fetched "+x352
+var x354 = console.log(x353)
+return x354
+})
+var x357 = x344.set(x356)
+return x357
+}
+var x362 = function(x359) {
+var x360 = x349(x359)
+return x360
+}
+x348.success = x362
+var x363 = $.ajax(x348)
+return x344
+})
+var x366 = 0
+var x379 = function() {
+var x380 = x366 += 1
+var x384 = x374()
+return x384
+}
+var x388 = function() {
+var x386 = x379()
+return x386
+}
+var x374 = function() {
+var x375 = x366
+var x376 = x365.length
+var x377 = x375 < x376
+var x391
+if (x377) {
+var x378 = x365[x375]
+var x389 = x378.get(x388)
+x391=undefined
+} else {
+x391=undefined
+}
+return x391
+}
+var x372 = function() {
+var x373 = x366 += 1
+var x396 = x374()
+return x396
+}
+var x400 = function() {
+var x398 = x372()
+return x398
+}
+var x367 = function() {
+var x368 = x366
+var x369 = x365.length
+var x370 = x368 < x369
+var x403
+if (x370) {
+var x371 = x365[x368]
+var x401 = x371.get(x400)
+x403=undefined
+} else {
+x403=undefined
+}
+return x403
+}
+var x408 = x367()
+return x408
 }
