@@ -52,6 +52,7 @@ object Twitter {
           append("#" + user, "<li>" + d.text + "</li>")
         }
       }
+      log("All done.")
     }
   }
 
