@@ -5,7 +5,7 @@ import scala.virtualization.lms.common._
 
 import java.io.PrintWriter
 
-trait CPS extends JS with LiftVariables with Arrays with JSProxyBase {
+trait CPS extends JS with LiftVariables with JSProxyBase {
   
   type suspendable = cps[Rep[Unit]]
 
@@ -17,7 +17,7 @@ trait CPS extends JS with LiftVariables with Arrays with JSProxyBase {
   class SuspendableArrayOps[A: Manifest](xs: Rep[Array[A]]) extends java.io.Serializable {
     def foreach(yld: Rep[A] => Rep[Unit] @suspendable): Rep[Unit] @suspendable = {
       var i = 0
-      suspendableWhile(i < xs.length, { yld(xs(i)); i += 1; unit(()) })
+      suspendableWhile(i < xs.length) { yld(xs(i)); i += 1 }
     }
     def map[B: Manifest](f: Rep[A] => Rep[B] @suspendable): Rep[Array[B]] @suspendable = {
       val ys = array[B]()
@@ -48,12 +48,14 @@ trait CPS extends JS with LiftVariables with Arrays with JSProxyBase {
     cell
   }
 
-  def suspendableWhile(cond: => Rep[Boolean], body: => Rep[Unit] @suspendable): Rep[Unit] @suspendable
+  def suspendableWhile(cond: => Rep[Boolean])(body: => Rep[Unit] @suspendable): Rep[Unit] @suspendable = shift { k =>
+    lazy val rec: Rep[Unit => Unit] = fun { () => if (cond) reset { body; rec() } else k() }
+    rec()
+  }
   
   class DataFlowCell[A: Manifest](cell: Cell[A]) extends java.io.Serializable {
     def apply() = shift { k: (Rep[A] => Rep[Unit]) =>
       cell.get(fun(k))
-      unit(())
     }
     def set(v: Rep[A]): Rep[Unit] = cell.set(v)
   }
@@ -75,11 +77,6 @@ trait CPSExp extends CPS with JSProxyExp {
   case class CellNode[A: Manifest]() extends Def[Cell[A]]
   
   def createCell[A: Manifest](): Rep[Cell[A]] = reflectEffect(CellNode[A]())
-
-  def suspendableWhile(cond: => Rep[Boolean], body: => Rep[Unit] @suspendable): Rep[Unit] @suspendable = shift { k: (Rep[Unit] => Rep[Unit]) =>
-    lazy val rec: Rep[Unit => Unit] = fun { () => if (cond) scala.util.continuations.reset[Rep[Unit], Rep[Unit]] { body; rec() } else k() }
-    rec()
-  }
 
 }
 

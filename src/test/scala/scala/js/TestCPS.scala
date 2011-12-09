@@ -16,7 +16,7 @@ trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax =>
 
   def test1(x: Rep[Int]): Rep[Unit] = reset {
     val xs = array(1, 2, 3)
-      for (x <- richArray(xs).suspendable) {
+      for (x <- xs.suspendable) {
         sleep(x * 1000)
         log(String.valueOf(x))
       }
@@ -25,7 +25,7 @@ trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax =>
   
   def test2(x: Rep[Int]): Rep[Unit] = reset {
    val xs = array(4, 5, 6)
-   val ys = for (x <- richArray(xs).suspendable) yield {
+   val ys = for (x <- xs.suspendable) yield {
      sleep(x * 1000)
      x+1
     }
@@ -34,7 +34,7 @@ trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax =>
   
   def test3(x: Rep[Int]): Rep[Unit] = reset {
     val xs = array(1, 2, 3)
-      for (x <- richArray(xs).parSuspendable) {
+      for (x <- xs.parSuspendable) {
         sleep(x * 1000)
         log(String.valueOf(x))
       }
@@ -43,7 +43,7 @@ trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax =>
 
   def test3b(x: Rep[Int]): Rep[Unit] = reset {
     val xs = array(3, 2, 1)
-    val ys = for (x <- richArray(xs).parSuspendable) yield {
+    val ys = for (x <- xs.parSuspendable) yield {
         sleep(x * 1000)
         log(String.valueOf(x))
         x+1
@@ -53,7 +53,7 @@ trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax =>
 
   def test3c(x: Rep[Int]): Rep[Unit] = reset {
     val xs = array(3, 2, 1)
-      for (x <- richArray(xs).parSuspendable) {
+      for (x <- xs.parSuspendable) {
         sleep(x * 1000)
         log(String.valueOf(x))
       }
