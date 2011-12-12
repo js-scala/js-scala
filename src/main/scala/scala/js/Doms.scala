@@ -20,16 +20,10 @@ trait Doms extends JSProxyBase {
     def closePath(): Rep[Unit]
     def stroke(): Rep[Unit]
   }
-  trait AsRep {
-    def as[T]: Rep[T]
-  }
   val document: Rep[Element]
   implicit def repToElement(x: Rep[Element]): Element = repProxy[Element](x)
   implicit def repToCanvas(x: Rep[Canvas]): Canvas = repProxy[Canvas](x)
   implicit def repToContext(x: Rep[Context]): Context = repProxy[Context](x)
-  implicit def asRep(x: Rep[_]): AsRep = new AsRep {
-    def as[T]: Rep[T] = x.asInstanceOf[Rep[T]]
-  }
 }
 
 trait DomsExp extends Doms with JSProxyExp {
