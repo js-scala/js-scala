@@ -24,6 +24,8 @@ trait GenCastChecked extends JSGenEffect {
   val IR: CastsCheckedExp
   import IR._
   
+  import scala.reflect._
+  
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
     case Cast(x, m) =>
       emitValDef(sym, quote(x))
@@ -31,12 +33,15 @@ trait GenCastChecked extends JSGenEffect {
     case _ => super.emitNode(sym, rhs)
   }
   def conformsCheck(v: String, m: Manifest[_])(implicit stream: PrintWriter): Unit = m match {
-    case m: scala.reflect.RefinedManifest[_] =>
+    case m: RefinedManifest[_] =>
       m.fields foreach { case (name, manifest) => conformsFieldCheck(v, name, manifest) }
+    case m if m == Manifest.classType(classOf[String]) => ()
+    case Manifest.Int => ()
     case _ => println("Can't generate check for " + m + " with of type " + m.getClass)
   }
   def conformsFieldCheck(v: String, f: String, m: Manifest[_])(implicit stream: PrintWriter): Unit = {
     stream.println("""if (!("%1$s" in %2$s)) throw "%1$s is not defined in " + %2$s;""".format(f, v))
+    conformsCheck(v + "." + f, m)
   }
 
 }

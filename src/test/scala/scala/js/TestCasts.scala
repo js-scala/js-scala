@@ -17,6 +17,12 @@ trait JSLiteralCastProg { this: JS with Casts =>
   }
 }
 
+trait NestedJSLiteralCastProg { this: JS with Casts =>
+  def test(x: Rep[Any]): Rep[Any] = {
+    x.as[JSLiteral {val foo: String; val lit: JSLiteral { val a: Int }}]
+  }
+}
+
 class TestCasts extends FileDiffSuite {
 
   val prefix = "test-out/"
@@ -39,6 +45,16 @@ class TestCasts extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"jsliteral_cast")
+  }
+  
+  def testNestedJSLiteral = {
+    withOutFile(prefix+"jsliteral_nested_cast") {
+      new NestedJSLiteralCastProg with JSExp with CastsCheckedExp { self =>
+        val codegen = new GenCastChecked { val IR: self.type = self }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"jsliteral_nested_cast")
   }
 
 }
