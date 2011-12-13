@@ -5,7 +5,7 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
   
 trait JSLiteral extends Base with EmbeddedControls {
-  type JSLiteral <: Row[Rep]
+  trait JSLiteral extends Row[Rep]
   def __new[T](args: (String, Boolean, Rep[T] => Rep[_])*): Rep[T] =
     newJSLiteral(args.map(x => (x._1, x._3).asInstanceOf[(String, Rep[JSLiteral] => Rep[_])]): _*).asInstanceOf[Rep[T]]
   def newJSLiteral(args: (String, Rep[JSLiteral] => Rep[_])*): Rep[JSLiteral]
@@ -20,12 +20,12 @@ trait JSLiteral extends Base with EmbeddedControls {
   // Since JSLiteral is abstract, it doesn't have a manifest, but one
   // is required by the LMS core framework. For instance, this will be
   // needed when returning a JSLiteral from a function abstraction.
-  implicit def jsLiteralManifest[T <: JSLiteral]: Manifest[T] =
-    implicitly[Manifest[AnyRef]].asInstanceOf[Manifest[T]]
+  // implicit def jsLiteralManifest: Manifest[JSLiteral] =
+  //   implicitly[Manifest[AnyRef]].asInstanceOf[Manifest[JSLiteral]]
 }
 
 trait JSLiteralExp extends JSLiteral with BaseExp {
-  trait JSLiteral extends Row[Rep]
+  // trait JSLiteral extends Row[Rep]
 
   case class JSLiteralDef(members: List[(String, Exp[Any])]) extends Def[JSLiteral]
   case class MemberSelect(receiver: Exp[Any], field: String) extends Def[Any]
