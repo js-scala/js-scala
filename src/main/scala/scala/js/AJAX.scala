@@ -14,7 +14,7 @@ trait Ajax extends JS with CPS {
     val data: JSLiteral
   }
 
-  type Response = Array[JSLiteral { val text: String }]
+  type Response = Any
 
   val ajax = new AjaxOps
   

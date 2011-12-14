@@ -6,7 +6,7 @@ import scala.util.continuations._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 
-trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax =>
+trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax with Casts =>
 
   def sleep(delay: Rep[Int]) = shift { retrn: (Rep[Unit]=>Rep[Unit]) =>
     log("sleeping for " + delay)
@@ -76,8 +76,9 @@ trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax =>
           }
         }
       }
-      for (d <- data)
-        log("fetched " + d.text)
+      val tweets = data.as[Array[JSLiteral {val text: String}]]
+      for (t <- tweets)
+        log("fetched " + t.text)
     }
   }
 
@@ -90,7 +91,7 @@ class TestCPS extends FileDiffSuite {
   def testArrays = {
     withOutFile(prefix+"cps") {
 
-      new CPSProg with JSExp with JSDebugExp with JSLibExp with CPSExp with AjaxExp { self =>
+      new CPSProg with JSExp with JSDebugExp with JSLibExp with CPSExp with AjaxExp with Casts { self =>
         val codegen = new JSGen with JSGenDebug with JSGenLib with GenCPS with GenAjax { val IR: self.type = self }
         codegen.emitSource(test1 _, "test1", new PrintWriter(System.out))
         codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))

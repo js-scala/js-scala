@@ -29,7 +29,7 @@ trait JSGenTwitterApi extends JSGen with JSGenLib with GenCPS with GenAjax with 
 }
 
 object Twitter {
-  trait TwitterProg { this: TwitterApi =>
+  trait TwitterProg { this: TwitterApi with Casts =>
     def loadTweets(): Rep[Unit] = reset {
       for (user <- array("gkossakowski", "odersky", "adriaanm").parSuspendable) {
         log("fetching " + user)
@@ -47,9 +47,10 @@ object Twitter {
             }
           }
         }
+        val tweets = data.as[Array[JSLiteral {val text: String}]]
         log("done fetching " + user)
-        for (d <- data) {
-          append("#" + user, "<li>" + d.text + "</li>")
+        for (t <- tweets) {
+          append("#" + user, "<li>" + t.text + "</li>")
         }
       }
       log("All done.")
@@ -57,7 +58,7 @@ object Twitter {
   }
 
   def codegen(pw: PrintWriter) {
-    new TwitterProg with TwitterApiExp { self =>
+    new TwitterProg with TwitterApiExp with Casts { self =>
       val codegen = new JSGenTwitterApi { val IR: self.type = self }
       codegen.emitSource0(loadTweets _, "loadTweets", pw)
     }
