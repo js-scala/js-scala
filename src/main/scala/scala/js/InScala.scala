@@ -212,6 +212,7 @@ trait DomsInScala extends Doms with JSProxyInScala {
 	graphics = g.asInstanceOf[Graphics2D]
 	graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 	graphics.setPaint(Color.black)
+        resetStroke()
 	graphics.translate(0, 30)
 	draw()
       }
@@ -223,6 +224,26 @@ trait DomsInScala extends Doms with JSProxyInScala {
     frame.setVisible(true)
   }
 
+  val strokes : Stack[Float] = new Stack()
+  private var strokeWidth = 0.0f
+  private def resetStroke() {
+    strokeWidth = 1.0f
+    updateStroke()
+  }
+  private def adjustStroke(sx: Double, sy: Double) {
+    strokeWidth = strokeWidth / Math.min(sx, sy).toFloat
+    updateStroke()
+  }
+  private def updateStroke() {
+    graphics.setStroke(new BasicStroke(strokeWidth))
+  }
+  private def restoreStroke() {
+    strokeWidth = strokes.pop()
+  }
+  private def saveStroke() {
+    strokes.push(strokeWidth)
+  }
+
   class ElementInScala extends Element {
     def getElementById(id: String) : ElementInScala = new CanvasInScala
   }
@@ -230,10 +251,14 @@ trait DomsInScala extends Doms with JSProxyInScala {
     def getContext(context: String) : ContextInScala = new ContextInScala
   }
   class ContextInScala extends Context {
-    def save(): Unit =
+    def save(): Unit = {
       transforms.push(graphics.getTransform)
-    def restore(): Unit =
+      saveStroke()
+    }
+    def restore(): Unit = {
       graphics.setTransform(transforms.pop())
+      restoreStroke()
+    }
     def moveTo(x: Int, y: Int) {
       point = new Point2D.Double(x, y)
       pointTransform = graphics.getTransform
@@ -246,8 +271,10 @@ trait DomsInScala extends Doms with JSProxyInScala {
       point = end
       pointTransform = graphics.getTransform
     }
-    def scale(sx: Double, sy: Double): Unit =
+    def scale(sx: Double, sy: Double): Unit = {
       graphics.scale(sx, sy)
+      adjustStroke(sx, sy)
+    }
     def rotate(theta: Double): Unit =
       graphics.rotate(theta)
     def translate(tx: Int, ty: Int): Unit =
