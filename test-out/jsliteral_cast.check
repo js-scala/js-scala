@@ -1,0 +1,6 @@
+function main(x0) {
+var x1 = x0
+if (!("foo" in x1)) throw "foo is not defined in " + x1;
+if (!("bar" in x1)) throw "bar is not defined in " + x1;
+return x1
+}
