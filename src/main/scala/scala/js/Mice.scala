@@ -36,6 +36,7 @@ trait MiceApi extends JSProxyBase with JSLiteral {
 
     def append(s: Rep[String]): Rep[JQuery]
     def css(o: Rep[JSLiteral]): Rep[JQuery]
+    def click(fn: Rep[JQueryEvent => Any]): Rep[JQuery]
     def mousemove(fn: Rep[JQueryEvent => Any]): Rep[JQuery]
     def remove(): Rep[JQuery]
   }
@@ -85,6 +86,7 @@ trait JSGenMiceApi extends JSGenProxy with JSGenLiteral {
 object Mice {
   trait MiceProg { this: JS with MiceApi with LiftVariables with Doms with JSDebug =>
     def main() {
+      var penDown = false
       val move = fun { (mouse: Rep[MoveLiteral]) =>
         val canvas = document.getElementById("canvas").as[Canvas]
         val c = canvas.getContext("2d")
@@ -116,15 +118,21 @@ object Mice {
           move(data.asInstanceOf[Rep[MoveLiteral]])
       }
 
+      jQuery(document).click { (e: Rep[JQueryEvent]) =>
+        penDown = !penDown
+      }
+
       jQuery(document).mousemove {
         ratelimit(40) { (e: Rep[JQueryEvent]) =>
-          socket.send(json.stringify(new JSLiteral {
-            val action = "move"
-            val cx = e.pageX
-            val cy = e.pageY
-            val w = jQuery(window).width()
-            val h = jQuery(window).height()
-          }))
+          if (penDown) {
+            socket.send(json.stringify(new JSLiteral {
+              val action = "move"
+              val cx = e.pageX
+              val cy = e.pageY
+              val w = jQuery(window).width()
+              val h = jQuery(window).height()
+            }))
+          }
         }
       }
     }
