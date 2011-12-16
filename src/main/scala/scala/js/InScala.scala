@@ -282,6 +282,8 @@ trait DomsInScala extends Doms with JSProxyInScala {
       graphics.translate(tx, ty)
     def closePath(): Unit = {}
     def stroke(): Unit = {}
+    var fillStyle: Rep[String] = null
+    def fillRect(x: Rep[Int], y: Rep[Int], widht: Rep[Int], height: Rep[Int]) = ???
   }
   val document = new ElementInScala
 }

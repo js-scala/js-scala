@@ -5,7 +5,6 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 
 trait MiceApi extends JSProxyBase with JSLiteral {
-  val document: Rep[Any]
   val window: Rep[Any]
 
   type DataLiteral = JSLiteral {val data : String}
@@ -44,9 +43,7 @@ trait MiceApi extends JSProxyBase with JSLiteral {
   type JQueryEvent = JSLiteral {val pageX: Int; val pageY: Int}
 }
 
-trait MiceApiExp extends MiceApi with JSProxyExp with JSLiteralExp {
-  case object DocumentVar extends Exp[Any]
-  val document = DocumentVar
+trait MiceApiExp extends MiceApi with JSProxyExp with JSLiteralExp with DomsExp {
 
   case object WindowVar extends Exp[Any]
   val window = WindowVar
@@ -69,7 +66,6 @@ trait JSGenMiceApi extends JSGenProxy with JSGenLiteral {
   import IR._
 
   override def quote(x: Exp[Any]) : String = x match {
-    case DocumentVar => "document"
     case WindowVar => "window"
     case JSONVar => "JSON"
     case _ => super.quote(x)
@@ -87,16 +83,16 @@ trait JSGenMiceApi extends JSGenProxy with JSGenLiteral {
 }
 
 object Mice {
-  trait MiceProg { this: JS with MiceApi with LiftVariables =>
+  trait MiceProg { this: JS with MiceApi with LiftVariables with Doms with JSDebug =>
     def main() {
       val move = fun { (mouse: Rep[MoveLiteral]) =>
-        if (jQuery("#mouse_"+mouse.id).length == 0)
-          jQuery("body").append("<span class='mouse' id='mouse_"+mouse.id+"'><span style='display:none;' class='chat'/></span>")
-        jQuery("#mouse_"+mouse.id).css(new JSLiteral {
-          val left = ((jQuery(window).width().asInstanceOf[Rep[Int]] - mouse.w) / 2 + mouse.cx) + "px"
-          val top = mouse.cy + "px"
-          val `background-color` = mouse.color
-        })
+        val canvas = document.getElementById("canvas").as[Canvas];
+        val c = canvas.getContext("2d");
+        c.fillStyle = "rgb(200,0,0)"
+        val x1 = string_plus(mouse.cx, unit(", "))
+        val x2 = string_plus(x1, String.valueOf(mouse.cy))
+        log(x2)
+        c.fillRect(mouse.cx, mouse.cy, 10, 10)
       }
 
       val ratelimit = fun { (ms: Rep[Int]) => fun { (fn: Rep[JQueryEvent => Any]) =>
@@ -135,8 +131,8 @@ object Mice {
   }
 
   def codegen(pw: PrintWriter) {
-    new MiceProg with JSExp with MiceApiExp with LiftVariables { self =>
-      val codegen = new JSGenOpt with JSGenMiceApi { val IR: self.type = self }
+    new MiceProg with JSExp with MiceApiExp with LiftVariables with DomsExp with JSDebugExp { self =>
+      val codegen = new JSGenOpt with JSGenMiceApi with GenDoms with JSGenDebug { val IR: self.type = self }
       codegen.emitSource0(main _, "main", pw)
     }
   }

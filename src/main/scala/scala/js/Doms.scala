@@ -19,6 +19,8 @@ trait Doms extends JSProxyBase {
     def moveTo(x: Rep[Int], y: Rep[Int])
     def closePath(): Rep[Unit]
     def stroke(): Rep[Unit]
+    var fillStyle: Rep[String]
+    def fillRect(x: Rep[Int], y: Rep[Int], widht: Rep[Int], height: Rep[Int])
   }
   trait AsRep {
     def as[T]: Rep[T]
