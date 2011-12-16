@@ -88,11 +88,11 @@ object Mice {
       val move = fun { (mouse: Rep[MoveLiteral]) =>
         val canvas = document.getElementById("canvas").as[Canvas]
         val c = canvas.getContext("2d")
+        val x = (((jQuery(window).width() - mouse.w) + mouse.cx)*6)/17
+        val y = (mouse.cy*4)/17
+        log(string_plus("(", string_plus(String.valueOf(x), string_plus(", ", string_plus(String.valueOf(y), ")")))))
         c.fillStyle = mouse.color
-        val x1 = string_plus(mouse.cx, unit(", "))
-        val x2 = string_plus(x1, String.valueOf(mouse.cy))
-        log(x2)
-        c.fillRect(mouse.cx, mouse.cy, 10, 10)
+        c.fillRect(x, y, 5, 5)
       }
 
       val ratelimit = fun { (ms: Rep[Int]) => fun { (fn: Rep[JQueryEvent => Any]) =>
