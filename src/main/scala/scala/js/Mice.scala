@@ -88,7 +88,7 @@ object Mice {
       val move = fun { (mouse: Rep[MoveLiteral]) =>
         val canvas = document.getElementById("canvas").as[Canvas]
         val c = canvas.getContext("2d")
-        val x = (((jQuery(window).width() - mouse.w) + mouse.cx)*6)/17
+        val x = (mouse.cx*6)/17
         val y = (mouse.cy*4)/17
         log(string_plus("(", string_plus(String.valueOf(x), string_plus(", ", string_plus(String.valueOf(y), ")")))))
         c.fillStyle = mouse.color
