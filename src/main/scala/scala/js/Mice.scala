@@ -86,9 +86,9 @@ object Mice {
   trait MiceProg { this: JS with MiceApi with LiftVariables with Doms with JSDebug =>
     def main() {
       val move = fun { (mouse: Rep[MoveLiteral]) =>
-        val canvas = document.getElementById("canvas").as[Canvas];
-        val c = canvas.getContext("2d");
-        c.fillStyle = "rgb(200,0,0)"
+        val canvas = document.getElementById("canvas").as[Canvas]
+        val c = canvas.getContext("2d")
+        c.fillStyle = mouse.color
         val x1 = string_plus(mouse.cx, unit(", "))
         val x2 = string_plus(x1, String.valueOf(mouse.cy))
         log(x2)
