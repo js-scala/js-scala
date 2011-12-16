@@ -216,6 +216,7 @@ trait DomsInScala extends Doms with JSProxyInScala {
 	draw()
       }
     }
+    frame.setTitle("Canvas as Java's Graphics2D")
     frame.setBackground(Color.white)
     frame.setForeground(Color.white)
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
