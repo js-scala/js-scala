@@ -6,10 +6,10 @@ trait Doms extends JSProxyBase {
   trait Element {
     def getElementById(id: Rep[String]): Rep[Element]
   }
-  trait Canvas {
+  trait Canvas extends Element {
     def getContext(context: Rep[String]): Rep[Context]
   }
-  trait Context extends Element {
+  trait Context {
     def save(): Rep[Unit]
     def lineTo(x: Rep[Int], y: Rep[Int]): Rep[Unit]
     def scale(x1: Rep[Double], x2: Rep[Double]): Rep[Unit]

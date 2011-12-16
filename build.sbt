@@ -18,6 +18,8 @@ scalaHome <<= baseDirectory { f =>
 
 scalaVersion := "2.10.0-virtualized-SNAPSHOT"
 
+scalacOptions <+= scalaHome map (_.map(f => "-Xplugin:"+f+"/misc/scala-devel/plugins/continuations.jar").get)
+
 //--- Dependencies
 
 resolvers ++= Seq(
@@ -37,7 +39,7 @@ libraryDependencies ++= Seq(
 
 //--- End of Dependencies
 
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable")
 
 //Our tests are not threadsafe so disabling parallel execution for now
 parallelExecution in Test := false
