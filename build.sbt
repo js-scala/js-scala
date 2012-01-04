@@ -29,6 +29,7 @@ resolvers ++= Seq(
     )
 
 libraryDependencies ++= Seq(
+    "javassist" % "javassist" % "3.12.1.GA",
     "org.scalatest" % "scalatest_2.10.0-virtualized-SNAPSHOT" % "1.6.1-SNAPSHOT" % "test",
     "scala" % "virtualization-lms-core_2.10.0-virtualized-SNAPSHOT" % "0.1")
     

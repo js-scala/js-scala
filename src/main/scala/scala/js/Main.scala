@@ -55,6 +55,39 @@ trait SomeProg { this: JS =>
   }
 }
 
+object ProxyDog {
+  // adapated from http://stackoverflow.com/questions/3291637/alternatives-to-java-lang-reflect-proxy-for-creating-proxies-of-abstract-classes
+
+  import javassist._
+  import javassist.util.proxy._
+  import java.lang.{reflect => jreflect}
+
+  abstract class Dog {
+    def bark(): Unit = println("Woof!")
+    def fetch(): Unit
+  }
+
+  val factory = new ProxyFactory()
+  factory.setSuperclass(classOf[Dog])
+  factory.setFilter(
+    new MethodFilter() {
+      override def isHandled(method: jreflect.Method) =
+        Modifier.isAbstract(method.getModifiers())
+    })
+  val handler = new MethodHandler() {
+    override def invoke(self: AnyRef, thisMethod: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
+      println("Handling " + thisMethod + " via the method handler")
+      null
+    }
+  }
+  val dog = factory.create(Array[Class[_]](), Array[AnyRef](), handler).asInstanceOf[Dog]
+
+  def run() = {
+    dog.bark()
+    dog.fetch()
+  }
+}
+
 object Main extends App {
   new FunProg with JSFunctionsExp { self =>
     val codegen = new JSGenFunctions { val IR: self.type = self }
@@ -71,4 +104,6 @@ object Main extends App {
     Koch.run()
   Birds.writeJs("examples/birds/Bird_.js")
   Twitter.writeJs("examples/ajax/twitter_.js")
+
+  ProxyDog.run()
 }
