@@ -4,14 +4,14 @@ import scala.virtualization.lms.common._
 
 import java.io.PrintWriter
 
-trait JSClasses extends Base {
+trait JSClasses extends JSClassProxyBase {
   trait Factory[+T] {
     def apply(args: Rep[Any]*): Rep[T]
   }
   def register[T<:AnyRef:Manifest](outer: AnyRef): Factory[T]
 }
 
-trait JSClassesExp extends JSClasses with BaseExp with EffectExp {
+trait JSClassesExp extends JSClasses with JSClassProxyExp {
   trait Constructor[+T]
 
   case class MethodTemplate(name: String, params: List[Sym[Any]], body: Exp[Any])
@@ -82,7 +82,7 @@ trait JSClassesExp extends JSClasses with BaseExp with EffectExp {
   }
 }
 
-trait JSGenClasses extends JSGenBase {
+trait JSGenClasses extends JSGenBase with JSGenClassProxy {
   val IR: JSClassesExp
   import IR._
 

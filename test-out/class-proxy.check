@@ -1,0 +1,4 @@
+function main(x0) {
+var x1 = x0.f()
+return x1
+}

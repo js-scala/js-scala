@@ -3,11 +3,13 @@ package scala.js
 import scala.virtualization.lms.common._
 
 import java.lang.{reflect => jreflect}
+import javassist._
+import javassist.util.proxy._
 
 import java.io.PrintWriter
 
 trait JSClassProxyBase extends Base {
-  def repClassProxy[T<:AnyRef](x: Rep[T])(implicit m: Manifest[T]): T
+  def repClassProxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T
 }
 
 trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
@@ -17,24 +19,31 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
   case class FieldAccess[T](receiver: Exp[Any], field: String) extends Def[T]
   case class FieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
 
-  def repClassProxy[T<:AnyRef](x: Rep[T])(implicit m: Manifest[T]): T = {
-    classProxy[T](x, null)(m)
-  }
-
-  def classProxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
+  def repClassProxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
     val clazz = m.erasure
+    val factory = new ProxyFactory()
+    factory.setSuperclass(clazz)
+    factory.setFilter(
+      new MethodFilter() {
+        override def isHandled(method: jreflect.Method) = true
+      })
     val handler = new JSInvocationHandler(x, outer)
-    val classProxy = jreflect.Proxy.newProxyInstance(clazz.getClassLoader(), Array(clazz), handler)
+
+    val constructor = (clazz.getConstructors())(0)
+    val constructorParams = constructor.getParameterTypes()
+    val constructorArgs = constructorParams.map(clazz => null: AnyRef)
+    constructorArgs(0) = outer
+    val classProxy = factory.create(constructorParams, constructorArgs, handler)
     classProxy.asInstanceOf[T]
   }
 
-  class JSInvocationHandler(receiver: Exp[Any], outer: AnyRef) extends jreflect.InvocationHandler with java.io.Serializable {
+  class JSInvocationHandler(receiver: Exp[Any], outer: AnyRef) extends MethodHandler with java.io.Serializable {
     private val fieldUpdateMarker = "_$eq"
     private def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
     private def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
     private def updateMethodFromField(name: String) = name + fieldUpdateMarker
 
-    def invoke(classProxy: AnyRef, m: jreflect.Method, args: Array[AnyRef]): AnyRef = {
+    def invoke(classProxy: AnyRef, m: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
       //TODO: Make a check when constructing classProxy, not when executing it. Also, check using
       //reflection by enumerating all methods and checking their signatures
       assert(args == null || args.forall(_.isInstanceOf[Exp[_]]), "At the moment only Exps can be passed as arguments.")
