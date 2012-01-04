@@ -88,6 +88,62 @@ object ProxyDog {
   }
 }
 
+object ProxyFoo {
+  import javassist._
+
+  class Foo(v: Int) {
+    private var w = 0
+    def f() = v
+    def g() = v+w
+    def h() = { w += 1; w }
+  }
+
+  def run(): Unit = {
+    val cp = ClassPool.getDefault()
+    cp.insertClassPath(new ClassClassPath(classOf[Foo]))
+    val cl = new Loader(cp)
+
+    val cc = cp.get(classOf[Foo].getName())
+
+    // We only instrument methods and not constructors, because fields
+    // can be set before the object is initialized to an Object. We
+    // can copy the constructor into a normal method to instrument it.
+    val conv = new CodeConverter()
+
+    val ch = cp.makeClass(classOf[Foo].getName() + "__$StaticHelper")
+
+    for (cf <- cc.getDeclaredFields()) {
+      cf.setModifiers(Modifier.PUBLIC)
+
+      ch.addMethod(CtNewMethod.make("public static " + cf.getType().getName() + " __" + cf.getName() + "(Object target) { System.out.println(\"** field-read: " + cf.getName() + "\"); return ((" + cc.getName() + ") target)." + cf.getName() +"; }", ch))
+      conv.replaceFieldRead(cf, ch, "__" + cf.getName())
+
+      ch.addMethod(CtNewMethod.make("public static void __" + cf.getName() + "_$eq(Object target, " + cf.getType().getName() + " value) { System.out.println(\"** field-write: " + cf.getName() + "\"); ((" + cc.getName() + ") target)." + cf.getName() + " = value; }", ch))
+      conv.replaceFieldWrite(cf, ch, "__" + cf.getName() + "_$eq")
+    }
+
+    for (cm <- cc.getDeclaredConstructors()) {
+      cc.addMethod(cm.toMethod("constructor", cc))
+      cm.insertBefore("System.out.println(\"** constructor-call: \" + \"" + cm.getName() + "\");")
+    }
+    for (cm <- cc.getDeclaredMethods()) {
+      cm.insertBefore("System.out.println(\"** method-call: \" + \"" + cm.getName() + "\");")
+      cm.instrument(conv)
+    }
+    cc.writeFile()
+
+    val fooClazz = cl.loadClass(classOf[Foo].getName())
+    val fooConstructor = fooClazz.getConstructor(classOf[Int])
+    val foo = fooConstructor.newInstance(2: java.lang.Integer)
+
+    fooClazz.getDeclaredMethod("f").invoke(foo)
+    fooClazz.getDeclaredMethod("g").invoke(foo)
+    fooClazz.getDeclaredMethod("h").invoke(foo)
+
+    fooClazz.getDeclaredMethod("constructor", classOf[Int]).invoke(foo, 2: java.lang.Integer)
+  }
+}
+
 object Main extends App {
   new FunProg with JSFunctionsExp { self =>
     val codegen = new JSGenFunctions { val IR: self.type = self }
@@ -106,4 +162,5 @@ object Main extends App {
   Twitter.writeJs("examples/ajax/twitter_.js")
 
   ProxyDog.run()
+  ProxyFoo.run()
 }
