@@ -6,7 +6,7 @@ import java.io.PrintWriter
 
 trait JSClasses extends Base {
   trait Factory[+T] {
-    def apply(): Rep[T]
+    def apply(args: Rep[Any]*): Rep[T]
   }
   def register[T<:AnyRef:Manifest](outer: AnyRef): Factory[T]
 }
@@ -20,17 +20,17 @@ trait JSClassesExp extends JSClasses with BaseExp with EffectExp {
   case class This[+T:Manifest]() extends Exp[T]
 
   case class ClassTemplate[T:Manifest](parent: Option[ParentTemplate], methods: List[MethodTemplate]) extends Def[Constructor[T]]
-  case class New[T:Manifest](constructor: Exp[Constructor[T]]) extends Def[T]
+  case class New[T:Manifest](constructor: Exp[Constructor[T]], args: List[Rep[Any]]) extends Def[T]
 
   override def register[T<:AnyRef:Manifest](outer: AnyRef) = {
     val constructor = registerInternal[T](outer)
     new Factory[T] {
-      override def apply() = create[T](constructor)
+      override def apply(args: Rep[Any]*) = create[T](constructor, args.toList)
     }
   }
 
-  private def create[T<:AnyRef:Manifest](constructor: Exp[Constructor[T]]): Exp[T] =
-    reflectEffect(New(constructor))
+  private def create[T<:AnyRef:Manifest](constructor: Exp[Constructor[T]], args: List[Rep[Any]]): Exp[T] =
+    reflectEffect(New(constructor, args))
 
   private var registered : Map[String, Exp[Constructor[Any]]] = Map()
   private def registerInternal[T<:AnyRef:Manifest](outer: AnyRef) : Exp[Constructor[T]] = {
@@ -99,8 +99,8 @@ trait JSGenClasses extends JSGenBase {
 	stream.println("return " + quote(getBlockResult(body)))
 	stream.println("}")
       }
-    case New(constructor) =>
-      emitValDef(sym, "new " + quote(constructor) + "()")
+    case New(constructor, args) =>
+      emitValDef(sym, "new " + quote(constructor) + args.mkString("(", ", ", ")"))
     case _ => super.emitNode(sym, rhs)
   }
 
