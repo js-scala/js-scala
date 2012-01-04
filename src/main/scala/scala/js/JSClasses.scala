@@ -2,6 +2,9 @@ package scala.js
 
 import scala.virtualization.lms.common._
 
+import javassist._
+import javassist.expr._
+
 import java.io.PrintWriter
 
 trait JSClasses extends JSClassProxyBase {
@@ -17,7 +20,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
   case class MethodTemplate(name: String, params: List[Sym[Any]], body: Exp[Any])
   case class ParentTemplate(constructor: Exp[Any], instance: Exp[Any])
 
-  case class This[+T:Manifest]() extends Exp[T]
+  case class This() extends Exp[AnyRef]
 
   case class ClassTemplate[T:Manifest](parent: Option[ParentTemplate], methods: List[MethodTemplate]) extends Def[Constructor[T]]
   case class New[T:Manifest](constructor: Exp[Constructor[T]], args: List[Rep[Any]]) extends Def[T]
@@ -42,6 +45,42 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
        case Some(constructor) => return constructor.asInstanceOf[Exp[Constructor[T]]]
        case None => ()
     }
+
+    val cp = ClassPool.getDefault
+    cp.insertClassPath(new ClassClassPath(clazz))
+    val cl = new Loader(cp)
+    val cc = cp.get(key)
+
+    val outerMethodName = key.replace(".", "$") + "$$$outer"
+    val outerSrc = "((" + classOf[JSClassProxyExp].getName + ")" + outerMethodName + "())"
+    val thisSrc = "(new " + classOf[This].getName + "((" + classOf[JSClassesExp].getName + ") " + outerMethodName + "()))"
+    val reflectEffectSrc = "((" + classOf[scala.virtualization.lms.internal.Effects].getName + ")" + outerMethodName + "()).reflectEffect"
+    val expName = classOf[Exp[AnyRef]].getName
+    def wrapInReflectEffect(x: String) = {
+      val src = reflectEffectSrc + "((" + classOf[Def[AnyRef]].getName + ") " + x + ", scala.reflect.Manifest$.MODULE$.Object())";
+      src
+    }
+    def fieldAccess(field: String) = {
+      val src = (
+        "$_ = ($0 == this ? " +
+        wrapInReflectEffect("new " + classOf[FieldAccess[AnyRef]].getName + "(" + outerSrc + ", " + thisSrc + ", \"" + field + "\")") + " : " +
+        "($0." + field + "));")
+      src
+    }
+    def fieldUpdate(field: String) = {
+      val src = (
+        "if ($0 == this) " +
+        wrapInReflectEffect("new " + classOf[FieldUpdate].getName + "(" + outerSrc + ", " + thisSrc + ", \"" + field + "\", ((" + expName + ") $1))") + "; else " +
+        "($0." + field + " = $1);")
+      src
+    }
+    cc.instrument(new ExprEditor() {
+      override def edit(f: expr.FieldAccess) {
+        if (f.getClassName == key && f.getFieldName != "$outer") {
+          f.replace(if (f.isReader) fieldAccess(f.getFieldName) else fieldUpdate(f.getFieldName))
+        }
+      }
+    })
 
     // val implClazz = Class.forName(traitClazz.getName + "$class")
     // val parents = traitClazz.getInterfaces.filter(_ != implicitly[Manifest[scala.ScalaObject]].erasure)
