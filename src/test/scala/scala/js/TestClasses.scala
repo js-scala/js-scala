@@ -14,6 +14,12 @@ trait ClassesProg { this: JS with JSClasses =>
   def testClassProxy(foo: Rep[Foo]): Rep[Int] = {
     foo.f()
   }
+
+  def testReifiedClass(x: Rep[Int]): Rep[Int] = {
+    val newFoo = register[Foo](this)
+    val foo = newFoo(x)
+    foo.f()
+  }
 }
 
 class TestClasses extends FileDiffSuite {
@@ -26,5 +32,15 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"class-proxy")
+  }
+
+  def testReifiedClass = {
+    withOutFile(prefix+"reified-class") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testReifiedClass _, "main", new PrintWriter(System.out))
+      }
+    }
+    //assertFileEqualsCheck(prefix+"reified-class")
   }
 }

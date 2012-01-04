@@ -1,0 +1,5 @@
+function main(x0) {
+var x2 = new x1(x0)
+var x3 = x2.f()
+return x3
+}
