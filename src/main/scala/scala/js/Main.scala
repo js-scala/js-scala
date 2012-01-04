@@ -95,7 +95,7 @@ object ProxyFoo {
   class Foo(v: Int) {
     private var w = 0
     def f() = v
-    def g() = v+w
+    def g() = f()+w
     def h() = { w += 1; w }
   }
 
@@ -118,23 +118,29 @@ object ProxyFoo {
           f.replace(src)
         }
       }
+      override def edit(m: MethodCall) {
+        if (m.getClassName == classOf[Foo].getName) {
+          val src = (
+            "System.out.println(\"** method-call : " +
+            m.getMethodName + "\");" +
+            (if (m.getMethod.getReturnType != CtClass.voidType) "$_ = " else "") +
+            "$0." + m.getMethodName + "(" + (1 to m.getMethod.getParameterTypes.length).map("$" + _).mkString(", ") + ");")
+          m.replace(src)
+        }
+      }
     }
     cc.instrument(exprEditor)
-
-    for (cm <- cc.getDeclaredConstructors) {
-      cm.insertBefore("System.out.println(\"** constructor-call: \" + \"" + cm.getName + "\");")
-    }
-    for (cm <- cc.getDeclaredMethods) {
-      cm.insertBefore("System.out.println(\"** method-call: \" + \"" + cm.getName + "\");")
-    }
     cc.writeFile()
 
     val fooClazz = cl.loadClass(classOf[Foo].getName)
     val fooConstructor = fooClazz.getConstructor(classOf[Int])
     val foo = fooConstructor.newInstance(2: java.lang.Integer)
 
+    println("f:");
     fooClazz.getDeclaredMethod("f").invoke(foo)
+    println("g:");
     fooClazz.getDeclaredMethod("g").invoke(foo)
+    println("h:");
     fooClazz.getDeclaredMethod("h").invoke(foo)
   }
 }
