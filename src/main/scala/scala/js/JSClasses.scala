@@ -34,14 +34,14 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
 
   private var registered : Map[String, Exp[Constructor[Any]]] = Map()
   private def registerInternal[T<:AnyRef:Manifest](outer: AnyRef) : Exp[Constructor[T]] = {
-    // val m = implicitly[Manifest[T]]
-    // val traitClazz = m.erasure
-    // val key = traitClazz.getName
+    val m = implicitly[Manifest[T]]
+    val clazz = m.erasure
+    val key = clazz.getName
 
-    // registered.get(key) match {
-    //   case Some(constructor) => return constructor.asInstanceOf[Exp[Constructor[T]]]
-    //   case None => ()
-    // }
+    registered.get(key) match {
+       case Some(constructor) => return constructor.asInstanceOf[Exp[Constructor[T]]]
+       case None => ()
+    }
 
     // val implClazz = Class.forName(traitClazz.getName + "$class")
     // val parents = traitClazz.getInterfaces.filter(_ != implicitly[Manifest[scala.ScalaObject]].erasure)
@@ -100,7 +100,7 @@ trait JSGenClasses extends JSGenBase with JSGenClassProxy {
 	stream.println("}")
       }
     case New(constructor, args) =>
-      emitValDef(sym, "new " + quote(constructor) + args.mkString("(", ", ", ")"))
+      emitValDef(sym, "new " + quote(constructor) + args.map(quote).mkString("(", ", ", ")"))
     case _ => super.emitNode(sym, rhs)
   }
 
