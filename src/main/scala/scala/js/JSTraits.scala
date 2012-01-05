@@ -49,7 +49,7 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
     val parentConstructor = if (parents.length == 0) None else Some(registerInternal[AnyRef](outer)(Manifest.classType(parents(0))))
     val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c)))
 
-    val self = proxyTrait[T](This[T](), parent.map(_.constructor), outer)
+    val self = proxyTrait[T](This[T](), parentConstructor, outer)
     val methods = 
       for (method <- implClazz.getDeclaredMethods.toList)
 	yield {
