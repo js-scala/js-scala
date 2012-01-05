@@ -50,12 +50,26 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     cp.insertClassPath(new ClassClassPath(clazz))
     val cc = cp.get(key)
 
-    val outerMethodName = key.replace(".", "$") + "$$$outer"
-    val outerSrc = "((" + classOf[JSClassProxyExp].getName + ")" + outerMethodName + "())"
-    val objManifestSrc = "scala.reflect.Manifest$.MODULE$.Object()"
-    val thisSrc = "(new " + classOf[This[T]].getName + "((" + classOf[JSClassesExp].getName + ") " + outerMethodName + "(), " + objManifestSrc + "))"
-    val reflectEffectSrc = "((" + classOf[scala.virtualization.lms.internal.Effects].getName + ")" + outerMethodName + "()).reflectEffect"
-    val expName = classOf[Exp[AnyRef]].getName
+    for (field <- cc.getDeclaredFields;
+         if field.getName != "$outer") {
+      try {
+        cc.getDeclaredMethod(field.getName)
+      } catch {
+        case e: NotFoundException =>
+          cc.addMethod(CtNewMethod.getter(
+            field.getName, field))
+      }
+      try {
+        cc.getDeclaredMethod(
+          updateMethodFromField(field.getName),
+          Array(field.getType))
+      } catch {
+        case e: NotFoundException =>
+          cc.addMethod(CtNewMethod.setter(
+            updateMethodFromField(field.getName), field))
+      }
+    }
+
     def isFieldAccess(method: String) = {
       try {
         cc.getField(method)
@@ -64,39 +78,14 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         case e: NotFoundException => false
       }
     }
-    def wrapInReflectEffect(x: String) = {
-      val src = reflectEffectSrc + "((" + classOf[Def[AnyRef]].getName + ") " + x + ", " + objManifestSrc + ")";
-      src
-    }
-    def fieldAccess(field: String) = {
-      val src = (
-        "$_ = ($0 == this ? " +
-        wrapInReflectEffect("new " + classOf[FieldAccess[AnyRef]].getName + "(" + outerSrc + ", " + thisSrc + ", \"" + field + "\")") + " : " +
-        "($0." + field + "));")
-      src
-    }
-    def fieldUpdate(field: String) = {
-      val src = (
-        "if ($0 == this) " +
-        wrapInReflectEffect("new " + classOf[FieldUpdate].getName + "(" + outerSrc + ", " + thisSrc + ", \"" + field + "\", ((" + expName + ") $1))") + "; else " +
-        "($0." + field + " = $1);")
-      src
-    }
+    def fieldAccess(field: String) =
+      "$_ = $0." + field + "();"
+    def fieldUpdate(field: String) =
+      "$0." + updateMethodFromField(field) + "($1);"
     val exprEditor = new ExprEditor() {
       override def edit(f: expr.FieldAccess) {
         if (f.getClassName == key && f.getFieldName != "$outer") {
-          f.replace(if (f.isReader) fieldAccess(f.getFieldName) else fieldUpdate(f.getFieldName))
-        }
-      }
-      override def edit(m: expr.MethodCall) {
-        if (m.getClassName == key && !m.getMethodName.endsWith("$outer")) {
-          if (isFieldUpdateMethod(m.getMethodName)) {
-            m.replace(fieldUpdate(fieldFromUpdateMethod(m.getMethodName)))
-          } else if (isFieldAccess(m.getMethodName)) {
-            m.replace(fieldAccess(m.getMethodName))
-          } else {
-            // TODO
-          }
+          f.replace((if (f.isReader) fieldAccess _ else fieldUpdate _) (f.getFieldName))
         }
       }
     }

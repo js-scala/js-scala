@@ -60,7 +60,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
       // reflection gives us no way to distinguish abstract vals from
       // 0-argument methods.
       def isFieldAccess: Boolean = {
-	if (args != null) return false
+	if (!args_.isEmpty) return false
 
 	try {
 	  m.getDeclaringClass.getMethod(updateMethodFromField(m.getName), m.getReturnType)
