@@ -1,6 +1,8 @@
 function main(x0) {
 var x6 = function(x1){
+if (arguments.length != 0) {
 this.$init$(x1)
+}
 }
 x6.prototype.$init$ = function(x1) {
 var x2 = this.v = x1
@@ -12,7 +14,9 @@ return x4
 }
 var x7 = new x6()
 var x18 = function(x8){
+if (arguments.length != 0) {
 this.$init$(x8)
+}
 }
 x18.prototype = x7
 x18.prototype.$init$ = function(x8) {

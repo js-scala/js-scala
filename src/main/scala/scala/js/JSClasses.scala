@@ -196,7 +196,11 @@ trait JSGenClasses extends JSGenBase with JSGenClassProxy {
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
     case ClassTemplate(parentTemplate, methodTemplates @ MethodTemplate(_, params, _)::_) =>
       stream.println("var " + quote(sym) + " = function" + params.map(quote).mkString("(", ",", ")") + "{")
-      stream.println("this.$init$" + params.map(quote).mkString("(", ",", ")"))
+      var initCall = "this.$init$" + params.map(quote).mkString("(", ",", ")")
+      if (!params.isEmpty) {
+        initCall = "if (arguments.length != 0) {\n" + initCall + "\n}"
+      }
+      stream.println(initCall)
       stream.println("}")
       parentTemplate.foreach(pt => stream.println(quote(sym) + ".prototype = " + quote(pt.instance)))
       for (MethodTemplate(name, params, body) <- methodTemplates) {
