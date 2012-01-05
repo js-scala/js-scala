@@ -112,8 +112,8 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     val jConstructor = (bisClazz.getDeclaredConstructors())(0)
     val constructorTemplate = {
       val n = jConstructor.getParameterTypes.length
-      val params = (1 to n).toList.map(_ => fresh[Any])
-      val args = params.toArray
+      val params = (1 to (n-1)).toList.map(_ => fresh[Any])
+      val args = (outer::params).toArray
       MethodTemplate("$init$", params, reifyEffects(jConstructor.newInstance(args: _*).asInstanceOf[Exp[Any]]))
     }
     val self = repClassProxy[T](This[T](), outer)
