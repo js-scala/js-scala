@@ -147,35 +147,47 @@ object ProxyFoo {
 
 object ProxyCat {
   import javassist._
+  import javassist.expr._
   import javassist.util.proxy._
   import java.lang.{reflect => jreflect}
 
-  class Animal {
+  class Animal(val name: String) {
     def eat(): Unit = println("miam")
     def sleep(): Unit = println("sleeping animal...")
   }
-  class Cat extends Animal {
+  class Cat(override val name: String) extends Animal("cat " + name) {
     def purr() = { println("purr"); }
     override def sleep(): Unit = println("sleeping cat...")
     override def eat() = { super.sleep(); super.eat(); println("miao"); purr(); }
   }
 
-  val factory = new ProxyFactory()
-  factory.setSuperclass(classOf[Cat])
-  factory.setFilter(
-    new MethodFilter() {
-      override def isHandled(method: jreflect.Method) =
-        method.getName() != "eat"
-    })
-  val handler = new MethodHandler() {
-    override def invoke(self: AnyRef, thisMethod: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
-      println("Handling " + thisMethod + " via the method handler")
-      null
-    }
-  }
-  val cat = factory.create(Array[Class[_]](), Array[AnyRef](), handler).asInstanceOf[Cat]
-
   def run() = {
+    val cp = ClassPool.getDefault
+    cp.insertClassPath(new ClassClassPath(classOf[Cat]))
+
+    val cc = cp.get(classOf[Cat].getName)
+    val exprEditor = new ExprEditor() {
+      override def edit(m: MethodCall) {
+        println("** method call: " + m.getMethodName + " super? " + m.isSuper)
+      }
+    }
+    cc.getDeclaredMethod("eat").instrument(exprEditor)
+
+    val factory = new ProxyFactory()
+    factory.setSuperclass(classOf[Cat])
+    factory.setFilter(
+      new MethodFilter() {
+        override def isHandled(method: jreflect.Method) =
+          method.getName() != "eat"
+      })
+    val handler = new MethodHandler() {
+      override def invoke(self: AnyRef, thisMethod: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
+        println("Handling " + thisMethod + " via the method handler")
+        null
+      }
+    }
+    val cat = factory.create(Array(classOf[String]), Array[AnyRef]("chico"), handler).asInstanceOf[Cat]
+
     cat.eat()
   }
 }
