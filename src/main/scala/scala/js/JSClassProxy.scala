@@ -21,11 +21,17 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
 
   def repClassProxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
     val clazz = m.erasure
+    val classProxy = repMasqueradeProxy(clazz, x, outer, List[String]())
+    classProxy.asInstanceOf[T]
+  }
+
+  def repMasqueradeProxy(clazz: Class[_], x: Rep[_], outer: AnyRef, notHandledMethodNames: List[String]): AnyRef = {
     val factory = new ProxyFactory()
     factory.setSuperclass(clazz)
     factory.setFilter(
       new MethodFilter() {
-        override def isHandled(method: jreflect.Method) = true
+        override def isHandled(method: jreflect.Method) =
+          !notHandledMethodNames.contains(method.getName)
       })
     val handler = new JSInvocationHandler(x, outer)
 
@@ -34,7 +40,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
     val constructorArgs = constructorParams.map(clazz => null: AnyRef)
     constructorArgs(0) = outer
     val classProxy = factory.create(constructorParams, constructorArgs, handler)
-    classProxy.asInstanceOf[T]
+    classProxy
   }
 
   private val fieldUpdateMarker = "_$eq"

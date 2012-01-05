@@ -1,5 +1,16 @@
 function main(x0) {
-var x2 = new x1(x0)
-var x3 = x2.f()
-return x3
+var x6 = function(x1){
+this.$init$(x1)
+}
+x6.prototype.$init$ = function(x1) {
+var x2 = this.v = x1
+return null
+}
+x6.prototype.f = function() {
+var x4 = this.v
+return x4
+}
+var x7 = new x6(x0)
+var x8 = x7.f()
+return x8
 }

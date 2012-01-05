@@ -48,7 +48,6 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
 
     val cp = ClassPool.getDefault
     cp.insertClassPath(new ClassClassPath(clazz))
-    val cl = new Loader(cp)
     val cc = cp.get(key)
 
     val outerMethodName = key.replace(".", "$") + "$$$outer"
@@ -83,7 +82,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         "($0." + field + " = $1);")
       src
     }
-    cc.instrument(new ExprEditor() {
+    val exprEditor = new ExprEditor() {
       override def edit(f: expr.FieldAccess) {
         if (f.getClassName == key && f.getFieldName != "$outer") {
           f.replace(if (f.isReader) fieldAccess(f.getFieldName) else fieldUpdate(f.getFieldName))
@@ -100,7 +99,16 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
           }
         }
       }
-    })
+    }
+
+    val ctConstructor = (cc.getDeclaredConstructors())(0)
+    val ctConstructorMethod = ctConstructor.toMethod("$init$", cc)
+    cc.addMethod(ctConstructorMethod)
+    ctConstructorMethod.instrument(exprEditor)
+
+    for (method <- cc.getDeclaredMethods)
+      if (!method.getName.contains("$") && !isFieldAccess(method.getName))
+        method.instrument(exprEditor)
 
     // val parents = traitClazz.getInterfaces.filter(_ != implicitly[Manifest[scala.ScalaObject]].erasure)
     // assert (parents.length < 2, "Only single inheritance is supported.")
@@ -108,15 +116,19 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     // val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c)))
     val parent = None // TODO
 
-    val bisClazz = cl.loadClass(clazz.getName)
+    cc.setName(clazz.getName + "$bis")
+    val bisClazz = cc.toClass()
+
     val jConstructor = (bisClazz.getDeclaredConstructors())(0)
+    val jConstructorMethod = bisClazz.getDeclaredMethod("$init$", jConstructor.getParameterTypes: _*)
     val constructorTemplate = {
-      val n = jConstructor.getParameterTypes.length
+      val n = jConstructorMethod.getParameterTypes.length
       val params = (1 to (n-1)).toList.map(_ => fresh[Any])
       val args = (outer::params).toArray
-      MethodTemplate("$init$", params, reifyEffects(jConstructor.newInstance(args: _*).asInstanceOf[Exp[Any]]))
+      val self = repMasqueradeProxy(bisClazz, This[T](), outer, List("$init$"))
+      MethodTemplate("$init$", params, reifyEffects(jConstructorMethod.invoke(self, args: _*).asInstanceOf[Exp[Any]]))
     }
-    val self = repClassProxy[T](This[T](), outer)
+
     val methods = 
       for (method <- bisClazz.getDeclaredMethods.toList;
            if !method.getName.contains("$") && !isFieldAccess(method.getName))
@@ -124,6 +136,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         val n = method.getParameterTypes.length
         val params = (1 to n).toList.map(_ => fresh[Any])
         val args = params.toArray
+        val self = repMasqueradeProxy(bisClazz, This[T](), outer, List(method.getName))
         MethodTemplate(method.getName, params, reifyEffects(method.invoke(self, args: _*).asInstanceOf[Exp[Any]]))
       }
     
@@ -154,7 +167,7 @@ trait JSGenClasses extends JSGenBase with JSGenClassProxy {
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case ClassTemplate(parentTemplate, MethodTemplate(_, params, _)::methodTemplates) =>
+    case ClassTemplate(parentTemplate, methodTemplates @ MethodTemplate(_, params, _)::_) =>
       stream.println("var " + quote(sym) + " = function" + params.map(quote).mkString("(", ",", ")") + "{")
       parentTemplate.foreach(pt => stream.println("this.$super$ = " + quote(pt.constructor) + ".prototype"))
       stream.println("this.$init$" + params.map(quote).mkString("(", ",", ")"))

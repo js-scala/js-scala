@@ -41,6 +41,6 @@ class TestClasses extends FileDiffSuite {
         codegen.emitSource(testReifiedClass _, "main", new PrintWriter(System.out))
       }
     }
-    //assertFileEqualsCheck(prefix+"reified-class")
+    assertFileEqualsCheck(prefix+"reified-class")
   }
 }
