@@ -13,26 +13,26 @@ trait JSProxyBase extends Base {
 trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
 
   case class MethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
-  case class SuperMethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
+  case class SuperMethodCall[T](receiver: Exp[Any], parentConstructor: Option[Exp[Any]], method: String, args: List[Exp[Any]]) extends Def[T]
   case class FieldAccess[T](receiver: Exp[Any], field: String) extends Def[T]
   case class FieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
 
   def repProxy[T<:AnyRef](x: Rep[T])(implicit m: Manifest[T]): T = {
-    proxy[T](x, null)(m)
+    proxy[T](x, None, null)(m)
   }
 
-  def proxyTrait[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
-    proxy[T](x, outer)(m)
+  def proxyTrait[T<:AnyRef](x: Rep[T], parentConstructor: Option[Rep[Any]], outer: AnyRef)(implicit m: Manifest[T]): T = {
+    proxy[T](x, parentConstructor, outer)(m)
   }
 
-  def proxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
+  def proxy[T<:AnyRef](x: Rep[T], parentConstructor: Option[Rep[Any]], outer: AnyRef)(implicit m: Manifest[T]): T = {
     val clazz = m.erasure
-    val handler = new JSInvocationHandler(x, outer)
+    val handler = new JSInvocationHandler(x, parentConstructor, outer)
     val proxy = jreflect.Proxy.newProxyInstance(clazz.getClassLoader(), Array(clazz), handler)
     proxy.asInstanceOf[T]
   }
 
-  class JSInvocationHandler(receiver: Exp[Any], outer: AnyRef) extends jreflect.InvocationHandler with java.io.Serializable {
+  class JSInvocationHandler(receiver: Exp[Any], parentConstructor: Option[Rep[Any]], outer: AnyRef) extends jreflect.InvocationHandler with java.io.Serializable {
     private val fieldUpdateMarker = "_$eq"
     private def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
     private def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
@@ -64,7 +64,7 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
       if (m.getName.endsWith("$$$outer")) outer
       else if (m.getName.contains("$$super$")) {
 	val methodName = m.getName.slice(m.getName.indexOf("$$super$") + "$$super$".length, m.getName.length)
-	reflectEffect(SuperMethodCall[AnyRef](receiver, methodName, args_.toList)) : Exp[Any]
+	reflectEffect(SuperMethodCall[AnyRef](receiver, parentConstructor, methodName, args_.toList)) : Exp[Any]
       // We use reflectEffect for field access to ensure that reads
       // are serialized with respect to updates.  TODO: Could we use
       // something like reflectMutable and reflectWrite to achieve a
@@ -85,8 +85,9 @@ trait JSGenProxy extends JSGenBase with JSGenEffect {
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
     case MethodCall(receiver, method, args) =>  emitValDef(sym,
       quote(receiver) + "." + method + args.map(quote).mkString("(", ",", ")"))
-    case SuperMethodCall(receiver, method, args) =>  emitValDef(sym,
-      quote(receiver) + ".$super$." + method + ".call" + (receiver::args).map(quote).mkString("(", ",", ")"))
+    case SuperMethodCall(receiver, parentConstructor, method, args) =>  emitValDef(sym,
+      (parentConstructor match { case Some(parentConstructor) => quote(parentConstructor); case None => "Object" }) +
+      ".prototype." + method + ".call" + (receiver::args).map(quote).mkString("(", ",", ")"))
     case FieldAccess(receiver, field) =>  emitValDef(sym,
       quote(receiver) + "." + field)
     case FieldUpdate(receiver, field, value) =>  emitValDef(sym,

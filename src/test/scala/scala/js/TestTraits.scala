@@ -19,6 +19,11 @@ trait TraitsProg { this: JS with JSTraits =>
   }
   implicit def proxyRepBar(x: Rep[Bar]) = repProxy[Bar](x)
 
+  trait Baz extends Bar {
+    override def someMethod(): Rep[Int] = super.someMethod() + 1
+  }
+  implicit def proxyRepBaz(x: Rep[Baz]) = repProxy[Baz](x)
+
   def test(x: Rep[Int]): Rep[Int] = {
     val newFoo = register[Foo](this)
     val foo = newFoo()
@@ -33,6 +38,12 @@ trait TraitsProg { this: JS with JSTraits =>
     bar.someVar = 2
     bar.someNewMethod(x) + bar.someMethod() + foo.someVar // 2x + 4
   }
+
+  def testDoubleExtends(x: Rep[Int]): Rep[Int] = {
+    val newBaz = register[Baz](this)
+    val baz = newBaz()
+    baz.someMethod() // 3
+  }
 }
 
 trait TraitsProgInScala extends TraitsProg with JSInScala with JSTraitsInScala { self =>
@@ -40,6 +51,7 @@ trait TraitsProgInScala extends TraitsProg with JSInScala with JSTraitsInScala {
     val m = implicitly[Manifest[T]]
     if      (m.equals(implicitly[Manifest[Foo]]))  (new Foo {}).asInstanceOf[T]
     else if (m.equals(implicitly[Manifest[Bar]]))  (new Bar {}).asInstanceOf[T]
+    else if (m.equals(implicitly[Manifest[Baz]]))  (new Baz {}).asInstanceOf[T]
     else super.create[T]()
   }
 }
@@ -67,10 +79,21 @@ class TestTraits extends FileDiffSuite {
     assertFileEqualsCheck(prefix+"traits-extends")
   }
 
+  def testTraitsDoubleExtends = {
+    withOutFile(prefix+"traits-double-extends") {
+      new TraitsProg with JSExp with JSTraitsExp { self =>
+        val codegen = new JSGen with JSGenTraits { val IR: self.type = self }
+        codegen.emitSource(testDoubleExtends _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"traits-double-extends")
+  }
+
   def testTraitsInScala = {
     new TraitsProgInScala { self =>
       expect(9){test(3)}
       expect(10){testExtends(3)}
+      expect(3){testDoubleExtends(0)}
     }
   }
 }
