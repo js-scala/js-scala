@@ -145,6 +145,39 @@ object ProxyFoo {
   }
 }
 
+object ProxyCat {
+  import javassist._
+  import javassist.util.proxy._
+  import java.lang.{reflect => jreflect}
+
+  class Animal {
+    def eat(): Unit = println("miam")
+  }
+  class Cat extends Animal {
+    def purr() = { println("purr"); }
+    override def eat() = { super.eat(); println("miao"); purr(); }
+  }
+
+  val factory = new ProxyFactory()
+  factory.setSuperclass(classOf[Cat])
+  factory.setFilter(
+    new MethodFilter() {
+      override def isHandled(method: jreflect.Method) =
+        method.getName() != "eat"
+    })
+  val handler = new MethodHandler() {
+    override def invoke(self: AnyRef, thisMethod: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
+      println("Handling " + thisMethod + " via the method handler")
+      null
+    }
+  }
+  val cat = factory.create(Array[Class[_]](), Array[AnyRef](), handler).asInstanceOf[Cat]
+
+  def run() = {
+    cat.eat()
+  }
+}
+
 object Main extends App {
   new FunProg with JSFunctionsExp { self =>
     val codegen = new JSGenFunctions { val IR: self.type = self }
@@ -164,4 +197,5 @@ object Main extends App {
 
   ProxyDog.run()
   ProxyFoo.run()
+  ProxyCat.run()
 }
