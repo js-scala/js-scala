@@ -152,10 +152,12 @@ object ProxyCat {
 
   class Animal {
     def eat(): Unit = println("miam")
+    def sleep(): Unit = println("sleeping animal...")
   }
   class Cat extends Animal {
     def purr() = { println("purr"); }
-    override def eat() = { super.eat(); println("miao"); purr(); }
+    override def sleep(): Unit = println("sleeping cat...")
+    override def eat() = { super.sleep(); super.eat(); println("miao"); purr(); }
   }
 
   val factory = new ProxyFactory()
