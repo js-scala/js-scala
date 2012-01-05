@@ -15,17 +15,17 @@ trait JSClassProxyBase extends Base {
 trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
 
   case class MethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
-  case class SuperMethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
+  case class SuperMethodCall[T](receiver: Exp[Any], parentConstructor: Option[Exp[Any]], method: String, args: List[Exp[Any]]) extends Def[T]
   case class FieldAccess[T](receiver: Exp[Any], field: String) extends Def[T]
   case class FieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
 
   def repClassProxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
     val clazz = m.erasure
-    val classProxy = repMasqueradeProxy(clazz, x, outer, List[String]())
+    val classProxy = repMasqueradeProxy(clazz, x, None, outer, List[String]())
     classProxy.asInstanceOf[T]
   }
 
-  def repMasqueradeProxy(clazz: Class[_], x: Rep[_], outer: AnyRef, notHandledMethodNames: List[String]): AnyRef = {
+  def repMasqueradeProxy(clazz: Class[_], x: Rep[_], parentConstructor: Option[Rep[Any]], outer: AnyRef, notHandledMethodNames: List[String]): AnyRef = {
     val factory = new ProxyFactory()
     factory.setSuperclass(clazz)
     factory.setFilter(
@@ -33,7 +33,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
         override def isHandled(method: jreflect.Method) =
           !notHandledMethodNames.contains(method.getName)
       })
-    val handler = new JSInvocationHandler(x, outer)
+    val handler = new JSInvocationHandler(x, parentConstructor, outer)
 
     val constructor = (clazz.getDeclaredConstructors())(0)
     val constructorParams = constructor.getParameterTypes()
@@ -48,8 +48,16 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
   def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
   def updateMethodFromField(name: String) = name + fieldUpdateMarker
 
-  class JSInvocationHandler(receiver: Exp[Any], outer: AnyRef) extends MethodHandler with java.io.Serializable {
+  class JSInvocationHandler(receiver: Exp[Any], parentConstructor: Option[Rep[Any]], outer: AnyRef) extends MethodHandler with java.io.Serializable {
     def invoke(classProxy: AnyRef, m: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
+      if (m.getName == "$super$") {
+        val methodName = args(0).asInstanceOf[String]
+        val actualArgs = args(1).asInstanceOf[Array[AnyRef]]
+        assert(actualArgs.forall(_.isInstanceOf[Exp[_]]), "At the moment only Exps can be passed as arguments.")
+        val methodArgs = actualArgs.map(_.asInstanceOf[Exp[Any]]).toList
+	return reflectEffect(SuperMethodCall[AnyRef](receiver, parentConstructor, methodName, methodArgs)) : Exp[Any]
+      }
+
       //TODO: Make a check when constructing classProxy, not when executing it. Also, check using
       //reflection by enumerating all methods and checking their signatures
       assert(args == null || args.forall(_.isInstanceOf[Exp[_]]), "At the moment only Exps can be passed as arguments.")
@@ -73,15 +81,12 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
       def isFieldUpdate: Boolean =  isFieldUpdateMethod(m.getName) && args_.length == 1
 
       if (m.getName.endsWith("$$$outer")) outer
-      else if (m.getName.contains("$$super$")) {
-	val methodName = m.getName.slice(m.getName.indexOf("$$super$") + "$$super$".length, m.getName.length)
-	reflectEffect(SuperMethodCall[AnyRef](receiver, methodName, args_.toList)) : Exp[Any]
       // We use reflectEffect for field access to ensure that reads
       // are serialized with respect to updates.  TODO: Could we use
       // something like reflectMutable and reflectWrite to achieve a
       // finer-granularity? We will need a similar solution for
       // reified new with vars and for dynamic select.
-      } else if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
+      else if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
       else if (isFieldUpdate) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
       else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList)) : Exp[Any]
     }
@@ -96,8 +101,9 @@ trait JSGenClassProxy extends JSGenBase with JSGenEffect {
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
     case MethodCall(receiver, method, args) =>  emitValDef(sym,
       quote(receiver) + "." + method + args.map(quote).mkString("(", ",", ")"))
-    case SuperMethodCall(receiver, method, args) =>  emitValDef(sym,
-      quote(receiver) + ".$super$." + method + ".call" + (receiver::args).map(quote).mkString("(", ",", ")"))
+    case SuperMethodCall(receiver, parentConstructor, method, args) =>  emitValDef(sym,
+      (parentConstructor match { case Some(parentConstructor) => quote(parentConstructor); case None => "Object" }) +
+      ".prototype." + method + ".call" + (receiver::args).map(quote).mkString("(", ",", ")"))
     case FieldAccess(receiver, field) =>  emitValDef(sym,
       quote(receiver) + "." + field)
     case FieldUpdate(receiver, field, value) =>  emitValDef(sym,

@@ -35,7 +35,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
   private def create[T<:AnyRef:Manifest](constructor: Exp[Constructor[T]], args: List[Rep[Any]]): Exp[T] =
     reflectEffect(New(constructor, args))
 
-  private var registered : Map[String, Exp[Constructor[Any]]] = Map()
+  private var registered: Map[String, Exp[Constructor[Any]]] = Map()
   private def registerInternal[T<:AnyRef:Manifest](outer: AnyRef) : Exp[Constructor[T]] = {
     val m = implicitly[Manifest[T]]
     val clazz = m.erasure
@@ -46,29 +46,15 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
        case None => ()
     }
 
+    val parentConstructor =
+      if (clazz.getSuperclass.getName == "java.lang.Object") None
+      else Some(registerInternal[AnyRef](outer)(Manifest.classType(clazz.getSuperclass)))
+    val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c, List[Rep[Any]]())))
+
+    val bisKey = key + "$bis"
     val cp = ClassPool.getDefault
     cp.insertClassPath(new ClassClassPath(clazz))
     val cc = cp.get(key)
-
-    for (field <- cc.getDeclaredFields;
-         if field.getName != "$outer") {
-      try {
-        cc.getDeclaredMethod(field.getName)
-      } catch {
-        case e: NotFoundException =>
-          cc.addMethod(CtNewMethod.getter(
-            field.getName, field))
-      }
-      try {
-        cc.getDeclaredMethod(
-          updateMethodFromField(field.getName),
-          Array(field.getType))
-      } catch {
-        case e: NotFoundException =>
-          cc.addMethod(CtNewMethod.setter(
-            updateMethodFromField(field.getName), field))
-      }
-    }
 
     def isFieldAccess(method: String) = {
       try {
@@ -78,35 +64,87 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         case e: NotFoundException => false
       }
     }
-    def fieldAccess(field: String) =
-      "$_ = $0." + field + "();"
-    def fieldUpdate(field: String) =
-      "$0." + updateMethodFromField(field) + "($1);"
-    val exprEditor = new ExprEditor() {
-      override def edit(f: expr.FieldAccess) {
-        if (f.getClassName == key && f.getFieldName != "$outer") {
-          f.replace((if (f.isReader) fieldAccess _ else fieldUpdate _) (f.getFieldName))
-        }
-      }
+
+    var bisClazz = null: Class[_]
+    try {
+      bisClazz = Class.forName(bisKey)
+    } catch {
+      case e: ClassNotFoundException => ()
     }
 
-    val ctConstructor = (cc.getDeclaredConstructors())(0)
-    val ctConstructorMethod = ctConstructor.toMethod("$init$", cc)
-    cc.addMethod(ctConstructorMethod)
-    ctConstructorMethod.instrument(exprEditor)
+    if (bisClazz == null) {
+      val superMethod = CtNewMethod.make(
+        "protected Object $super$(String name, Object[] args) { return null; }",
+        cc)
+      cc.addMethod(superMethod)
 
-    for (method <- cc.getDeclaredMethods)
-      if (!method.getName.contains("$") && !isFieldAccess(method.getName))
-        method.instrument(exprEditor)
+      for (field <- cc.getDeclaredFields;
+           if field.getName != "$outer") {
+        try {
+          cc.getDeclaredMethod(field.getName)
+        } catch {
+          case e: NotFoundException =>
+            cc.addMethod(CtNewMethod.getter(
+              field.getName, field))
+        }
+        try {
+          cc.getDeclaredMethod(
+            updateMethodFromField(field.getName),
+            Array(field.getType))
+        } catch {
+          case e: NotFoundException =>
+            cc.addMethod(CtNewMethod.setter(
+              updateMethodFromField(field.getName), field))
+        }
+      }
+      def fieldAccess(field: String) =
+        "$_ = $0." + field + "();"
+      def fieldUpdate(field: String) =
+        "$0." + updateMethodFromField(field) + "($1);"
+      val exprEditor = new ExprEditor() {
+        override def edit(f: expr.FieldAccess) {
+          if (f.getClassName == key && f.getFieldName != "$outer") {
+            f.replace((if (f.isReader) fieldAccess _ else fieldUpdate _) (f.getFieldName))
+          }
+        }
+        override def edit(m: expr.MethodCall) {
+          if (m.isSuper) {
+            val name = m.getMethodName
+            val n = m.getMethod.getParameterTypes.length
+            var src = "Object[] args = new Object[" + n + "];"
+            for (i <- 1 to n)
+              src += "args[" + (i-1) + "] = $" + i + ";"
+            src += "$_ = $super$(\"" + name + "\", args);"
+            if (m.getMethod.getReturnType == CtClass.voidType) {
+              src = src.replace("$_ =", "")
+            }
+            m.replace(src)
+          }
+        }
+        override def edit(c: expr.ConstructorCall) {
+          if (c.isSuper && c.getConstructor.getName != "Object") {
+            val n = c.getConstructor.getParameterTypes.length-1
+            var src = "Object[] args = new Object[" + n + "];"
+            for (i <- 1 to n)
+              src += "args[" + (i-1) + "] = $" + (i+1) + ";"
+            src += "$super$(\"$init$\", args);"
+            c.replace(src)
+          }
+        }
+      }
 
-    // val parents = traitClazz.getInterfaces.filter(_ != implicitly[Manifest[scala.ScalaObject]].erasure)
-    // assert (parents.length < 2, "Only single inheritance is supported.")
-    // val parentConstructor = if (parents.length == 0) None else Some(registerInternal[AnyRef](outer)(Manifest.classType(parents(0))))
-    // val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c)))
-    val parent = None // TODO
+      val ctConstructor = new CtConstructor((cc.getDeclaredConstructors())(0), cc, null)
+      ctConstructor.instrument(exprEditor)
+      val ctConstructorMethod = ctConstructor.toMethod("$init$", cc)
+      cc.addMethod(ctConstructorMethod)
 
-    cc.setName(clazz.getName + "$bis")
-    val bisClazz = cc.toClass()
+      for (method <- cc.getDeclaredMethods)
+        if (!method.getName.contains("$") && !isFieldAccess(method.getName))
+          method.instrument(exprEditor)
+
+      cc.setName(bisKey)
+      bisClazz = cc.toClass()
+    }
 
     val jConstructor = (bisClazz.getDeclaredConstructors())(0)
     val jConstructorMethod = bisClazz.getDeclaredMethod("$init$", jConstructor.getParameterTypes: _*)
@@ -114,7 +152,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
       val n = jConstructorMethod.getParameterTypes.length
       val params = (1 to (n-1)).toList.map(_ => fresh[Any])
       val args = (outer::params).toArray
-      val self = repMasqueradeProxy(bisClazz, This[T](), outer, List("$init$"))
+      val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, List("$init$"))
       MethodTemplate("$init$", params, reifyEffects(jConstructorMethod.invoke(self, args: _*).asInstanceOf[Exp[Any]]))
     }
 
@@ -125,7 +163,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         val n = method.getParameterTypes.length
         val params = (1 to n).toList.map(_ => fresh[Any])
         val args = params.toArray
-        val self = repMasqueradeProxy(bisClazz, This[T](), outer, List(method.getName))
+        val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, List(method.getName))
         MethodTemplate(method.getName, params, reifyEffects(method.invoke(self, args: _*).asInstanceOf[Exp[Any]]))
       }
     
@@ -158,7 +196,6 @@ trait JSGenClasses extends JSGenBase with JSGenClassProxy {
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
     case ClassTemplate(parentTemplate, methodTemplates @ MethodTemplate(_, params, _)::_) =>
       stream.println("var " + quote(sym) + " = function" + params.map(quote).mkString("(", ",", ")") + "{")
-      parentTemplate.foreach(pt => stream.println("this.$super$ = " + quote(pt.constructor) + ".prototype"))
       stream.println("this.$init$" + params.map(quote).mkString("(", ",", ")"))
       stream.println("}")
       parentTemplate.foreach(pt => stream.println(quote(sym) + ".prototype = " + quote(pt.instance)))

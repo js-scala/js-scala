@@ -1,0 +1,33 @@
+function main(x0) {
+var x6 = function(x1){
+this.$init$(x1)
+}
+x6.prototype.$init$ = function(x1) {
+var x2 = this.v = x1
+return null
+}
+x6.prototype.f = function() {
+var x4 = this.v
+return x4
+}
+var x7 = new x6()
+var x18 = function(x8){
+this.$init$(x8)
+}
+x18.prototype = x7
+x18.prototype.$init$ = function(x8) {
+var x10 = this.w = x8
+var x11 = x8 + 1
+var x12 = x6.prototype.$init$.call(this,x11)
+return null
+}
+x18.prototype.g = function() {
+var x14 = x6.prototype.f.call(this)
+var x15 = this.w
+var x16 = x14 + x15
+return x16
+}
+var x19 = new x18(x0)
+var x20 = x19.g()
+return x20
+}

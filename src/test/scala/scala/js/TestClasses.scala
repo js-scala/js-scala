@@ -11,6 +11,11 @@ trait ClassesProg { this: JS with JSClasses =>
   }
   implicit def proxyRepFoo(x: Rep[Foo]) = repClassProxy[Foo](x, this)
 
+  class Bar(w: Rep[Int]) extends Foo(w+1) {
+    def g(): Rep[Int] = super.f() + w
+  }
+  implicit def proxyRepBar(x: Rep[Bar]) = repClassProxy[Bar](x, this)
+
   def testClassProxy(foo: Rep[Foo]): Rep[Int] = {
     foo.f()
   }
@@ -19,6 +24,12 @@ trait ClassesProg { this: JS with JSClasses =>
     val newFoo = register[Foo](this)
     val foo = newFoo(x)
     foo.f()
+  }
+
+  def testReifiedExtendedClass(x: Rep[Int]): Rep[Int] = {
+    val newBar = register[Bar](this)
+    val bar = newBar(x)
+    bar.g() // 2x+1
   }
 }
 
@@ -42,5 +53,15 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"reified-class")
+  }
+
+  def testReifiedExtendedClass = {
+    withOutFile(prefix+"reified-extended-class") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testReifiedExtendedClass _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"reified-extended-class")
   }
 }
