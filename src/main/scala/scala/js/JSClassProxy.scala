@@ -29,7 +29,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
       })
     val handler = new JSInvocationHandler(x, outer)
 
-    val constructor = (clazz.getConstructors())(0)
+    val constructor = (clazz.getDeclaredConstructors())(0)
     val constructorParams = constructor.getParameterTypes()
     val constructorArgs = constructorParams.map(clazz => null: AnyRef)
     constructorArgs(0) = outer
@@ -37,12 +37,12 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
     classProxy.asInstanceOf[T]
   }
 
-  class JSInvocationHandler(receiver: Exp[Any], outer: AnyRef) extends MethodHandler with java.io.Serializable {
-    private val fieldUpdateMarker = "_$eq"
-    private def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
-    private def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
-    private def updateMethodFromField(name: String) = name + fieldUpdateMarker
+  private val fieldUpdateMarker = "_$eq"
+  def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
+  def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
+  def updateMethodFromField(name: String) = name + fieldUpdateMarker
 
+  class JSInvocationHandler(receiver: Exp[Any], outer: AnyRef) extends MethodHandler with java.io.Serializable {
     def invoke(classProxy: AnyRef, m: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
       //TODO: Make a check when constructing classProxy, not when executing it. Also, check using
       //reflection by enumerating all methods and checking their signatures
