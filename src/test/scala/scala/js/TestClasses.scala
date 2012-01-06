@@ -29,6 +29,11 @@ trait ClassesProg { this: JS with JSClasses =>
   }
   implicit def proxyRepCounter(x: Rep[Counter]) = repClassProxy[Counter](x, this)
 
+  class Bloat(v: Rep[Int]) {
+    def get() = ({ () => v })()
+  }
+  implicit def proxyRepBloat(x: Rep[Bloat]) = repClassProxy[Bloat](x, this)
+
   def testClassProxy(foo: Rep[Foo]): Rep[Int] = {
     foo.f()
   }
@@ -61,6 +66,12 @@ trait ClassesProg { this: JS with JSClasses =>
     val counter = newCounter(x)
     counter.inc()
     counter.inc() // x+2
+  }
+
+  def testBloat(x: Rep[Int]): Rep[Int] = {
+    val newBloat = register[Bloat](this)
+    val bloat = newBloat(x)
+    bloat.get()
   }
 }
 
@@ -125,5 +136,15 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"private-reified-class")
+  }
+
+  def testReifiedClassBloat = {
+    withOutFile(prefix+"reified-class-bloat") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testBloat _, "main", new PrintWriter(System.out))
+      }
+    }
+    //assertFileEqualsCheck(prefix+"reified-class-bloat")
   }
 }

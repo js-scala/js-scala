@@ -4,6 +4,7 @@ import scala.virtualization.lms.common._
 
 import javassist._
 import javassist.expr._
+import scala.collection.JavaConversions._
 
 import java.io.PrintWriter
 
@@ -73,6 +74,9 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     }
 
     if (bisClazz == null) {
+      val deps = cc.getRefClasses.map(_.asInstanceOf[String]).filter(_.startsWith(key + "$"))
+      cc.setName(bisKey)
+
       val superMethod = CtNewMethod.make(
         "protected Object $super$(String name, Object[] args) { return null; }",
         cc)
@@ -106,12 +110,13 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         "$_ = $0." + field + "();"
       def fieldUpdate(field: String) =
         "$0." + updateMethodFromField(field) + "($1);"
-      val exprEditor = new ExprEditor() {
-        override def edit(f: expr.FieldAccess) {
-          if (f.getClassName == key && f.getFieldName != "$outer") {
-            f.replace((if (f.isReader) fieldAccess _ else fieldUpdate _) (f.getFieldName))
-          }
+      def editField(f: expr.FieldAccess) = {
+        if (f.getClassName == bisKey && f.getFieldName != "$outer") {
+          f.replace((if (f.isReader) fieldAccess _ else fieldUpdate _) (f.getFieldName))
         }
+      }
+      val exprEditor = new ExprEditor() {
+        override def edit(f: expr.FieldAccess) = editField(f)
         override def edit(m: expr.MethodCall) {
           if (m.isSuper) {
             val name = m.getMethodName
@@ -123,7 +128,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
             if (m.getMethod.getReturnType == CtClass.voidType)
               src = src.replace("$_ =", "")
             m.replace(src)
-          } else if (m.getClassName == key) {
+          } else if (m.getClassName == bisKey) {
             // this ensures that calls to formerly private methods get
             // re-written to use invokevirtual instead of invokespecial
             val n = m.getMethod.getParameterTypes.length
@@ -155,7 +160,30 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         if (!method.getName.contains("$") && !isFieldAccess(method.getName))
           method.instrument(exprEditor)
 
-      cc.setName(bisKey)
+      if (!deps.isEmpty) {
+        val map = new ClassMap()
+        map.put(key, bisKey)
+
+        val depExprEditor = new ExprEditor() {
+          override def edit(f: expr.FieldAccess) = editField(f)
+        }
+
+        val ccDeps = deps.map(depKey => {
+          val depcc = cp.get(depKey)
+          val depBisKey = depKey + "$bis"
+          depcc.setName(depBisKey)
+          map.put(depKey, depBisKey)
+          depcc
+        })
+
+        cc.replaceClassName(map)
+        ccDeps.foreach(depcc => {
+          depcc.replaceClassName(map)
+          depcc.instrument(depExprEditor)
+          depcc.toClass()
+        })
+      }
+
       bisClazz = cc.toClass()
     }
 

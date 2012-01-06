@@ -1,0 +1,18 @@
+function main(x0) {
+var x6 = function(x1){
+if (arguments.length != 0) {
+this.$init$(x1)
+}
+}
+x6.prototype.$init$ = function(x1) {
+var x2 = this.scala$js$ClassesProg$Bloat$$v = x1
+return null
+}
+x6.prototype.get = function() {
+var x4 = this.scala$js$ClassesProg$Bloat$$v
+return x4
+}
+var x7 = new x6(x0)
+var x8 = x7.get()
+return x8
+}
