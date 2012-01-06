@@ -41,6 +41,13 @@ trait ClassesProg { this: JS with JSClasses =>
   def testGenericClassProxy(simple: Rep[Simple[Int]]): Rep[Int] = {
     simple.get()
   }
+
+  def testGenericReifiedClass(x: Rep[Int]): Rep[Int] = {
+    val newSimple = register[Simple[Int]](this)
+    val simple = newSimple(0)
+    simple.set(x)
+    simple.get()
+  }
 }
 
 class TestClasses extends FileDiffSuite {
@@ -84,5 +91,15 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"generic-class-proxy")
+  }
+
+  def testGenericReifiedClass = {
+    withOutFile(prefix+"generic-reified-class") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testGenericReifiedClass _, "main", new PrintWriter(System.out))
+      }
+    }
+    //assertFileEqualsCheck(prefix+"generic-reified-class")
   }
 }
