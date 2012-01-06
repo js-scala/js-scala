@@ -16,7 +16,7 @@ trait ClassesProg { this: JS with JSClasses =>
   }
   implicit def proxyRepBar(x: Rep[Bar]) = repClassProxy[Bar](x, this)
 
-  class Simple[A](private var value: Rep[A]) {
+  class Simple[A](var value: Rep[A]) {
     def get() = value
     def set(value: Rep[A]) = (this.value = value)
   }
@@ -100,6 +100,6 @@ class TestClasses extends FileDiffSuite {
         codegen.emitSource(testGenericReifiedClass _, "main", new PrintWriter(System.out))
       }
     }
-    //assertFileEqualsCheck(prefix+"generic-reified-class")
+    assertFileEqualsCheck(prefix+"generic-reified-class")
   }
 }

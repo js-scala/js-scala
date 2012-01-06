@@ -1,0 +1,23 @@
+function main(x0) {
+var x9 = function(x1){
+if (arguments.length != 0) {
+this.$init$(x1)
+}
+}
+x9.prototype.$init$ = function(x1) {
+var x2 = this.value = x1
+return null
+}
+x9.prototype.get = function() {
+var x4 = this.value
+return x4
+}
+x9.prototype.set = function(x6) {
+var x7 = this.value = x6
+return null
+}
+var x10 = new x9(0)
+var x11 = x10.set(x0)
+var x12 = x10.get()
+return x12
+}
