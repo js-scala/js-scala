@@ -85,11 +85,11 @@ trait ClassesProg { this: JS with JSClasses =>
     fp.fst() + fp.snd()
   }
 
-  // def testManifestReifiedClass(x: Rep[Int]): Rep[Int] = {
-  //   val newFancyPair = register[FancyPair[Int,Int]](this)
-  //   val fp = newFancyPair(x,x+1)
-  //   fp.fst() + fp.snd() // 2x+1
-  // }
+  def testManifestReifiedClass(x: Rep[Int]): Rep[Int] = {
+    val newFancyPair = register[FancyPair[Int,Int]](this)
+    val fp = newFancyPair(x,x+1)
+    fp.fst() + fp.snd() // 2x+1
+  }
 }
 
 class TestClasses extends FileDiffSuite {
@@ -175,13 +175,13 @@ class TestClasses extends FileDiffSuite {
     assertFileEqualsCheck(prefix+"manifest-class-proxy")
   }
 
-  // def testManifestReifiedClass = {
-  //   withOutFile(prefix+"manifest-reified-class") {
-  //     new ClassesProg with JSExp with JSClassesExp { self =>
-  //       val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
-  //       codegen.emitSource(testManifestReifiedClass _, "main", new PrintWriter(System.out))
-  //     }
-  //   }
-  //   assertFileEqualsCheck(prefix+"manifest-reified-class")
-  // }
+  def testManifestReifiedClass = {
+    withOutFile(prefix+"manifest-reified-class") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testManifestReifiedClass _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"manifest-reified-class")
+  }
 }

@@ -31,7 +31,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
     factory.setFilter(
       new MethodFilter() {
         override def isHandled(method: jreflect.Method) =
-          !notHandledMethodNames.contains(method.getName)
+          !notHandledMethodNames.contains(method.getName) && """\$\d""".r.findFirstIn(method.getName) == None
       })
     val handler = new JSInvocationHandler(x, parentConstructor, outer)
 

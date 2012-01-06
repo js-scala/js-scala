@@ -190,11 +190,16 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     val jConstructor = (bisClazz.getDeclaredConstructors())(0)
     val jConstructorMethod = bisClazz.getDeclaredMethod("$init$", jConstructor.getParameterTypes: _*)
     val constructorTemplate = {
-      val n = jConstructorMethod.getParameterTypes.length
-      val params = (1 to (n-1)).toList.map(_ => fresh[Any])
-      val args = (outer::params).toArray
+      val paramTypes = jConstructorMethod.getParameterTypes
+      val n = paramTypes.length
+      val args = (1 to (n-1)).toList.map(i => paramTypes(i).getName match {
+        case "scala.reflect.Manifest" => manifest[Any]
+        case _ => fresh[Any]
+      })
+      val allArgs = (outer::args).toArray
+      val params = args.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
       val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, List("$init$"))
-      MethodTemplate("$init$", params, reifyEffects(jConstructorMethod.invoke(self, args: _*).asInstanceOf[Exp[Any]]))
+      MethodTemplate("$init$", params, reifyEffects(jConstructorMethod.invoke(self, allArgs: _*).asInstanceOf[Exp[Any]]))
     }
 
     val methods = 
