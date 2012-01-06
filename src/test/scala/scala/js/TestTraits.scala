@@ -24,6 +24,12 @@ trait TraitsProg { this: JS with JSTraits =>
   }
   implicit def proxyRepBaz(x: Rep[Baz]) = repProxy[Baz](x)
 
+  trait FooFun {
+    var v: Rep[Int] = 1
+    def produce() = fun { () => v }
+  }
+  implicit def proxyRepFooFun(x: Rep[FooFun]) = repProxy[FooFun](x)
+
   def test(x: Rep[Int]): Rep[Int] = {
     val newFoo = register[Foo](this)
     val foo = newFoo()
@@ -43,6 +49,12 @@ trait TraitsProg { this: JS with JSTraits =>
     val newBaz = register[Baz](this)
     val baz = newBaz()
     baz.someMethod() // 3
+  }
+
+  def testFun(x: Rep[Int]): Rep[Int] = {
+    val newFooFun = register[FooFun](this)
+    val fooFun = newFooFun()
+    (fooFun.produce())()
   }
 }
 
@@ -87,6 +99,16 @@ class TestTraits extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"traits-double-extends")
+  }
+
+  def testTraitsFun = {
+    withOutFile(prefix+"traits-fun") {
+      new TraitsProg with JSExp with JSTraitsExp { self =>
+        val codegen = new JSGen with JSGenTraits { val IR: self.type = self }
+        codegen.emitSource(testFun _, "main", new PrintWriter(System.out))
+      }
+    }
+    //assertFileEqualsCheck(prefix+"traits-fun")
   }
 
   def testTraitsInScala = {
