@@ -41,6 +41,15 @@ trait ClassesProg { this: JS with JSClasses =>
   }
   implicit def proxyRepFancyPair[A:Manifest,B:Manifest](x: Rep[FancyPair[A,B]]) = repClassProxy[FancyPair[A,B]](x, this)
 
+  class Queue[A:Manifest] {
+    private var a = array[A]()
+    private var s = unit(0)
+    private var e = unit(0)
+    def put(x: Rep[A]) = { a(e) = x; e += 1 }
+    def get() = { s += 1; a(s-1) }
+  }
+  implicit def proxyRepQueue[A:Manifest](x: Rep[Queue[A]]) = repClassProxy[Queue[A]](x, this)
+
   def testClassProxy(foo: Rep[Foo]): Rep[Int] = {
     foo.f()
   }
@@ -89,6 +98,15 @@ trait ClassesProg { this: JS with JSClasses =>
     val newFancyPair = register[FancyPair[Int,Int]](this)
     val fp = newFancyPair(x,x+1)
     fp.fst() + fp.snd() // 2x+1
+  }
+
+  def testQueueProxy(queue: Rep[Queue[Int]]): Rep[Int] = {
+    val x = 0
+    queue.put(x)
+    queue.put(x+1)
+    queue.put(x+2)
+    queue.get()
+    queue.get()
   }
 }
 
@@ -183,5 +201,15 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"manifest-reified-class")
+  }
+
+  def testClassProxyQueue = {
+    withOutFile(prefix+"class-proxy-queue") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testQueueProxy _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"class-proxy-queue")
   }
 }

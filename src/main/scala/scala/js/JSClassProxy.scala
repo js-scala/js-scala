@@ -13,6 +13,14 @@ trait JSClassProxyBase extends Base {
 }
 
 trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
+  // TODO: should this go in core Effects?
+  def ignoreEffects[A](block: => A): A = {
+    val save = context
+    context = Nil
+    val result = block
+    context = save
+    result
+  }
 
   case class MethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
   case class SuperMethodCall[T](receiver: Exp[Any], parentConstructor: Option[Exp[Any]], method: String, args: List[Exp[Any]]) extends Def[T]
@@ -45,7 +53,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
       case _ => null: AnyRef
     })
     constructorArgs(0) = outer
-    val classProxy = factory.create(constructorParams, constructorArgs, handler)
+    val classProxy = ignoreEffects(factory.create(constructorParams, constructorArgs, handler))
     classProxy
   }
 
