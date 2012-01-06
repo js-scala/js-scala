@@ -22,6 +22,13 @@ trait ClassesProg { this: JS with JSClasses =>
   }
   implicit def proxyRepSimple[A:Manifest](x: Rep[Simple[A]]) = repClassProxy[Simple[A]](x, this)
 
+  class Counter(private var v: Rep[Int]) {
+    def get() = v
+    private def set(v: Rep[Int]) = (this.v = v)
+    def inc() = { set(get()+1); get() }
+  }
+  implicit def proxyRepCounter(x: Rep[Counter]) = repClassProxy[Counter](x, this)
+
   def testClassProxy(foo: Rep[Foo]): Rep[Int] = {
     foo.f()
   }
@@ -47,6 +54,13 @@ trait ClassesProg { this: JS with JSClasses =>
     val simple = newSimple(0)
     simple.set(x)
     simple.get()
+  }
+
+  def testPrivateReifiedClass(x: Rep[Int]): Rep[Int] = {
+    val newCounter = register[Counter](this)
+    val counter = newCounter(x)
+    counter.inc()
+    counter.inc() // x+2
   }
 }
 
@@ -101,5 +115,15 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"generic-reified-class")
+  }
+
+  def testPrivateReifiedClass = {
+    withOutFile(prefix+"private-reified-class") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testPrivateReifiedClass _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"private-reified-class")
   }
 }

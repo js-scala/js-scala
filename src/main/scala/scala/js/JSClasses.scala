@@ -78,6 +78,11 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         cc)
       cc.addMethod(superMethod)
 
+      for (method <- cc.getDeclaredMethods)
+        if (Modifier.isPrivate(method.getModifiers) || Modifier.isPackage(method.getModifiers)) {
+          method.setModifiers(Modifier.setProtected(method.getModifiers))
+        }
+
       for (field <- cc.getDeclaredFields;
            if field.getName != "$outer") {
         try {
@@ -115,9 +120,17 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
             for (i <- 1 to n)
               src += "args[" + (i-1) + "] = $" + i + ";"
             src += "$_ = $super$(\"" + name + "\", args);"
-            if (m.getMethod.getReturnType == CtClass.voidType) {
+            if (m.getMethod.getReturnType == CtClass.voidType)
               src = src.replace("$_ =", "")
-            }
+            m.replace(src)
+          } else if (m.getClassName == key) {
+            // this ensures that calls to formerly private methods get
+            // re-written to use invokevirtual instead of invokespecial
+            val n = m.getMethod.getParameterTypes.length
+            val args = (1 to n).map("$" + _).mkString(", ")
+            var src = "$0." + m.getMethodName + "(" + args + ");"
+            if (m.getMethod.getReturnType != CtClass.voidType)
+              src = "$_ = " + src
             m.replace(src)
           }
         }

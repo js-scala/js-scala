@@ -74,7 +74,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
 	if (!args_.isEmpty) return false
 
 	try {
-	  m.getDeclaringClass.getMethod(updateMethodFromField(m.getName), m.getReturnType)
+	  m.getDeclaringClass.getDeclaredMethod(updateMethodFromField(m.getName), m.getReturnType)
 	  return true
 	} catch {
 	  case _ : NoSuchMethodException => return false
