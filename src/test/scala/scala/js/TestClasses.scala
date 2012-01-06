@@ -145,6 +145,6 @@ class TestClasses extends FileDiffSuite {
         codegen.emitSource(testBloat _, "main", new PrintWriter(System.out))
       }
     }
-    //assertFileEqualsCheck(prefix+"reified-class-bloat")
+    assertFileEqualsCheck(prefix+"reified-class-bloat")
   }
 }
