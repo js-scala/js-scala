@@ -1,0 +1,28 @@
+function main(x0) {
+var x13 = function(x1,x2){
+if (arguments.length != 0) {
+this.$init$(x1,x2)
+}
+}
+x13.prototype.$init$ = function(x1,x2) {
+var x4 = {_1:x1,_2:x2}
+var x5 = this.t = x4
+return null
+}
+x13.prototype.fst = function() {
+var x7 = this.t
+var x8 = x7._1
+return x8
+}
+x13.prototype.snd = function() {
+var x10 = this.t
+var x11 = x10._2
+return x11
+}
+var x14 = x0 + 1
+var x15 = new x13(x0, x14)
+var x16 = x15.fst()
+var x17 = x15.snd()
+var x18 = x16 + x17
+return x18
+}

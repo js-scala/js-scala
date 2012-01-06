@@ -13,6 +13,14 @@ trait JSClassProxyBase extends Base {
 }
 
 trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
+  // TODO: should this go in core Effects?
+  def ignoreEffects[A](block: => A): A = {
+    val save = context
+    context = Nil
+    val result = block
+    context = save
+    result
+  }
 
   case class MethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
   case class SuperMethodCall[T](receiver: Exp[Any], parentConstructor: Option[Exp[Any]], method: String, args: List[Exp[Any]]) extends Def[T]
@@ -21,25 +29,31 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
 
   def repClassProxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
     val clazz = m.erasure
-    val classProxy = repMasqueradeProxy(clazz, x, None, outer, List[String]())
+    val classProxy = repMasqueradeProxy(clazz, x, None, outer, Set[String]())
     classProxy.asInstanceOf[T]
   }
 
-  def repMasqueradeProxy(clazz: Class[_], x: Rep[_], parentConstructor: Option[Rep[Any]], outer: AnyRef, notHandledMethodNames: List[String]): AnyRef = {
+  val neverHandledMethodNames = Set("finalize")
+  def repMasqueradeProxy(clazz: Class[_], x: Rep[_], parentConstructor: Option[Rep[Any]], outer: AnyRef, notHandledMethodNames: Set[String]): AnyRef = {
     val factory = new ProxyFactory()
     factory.setSuperclass(clazz)
     factory.setFilter(
       new MethodFilter() {
         override def isHandled(method: jreflect.Method) =
-          !notHandledMethodNames.contains(method.getName)
+          !notHandledMethodNames.contains(method.getName) &&
+          """\$\d""".r.findFirstIn(method.getName) == None &&
+          !neverHandledMethodNames.contains(method.getName)
       })
     val handler = new JSInvocationHandler(x, parentConstructor, outer)
 
     val constructor = (clazz.getDeclaredConstructors())(0)
     val constructorParams = constructor.getParameterTypes()
-    val constructorArgs = constructorParams.map(clazz => null: AnyRef)
+    val constructorArgs = constructorParams.map(clazz => clazz.getName match {
+      case "scala.reflect.Manifest" => manifest[Any]
+      case _ => null: AnyRef
+    })
     constructorArgs(0) = outer
-    val classProxy = factory.create(constructorParams, constructorArgs, handler)
+    val classProxy = ignoreEffects(factory.create(constructorParams, constructorArgs, handler))
     classProxy
   }
 

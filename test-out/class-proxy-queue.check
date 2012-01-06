@@ -1,0 +1,8 @@
+function main(x0) {
+var x2 = x0.put(0)
+var x4 = x0.put(1)
+var x6 = x0.put(2)
+var x8 = x0.get()
+var x10 = x0.get()
+return x10
+}

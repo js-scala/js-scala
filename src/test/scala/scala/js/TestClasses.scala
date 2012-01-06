@@ -29,6 +29,27 @@ trait ClassesProg { this: JS with JSClasses =>
   }
   implicit def proxyRepCounter(x: Rep[Counter]) = repClassProxy[Counter](x, this)
 
+  class Bloat(v: Rep[Int]) {
+    def get() = ({ () => v })()
+  }
+  implicit def proxyRepBloat(x: Rep[Bloat]) = repClassProxy[Bloat](x, this)
+
+  class FancyPair[A:Manifest,B:Manifest](a: Rep[A], b: Rep[B]) {
+    private var t: Rep[(A,B)] = make_tuple2(a,b)
+    def fst() = tuple2_get1(t)
+    def snd() = tuple2_get2(t)
+  }
+  implicit def proxyRepFancyPair[A:Manifest,B:Manifest](x: Rep[FancyPair[A,B]]) = repClassProxy[FancyPair[A,B]](x, this)
+
+  class Queue[A:Manifest] {
+    private var a = array[A]()
+    private var s = unit(0)
+    private var e = unit(0)
+    def put(x: Rep[A]) = { a(e) = x; e += 1 }
+    def get() = { s += 1; a(s-1) }
+  }
+  implicit def proxyRepQueue[A:Manifest](x: Rep[Queue[A]]) = repClassProxy[Queue[A]](x, this)
+
   class FooFun(v: Rep[Int]) {
     def producer() = fun { () => v }
   }
@@ -66,6 +87,41 @@ trait ClassesProg { this: JS with JSClasses =>
     val counter = newCounter(x)
     counter.inc()
     counter.inc() // x+2
+  }
+
+  def testBloat(x: Rep[Int]): Rep[Int] = {
+    val newBloat = register[Bloat](this)
+    val bloat = newBloat(x)
+    bloat.get()
+  }
+
+  def testManifestClassProxy(fp: Rep[FancyPair[Int,Int]]): Rep[Int] = {
+    fp.fst() + fp.snd()
+  }
+
+  def testManifestReifiedClass(x: Rep[Int]): Rep[Int] = {
+    val newFancyPair = register[FancyPair[Int,Int]](this)
+    val fp = newFancyPair(x,x+1)
+    fp.fst() + fp.snd() // 2x+1
+  }
+
+  def testQueueProxy(queue: Rep[Queue[Int]]): Rep[Int] = {
+    val x = 0
+    queue.put(x)
+    queue.put(x+1)
+    queue.put(x+2)
+    queue.get()
+    queue.get()
+  }
+
+  def testQueue(x: Rep[Int]): Rep[Int] = {
+    val newQueue = register[Queue[Int]](this)
+    val queue = newQueue()
+    queue.put(x)
+    queue.put(x+1)
+    queue.put(x+2)
+    queue.get()
+    queue.get() // x+1
   }
 
   def testFunctionInReifiedMethod(x: Rep[Int]): Rep[Int] = {
@@ -136,6 +192,56 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"private-reified-class")
+  }
+
+  def testReifiedClassBloat = {
+    withOutFile(prefix+"reified-class-bloat") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testBloat _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"reified-class-bloat")
+  }
+
+  def testManifestClassProxy = {
+    withOutFile(prefix+"manifest-class-proxy") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testManifestClassProxy _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"manifest-class-proxy")
+  }
+
+  def testManifestReifiedClass = {
+    withOutFile(prefix+"manifest-reified-class") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testManifestReifiedClass _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"manifest-reified-class")
+  }
+
+  def testClassProxyQueue = {
+    withOutFile(prefix+"class-proxy-queue") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testQueueProxy _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"class-proxy-queue")
+  }
+
+  def testReifiedClassQueue = {
+    withOutFile(prefix+"reified-class-queue") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testQueue _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"reified-class-queue")
   }
 
   def testFunctionInReifiedMethod = {
