@@ -21,17 +21,20 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
 
   def repClassProxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
     val clazz = m.erasure
-    val classProxy = repMasqueradeProxy(clazz, x, None, outer, List[String]())
+    val classProxy = repMasqueradeProxy(clazz, x, None, outer, Set[String]())
     classProxy.asInstanceOf[T]
   }
 
-  def repMasqueradeProxy(clazz: Class[_], x: Rep[_], parentConstructor: Option[Rep[Any]], outer: AnyRef, notHandledMethodNames: List[String]): AnyRef = {
+  val neverHandledMethodNames = Set("finalize")
+  def repMasqueradeProxy(clazz: Class[_], x: Rep[_], parentConstructor: Option[Rep[Any]], outer: AnyRef, notHandledMethodNames: Set[String]): AnyRef = {
     val factory = new ProxyFactory()
     factory.setSuperclass(clazz)
     factory.setFilter(
       new MethodFilter() {
         override def isHandled(method: jreflect.Method) =
-          !notHandledMethodNames.contains(method.getName) && """\$\d""".r.findFirstIn(method.getName) == None
+          !notHandledMethodNames.contains(method.getName) &&
+          """\$\d""".r.findFirstIn(method.getName) == None &&
+          !neverHandledMethodNames.contains(method.getName)
       })
     val handler = new JSInvocationHandler(x, parentConstructor, outer)
 

@@ -197,8 +197,8 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         case _ => fresh[Any]
       })
       val allArgs = (outer::args).toArray
-      val params = args.filter(_.isInstanceOf[Sym[Any]]).map(_.asInstanceOf[Sym[Any]])
-      val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, List("$init$"))
+      val params = args.filter(_.isInstanceOf[Sym[_]]).map(_.asInstanceOf[Sym[Any]])
+      val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, Set("$init$"))
       MethodTemplate("$init$", params, reifyEffects(jConstructorMethod.invoke(self, allArgs: _*).asInstanceOf[Exp[Any]]))
     }
 
@@ -209,7 +209,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         val n = method.getParameterTypes.length
         val params = (1 to n).toList.map(_ => fresh[Any])
         val args = params.toArray
-        val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, List(method.getName))
+        val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, Set(method.getName))
         MethodTemplate(method.getName, params, reifyEffects(method.invoke(self, args: _*).asInstanceOf[Exp[Any]]))
       }
     
