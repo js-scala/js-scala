@@ -37,7 +37,10 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
 
     val constructor = (clazz.getDeclaredConstructors())(0)
     val constructorParams = constructor.getParameterTypes()
-    val constructorArgs = constructorParams.map(clazz => null: AnyRef)
+    val constructorArgs = constructorParams.map(clazz => clazz.getName match {
+      case "scala.reflect.Manifest" => manifest[Any]
+      case _ => null: AnyRef
+    })
     constructorArgs(0) = outer
     val classProxy = factory.create(constructorParams, constructorArgs, handler)
     classProxy
