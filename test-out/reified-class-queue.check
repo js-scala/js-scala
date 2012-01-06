@@ -1,0 +1,40 @@
+function main(x0) {
+var x25 = function(){
+this.$init$()
+}
+x25.prototype.$init$ = function() {
+var x2 = []
+var x3 = this.a = x2
+var x4 = this.s = 0
+var x5 = this.e = 0
+return null
+}
+x25.prototype.get = function() {
+var x8 = this.s
+var x9 = x8 + 1
+var x10 = this.s = x9
+var x11 = this.a
+var x12 = this.s
+var x13 = x12 - 1
+var x14 = x11[x13]
+return x14
+}
+x25.prototype.put = function(x16) {
+var x18 = this.a
+var x19 = this.e
+var x20 = x18[x19] = x16
+var x21 = this.e
+var x22 = x21 + 1
+var x23 = this.e = x22
+return null
+}
+var x26 = new x25()
+var x28 = x26.put(x0)
+var x30 = x0 + 1
+var x31 = x26.put(x30)
+var x33 = x0 + 2
+var x34 = x26.put(x33)
+var x36 = x26.get()
+var x38 = x26.get()
+return x38
+}

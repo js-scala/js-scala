@@ -108,6 +108,16 @@ trait ClassesProg { this: JS with JSClasses =>
     queue.get()
     queue.get()
   }
+
+  def testQueue(x: Rep[Int]): Rep[Int] = {
+    val newQueue = register[Queue[Int]](this)
+    val queue = newQueue()
+    queue.put(x)
+    queue.put(x+1)
+    queue.put(x+2)
+    queue.get()
+    queue.get() // x+1
+  }
 }
 
 class TestClasses extends FileDiffSuite {
@@ -211,5 +221,15 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"class-proxy-queue")
+  }
+
+  def testReifiedClassQueue = {
+    withOutFile(prefix+"reified-class-queue") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testQueue _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"reified-class-queue")
   }
 }
