@@ -16,6 +16,12 @@ trait ClassesProg { this: JS with JSClasses =>
   }
   implicit def proxyRepBar(x: Rep[Bar]) = repClassProxy[Bar](x, this)
 
+  class Simple[A](private var value: Rep[A]) {
+    def get() = value
+    def set(value: Rep[A]) = (this.value = value)
+  }
+  implicit def proxyRepSimple[A:Manifest](x: Rep[Simple[A]]) = repClassProxy[Simple[A]](x, this)
+
   def testClassProxy(foo: Rep[Foo]): Rep[Int] = {
     foo.f()
   }
@@ -31,10 +37,15 @@ trait ClassesProg { this: JS with JSClasses =>
     val bar = newBar(x)
     bar.g() // 2x+1
   }
+
+  def testGenericClassProxy(simple: Rep[Simple[Int]]): Rep[Int] = {
+    simple.get()
+  }
 }
 
 class TestClasses extends FileDiffSuite {
   val prefix = "test-out/"
+
   def testClassProxy = {
     withOutFile(prefix+"class-proxy") {
       new ClassesProg with JSExp with JSClassesExp { self =>
@@ -63,5 +74,15 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"reified-extended-class")
+  }
+
+  def testGenericClassProxy = {
+    withOutFile(prefix+"generic-class-proxy") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testGenericClassProxy _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"generic-class-proxy")
   }
 }
