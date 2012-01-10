@@ -50,6 +50,11 @@ trait ClassesProg { this: JS with JSClasses =>
   }
   implicit def proxyRepQueue[A:Manifest](x: Rep[Queue[A]]) = repClassProxy[Queue[A]](x, this)
 
+  class FooSimpleFun(v: Rep[Int]) {
+    def producer() = fun { () => 1 }
+  }
+  implicit def proxyRepFooSimpleFun(x: Rep[FooSimpleFun]) = repClassProxy[FooSimpleFun](x, this)
+
   class FooFun(v: Rep[Int]) {
     def producer() = fun { () => v }
   }
@@ -122,6 +127,12 @@ trait ClassesProg { this: JS with JSClasses =>
     queue.put(x+2)
     queue.get()
     queue.get() // x+1
+  }
+
+  def testSimpleFunctionInReifiedMethod(x: Rep[Int]): Rep[Int] = {
+    val newFooSimpleFun = register[FooSimpleFun](this)
+    val fooSimpleFun = newFooSimpleFun(x)
+    (fooSimpleFun.producer())()
   }
 
   def testFunctionInReifiedMethod(x: Rep[Int]): Rep[Int] = {
@@ -242,6 +253,16 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"reified-class-queue")
+  }
+
+  def testSimpleFunctionInReifiedMethod = {
+    withOutFile(prefix+"reified-class-simple-fun") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testSimpleFunctionInReifiedMethod _, "main", new PrintWriter(System.out))
+      }
+    }
+    //assertFileEqualsCheck(prefix+"reified-class-simple-fun")
   }
 
   def testFunctionInReifiedMethod = {
