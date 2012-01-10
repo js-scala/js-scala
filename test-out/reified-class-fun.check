@@ -1,0 +1,23 @@
+function main(x0) {
+var x4 = function() {
+var x5 = this.scala$js$ClassesProg$FooFun$$v
+return x5
+}
+var x9 = function(x1){
+if (arguments.length != 0) {
+this.$init$(x1)
+}
+}
+x9.prototype.$init$ = function(x1) {
+var x2 = this.scala$js$ClassesProg$FooFun$$v = x1
+return null
+}
+x9.prototype.producer = function() {
+var x7 = x4.bind(this)
+return x7
+}
+var x10 = new x9(x0)
+var x11 = x10.producer()
+var x12 = x11()
+return x12
+}

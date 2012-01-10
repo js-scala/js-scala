@@ -1,0 +1,21 @@
+function main(x0) {
+var x2 = function() {
+return 1
+}
+var x5 = function(x1){
+if (arguments.length != 0) {
+this.$init$(x1)
+}
+}
+x5.prototype.$init$ = function(x1) {
+return null
+}
+x5.prototype.producer = function() {
+var x3 = x2.bind(this)
+return x3
+}
+var x6 = new x5(x0)
+var x7 = x6.producer()
+var x8 = x7()
+return x8
+}

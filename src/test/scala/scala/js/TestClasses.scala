@@ -262,7 +262,7 @@ class TestClasses extends FileDiffSuite {
         codegen.emitSource(testSimpleFunctionInReifiedMethod _, "main", new PrintWriter(System.out))
       }
     }
-    //assertFileEqualsCheck(prefix+"reified-class-simple-fun")
+    assertFileEqualsCheck(prefix+"reified-class-simple-fun")
   }
 
   def testFunctionInReifiedMethod = {
@@ -272,6 +272,6 @@ class TestClasses extends FileDiffSuite {
         codegen.emitSource(testFunctionInReifiedMethod _, "main", new PrintWriter(System.out))
       }
     }
-    //assertFileEqualsCheck(prefix+"reified-class-fun")
+    assertFileEqualsCheck(prefix+"reified-class-fun")
   }
 }
