@@ -5,7 +5,7 @@ var x15 = function() {
 var x16 = x2
 var x17 = x1.length
 var x18 = x16 < x17
-var x39
+var x33
 if (x18) {
 var x19 = x1[x16]
 var x20 = x19 * 1000
@@ -15,26 +15,22 @@ var x24 = String(x19)
 var x23 = function() {
 var x25 = console.log(x24)
 var x26 = x2 += 1
-var x30 = x15()
-return x30
+var x27 = x15()
+return x27
 }
-var x34 = function() {
-var x32 = x23()
-return x32
-}
-var x35 = window.setTimeout(x34,x20)
-x39=undefined
+var x29 = window.setTimeout(x23,x20)
+x33=undefined
 } else {
-var x37 = console.log("done")
-x39=x37
+var x31 = console.log("done")
+x33=x31
 }
-return x39
+return x33
 }
 var x3 = function() {
 var x4 = x2
 var x5 = x1.length
 var x6 = x4 < x5
-var x53
+var x41
 if (x6) {
 var x7 = x1[x4]
 var x8 = x7 * 1000
@@ -44,401 +40,341 @@ var x12 = String(x7)
 var x11 = function() {
 var x13 = console.log(x12)
 var x14 = x2 += 1
-var x44 = x15()
-return x44
+var x35 = x15()
+return x35
 }
-var x48 = function() {
-var x46 = x11()
-return x46
-}
-var x49 = window.setTimeout(x48,x8)
-x53=undefined
+var x37 = window.setTimeout(x11,x8)
+x41=undefined
 } else {
-var x51 = console.log("done")
-x53=x51
+var x39 = console.log("done")
+x41=x39
 }
-return x53
+return x41
 }
-var x58 = x3()
-return x58
+var x43 = x3()
+return x43
 }
-function test2(x60) {
-var x61 = [4, 5, 6]
-var x62 = []
-var x63 = 0
-var x64 = 0
-var x79 = function() {
-var x80 = x64
-var x81 = x61.length
-var x82 = x80 < x81
-var x106
-if (x82) {
-var x83 = x61[x80]
-var x84 = x83 * 1000
-var x85 = "sleeping for "+x84
-var x86 = console.log(x85)
-var x88 = x83 + 1
-var x87 = function() {
-var x89 = x63
-var x90 = x62[x89] = x88
-var x91 = x63 += 1
-var x92 = x64 += 1
-var x96 = x79()
+function test2(x45) {
+var x46 = [4, 5, 6]
+var x47 = []
+var x48 = 0
+var x49 = 0
+var x64 = function() {
+var x65 = x49
+var x66 = x46.length
+var x67 = x65 < x66
+var x85
+if (x67) {
+var x68 = x46[x65]
+var x69 = x68 * 1000
+var x70 = "sleeping for "+x69
+var x71 = console.log(x70)
+var x73 = x68 + 1
+var x72 = function() {
+var x74 = x48
+var x75 = x47[x74] = x73
+var x76 = x48 += 1
+var x77 = x49 += 1
+var x78 = x64()
+return x78
+}
+var x80 = window.setTimeout(x72,x69)
+x85=undefined
+} else {
+var x82 = String(x47)
+var x83 = console.log(x82)
+x85=x83
+}
+return x85
+}
+var x50 = function() {
+var x51 = x49
+var x52 = x46.length
+var x53 = x51 < x52
+var x94
+if (x53) {
+var x54 = x46[x51]
+var x55 = x54 * 1000
+var x56 = "sleeping for "+x55
+var x57 = console.log(x56)
+var x59 = x54 + 1
+var x58 = function() {
+var x60 = x48
+var x61 = x47[x60] = x59
+var x62 = x48 += 1
+var x63 = x49 += 1
+var x87 = x64()
+return x87
+}
+var x89 = window.setTimeout(x58,x55)
+x94=undefined
+} else {
+var x91 = String(x47)
+var x92 = console.log(x91)
+x94=x92
+}
+return x94
+}
+var x96 = x50()
 return x96
 }
-var x100 = function() {
-var x98 = x87()
-return x98
-}
-var x101 = window.setTimeout(x100,x84)
-x106=undefined
-} else {
-var x103 = String(x62)
+function test3(x98) {
+var x99 = [1, 2, 3]
+var x112=x99.map(
+function(x100){
+var x101 = new Cell()
+var x102 = x100 * 1000
+var x103 = "sleeping for "+x102
 var x104 = console.log(x103)
-x106=x104
+var x106 = String(x100)
+var x105 = function() {
+var x107 = console.log(x106)
+var x108 = x101.set(x107)
+return x108
 }
-return x106
-}
-var x65 = function() {
-var x66 = x64
-var x67 = x61.length
-var x68 = x66 < x67
-var x121
-if (x68) {
-var x69 = x61[x66]
-var x70 = x69 * 1000
-var x71 = "sleeping for "+x70
-var x72 = console.log(x71)
-var x74 = x69 + 1
-var x73 = function() {
-var x75 = x63
-var x76 = x62[x75] = x74
-var x77 = x63 += 1
-var x78 = x64 += 1
-var x111 = x79()
-return x111
-}
-var x115 = function() {
-var x113 = x73()
-return x113
-}
-var x116 = window.setTimeout(x115,x70)
-x121=undefined
-} else {
-var x118 = String(x62)
-var x119 = console.log(x118)
-x121=x119
-}
-return x121
-}
-var x126 = x65()
-return x126
-}
-function test3(x128) {
-var x129 = [1, 2, 3]
-var x145=x129.map(
-function(x130){
-var x131 = new Cell()
-var x132 = x130 * 1000
-var x133 = "sleeping for "+x132
-var x134 = console.log(x133)
-var x136 = String(x130)
-var x135 = function() {
-var x137 = console.log(x136)
-var x138 = x131.set(x137)
-return x138
-}
-var x142 = function() {
-var x140 = x135()
-return x140
-}
-var x143 = window.setTimeout(x142,x132)
-return x131
+var x110 = window.setTimeout(x105,x102)
+return x101
 })
-var x146 = 0
-var x159 = function() {
-var x160 = x146 += 1
-var x164 = x154()
-return x164
+var x113 = 0
+var x126 = function() {
+var x127 = x113 += 1
+var x128 = x121()
+return x128
 }
-var x168 = function() {
-var x166 = x159()
-return x166
-}
-var x154 = function() {
-var x155 = x146
-var x156 = x145.length
-var x157 = x155 < x156
-var x173
-if (x157) {
-var x158 = x145[x155]
-var x169 = x158.get(x168)
-x173=x169
+var x121 = function() {
+var x122 = x113
+var x123 = x112.length
+var x124 = x122 < x123
+var x134
+if (x124) {
+var x125 = x112[x122]
+var x130 = x125.get(x126)
+x134=x130
 } else {
-var x171 = console.log("done")
-x173=x171
+var x132 = console.log("done")
+x134=x132
 }
-return x173
+return x134
 }
-var x152 = function() {
-var x153 = x146 += 1
-var x178 = x154()
-return x178
+var x119 = function() {
+var x120 = x113 += 1
+var x136 = x121()
+return x136
 }
-var x182 = function() {
-var x180 = x152()
-return x180
-}
-var x147 = function() {
-var x148 = x146
-var x149 = x145.length
-var x150 = x148 < x149
-var x187
-if (x150) {
-var x151 = x145[x148]
-var x183 = x151.get(x182)
-x187=x183
+var x114 = function() {
+var x115 = x113
+var x116 = x112.length
+var x117 = x115 < x116
+var x142
+if (x117) {
+var x118 = x112[x115]
+var x138 = x118.get(x119)
+x142=x138
 } else {
-var x185 = console.log("done")
-x187=x185
+var x140 = console.log("done")
+x142=x140
 }
+return x142
+}
+var x144 = x114()
+return x144
+}
+function test3b(x146) {
+var x147 = [3, 2, 1]
+var x161=x147.map(
+function(x148){
+var x149 = new Cell()
+var x150 = x148 * 1000
+var x151 = "sleeping for "+x150
+var x152 = console.log(x151)
+var x154 = String(x148)
+var x156 = x148 + 1
+var x153 = function() {
+var x155 = console.log(x154)
+var x157 = x149.set(x156)
+return x157
+}
+var x159 = window.setTimeout(x153,x150)
+return x149
+})
+var x162 = []
+var x163 = 0
+var x164 = 0
+var x181 = function(x182) {
+var x183 = x163
+var x184 = x162[x183] = x182
+var x185 = x163 += 1
+var x186 = x164 += 1
+var x187 = x176()
 return x187
 }
-var x192 = x147()
-return x192
+var x176 = function() {
+var x177 = x164
+var x178 = x161.length
+var x179 = x177 < x178
+var x194
+if (x179) {
+var x180 = x161[x177]
+var x189 = x180.get(x181)
+x194=x189
+} else {
+var x191 = String(x162)
+var x192 = console.log(x191)
+x194=x192
 }
-function test3b(x194) {
-var x195 = [3, 2, 1]
-var x212=x195.map(
-function(x196){
-var x197 = new Cell()
-var x198 = x196 * 1000
-var x199 = "sleeping for "+x198
-var x200 = console.log(x199)
-var x202 = String(x196)
-var x204 = x196 + 1
-var x201 = function() {
-var x203 = console.log(x202)
-var x205 = x197.set(x204)
+return x194
+}
+var x170 = function(x171) {
+var x172 = x163
+var x173 = x162[x172] = x171
+var x174 = x163 += 1
+var x175 = x164 += 1
+var x196 = x176()
+return x196
+}
+var x165 = function() {
+var x166 = x164
+var x167 = x161.length
+var x168 = x166 < x167
+var x203
+if (x168) {
+var x169 = x161[x166]
+var x198 = x169.get(x170)
+x203=x198
+} else {
+var x200 = String(x162)
+var x201 = console.log(x200)
+x203=x201
+}
+return x203
+}
+var x205 = x165()
 return x205
 }
-var x209 = function() {
-var x207 = x201()
-return x207
+function test3c(x207) {
+var x208 = [3, 2, 1]
+var x221=x208.map(
+function(x209){
+var x210 = new Cell()
+var x211 = x209 * 1000
+var x212 = "sleeping for "+x211
+var x213 = console.log(x212)
+var x215 = String(x209)
+var x214 = function() {
+var x216 = console.log(x215)
+var x217 = x210.set(x216)
+return x217
 }
-var x210 = window.setTimeout(x209,x198)
-return x197
+var x219 = window.setTimeout(x214,x211)
+return x210
 })
-var x213 = []
-var x214 = 0
-var x215 = 0
-var x232 = function(x233) {
-var x234 = x214
-var x235 = x213[x234] = x233
-var x236 = x214 += 1
-var x237 = x215 += 1
-var x241 = x227()
-return x241
+var x222 = 0
+var x235 = function() {
+var x236 = x222 += 1
+var x237 = x230()
+return x237
 }
-var x246 = function(x243) {
-var x244 = x232(x243)
-return x244
-}
-var x227 = function() {
-var x228 = x215
-var x229 = x212.length
-var x230 = x228 < x229
-var x252
-if (x230) {
-var x231 = x212[x228]
-var x247 = x231.get(x246)
-x252=x247
+var x230 = function() {
+var x231 = x222
+var x232 = x221.length
+var x233 = x231 < x232
+var x243
+if (x233) {
+var x234 = x221[x231]
+var x239 = x234.get(x235)
+x243=x239
 } else {
-var x249 = String(x213)
-var x250 = console.log(x249)
-x252=x250
+var x241 = console.log("done")
+x243=x241
 }
-return x252
+return x243
 }
-var x221 = function(x222) {
-var x223 = x214
-var x224 = x213[x223] = x222
-var x225 = x214 += 1
-var x226 = x215 += 1
-var x257 = x227()
-return x257
+var x228 = function() {
+var x229 = x222 += 1
+var x245 = x230()
+return x245
 }
-var x262 = function(x259) {
-var x260 = x221(x259)
-return x260
-}
-var x216 = function() {
-var x217 = x215
-var x218 = x212.length
-var x219 = x217 < x218
-var x268
-if (x219) {
-var x220 = x212[x217]
-var x263 = x220.get(x262)
-x268=x263
+var x223 = function() {
+var x224 = x222
+var x225 = x221.length
+var x226 = x224 < x225
+var x251
+if (x226) {
+var x227 = x221[x224]
+var x247 = x227.get(x228)
+x251=x247
 } else {
-var x265 = String(x213)
-var x266 = console.log(x265)
-x268=x266
+var x249 = console.log("done")
+x251=x249
 }
+return x251
+}
+var x253 = x223()
+return x253
+}
+function test4(x255) {
+var x256 = ["gkossakowski", "odersky", "adriaanm"]
+var x275=x256.map(
+function(x257){
+var x258 = new Cell()
+var x259 = "fetching "+x257
+var x260 = console.log(x259)
+var x261 = {'screen_name' : x257,'include_rts' : true,'count' : 5,'include_entities' : true}
+var x262 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x261}
+var x263 = function(x264) {
+var x270=x264.forEach(
+function(x265,i_,a_){
+var x266 = x265.text
+var x267 = "fetched "+x266
+var x268 = console.log(x267)
 return x268
+})
+var x271 = x258.set(x270)
+return x271
 }
-var x273 = x216()
-return x273
-}
-function test3c(x275) {
-var x276 = [3, 2, 1]
-var x292=x276.map(
-function(x277){
-var x278 = new Cell()
-var x279 = x277 * 1000
-var x280 = "sleeping for "+x279
-var x281 = console.log(x280)
-var x283 = String(x277)
-var x282 = function() {
-var x284 = console.log(x283)
-var x285 = x278.set(x284)
-return x285
-}
+x262.success = x263
+var x273 = $.ajax(x262)
+return x258
+})
+var x276 = 0
 var x289 = function() {
-var x287 = x282()
-return x287
+var x290 = x276 += 1
+var x291 = x284()
+return x291
 }
-var x290 = window.setTimeout(x289,x279)
-return x278
-})
-var x293 = 0
-var x306 = function() {
-var x307 = x293 += 1
-var x311 = x301()
-return x311
-}
-var x315 = function() {
-var x313 = x306()
-return x313
-}
-var x301 = function() {
-var x302 = x293
-var x303 = x292.length
-var x304 = x302 < x303
-var x320
-if (x304) {
-var x305 = x292[x302]
-var x316 = x305.get(x315)
-x320=x316
+var x284 = function() {
+var x285 = x276
+var x286 = x275.length
+var x287 = x285 < x286
+var x295
+if (x287) {
+var x288 = x275[x285]
+var x293 = x288.get(x289)
+x295=x293
 } else {
-var x318 = console.log("done")
-x320=x318
+x295=undefined
 }
-return x320
+return x295
 }
-var x299 = function() {
-var x300 = x293 += 1
-var x325 = x301()
-return x325
+var x282 = function() {
+var x283 = x276 += 1
+var x297 = x284()
+return x297
 }
-var x329 = function() {
-var x327 = x299()
-return x327
-}
-var x294 = function() {
-var x295 = x293
-var x296 = x292.length
-var x297 = x295 < x296
-var x334
-if (x297) {
-var x298 = x292[x295]
-var x330 = x298.get(x329)
-x334=x330
+var x277 = function() {
+var x278 = x276
+var x279 = x275.length
+var x280 = x278 < x279
+var x301
+if (x280) {
+var x281 = x275[x278]
+var x299 = x281.get(x282)
+x301=x299
 } else {
-var x332 = console.log("done")
-x334=x332
+x301=undefined
 }
-return x334
+return x301
 }
-var x339 = x294()
-return x339
-}
-function test4(x341) {
-var x342 = ["gkossakowski", "odersky", "adriaanm"]
-var x365=x342.map(
-function(x343){
-var x344 = new Cell()
-var x345 = "fetching "+x343
-var x346 = console.log(x345)
-var x347 = {'screen_name' : x343,'include_rts' : true,'count' : 5,'include_entities' : true}
-var x348 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x347}
-var x349 = function(x350) {
-var x356=x350.forEach(
-function(x351,i_,a_){
-var x352 = x351.text
-var x353 = "fetched "+x352
-var x354 = console.log(x353)
-return x354
-})
-var x357 = x344.set(x356)
-return x357
-}
-var x362 = function(x359) {
-var x360 = x349(x359)
-return x360
-}
-x348.success = x362
-var x363 = $.ajax(x348)
-return x344
-})
-var x366 = 0
-var x379 = function() {
-var x380 = x366 += 1
-var x384 = x374()
-return x384
-}
-var x388 = function() {
-var x386 = x379()
-return x386
-}
-var x374 = function() {
-var x375 = x366
-var x376 = x365.length
-var x377 = x375 < x376
-var x391
-if (x377) {
-var x378 = x365[x375]
-var x389 = x378.get(x388)
-x391=x389
-} else {
-x391=undefined
-}
-return x391
-}
-var x372 = function() {
-var x373 = x366 += 1
-var x396 = x374()
-return x396
-}
-var x400 = function() {
-var x398 = x372()
-return x398
-}
-var x367 = function() {
-var x368 = x366
-var x369 = x365.length
-var x370 = x368 < x369
-var x403
-if (x370) {
-var x371 = x365[x368]
-var x401 = x371.get(x400)
-x403=x401
-} else {
-x403=undefined
-}
-return x403
-}
-var x408 = x367()
-return x408
+var x303 = x277()
+return x303
 }

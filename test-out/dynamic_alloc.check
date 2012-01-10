@@ -4,6 +4,6 @@ var x3 = new Foo()
 var x4 = {'a' : x3}
 return x4
 }
-var x10 = x1(x0)
-return x10
+var x6 = x1(x0)
+return x6
 }
