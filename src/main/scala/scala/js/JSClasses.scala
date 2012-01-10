@@ -8,11 +8,14 @@ import scala.collection.JavaConversions._
 
 import java.io.PrintWriter
 
-trait JSClasses extends JSClassProxyBase {
+trait JSClasses extends JSClassProxyBase with Functions {
   trait Factory[+T] {
     def apply(args: Rep[Any]*): Rep[T]
   }
   def register[T<:AnyRef:Manifest](outer: AnyRef): Factory[T]
+  abstract override def doLambda[A:Manifest,B:Manifest](fun: Rep[A] => Rep[B]): Rep[A => B] =
+    bindThis(super.doLambda(fun))
+  def bindThis[A:Manifest,B:Manifest](fun: Rep[A => B]): Rep[A => B]
 }
 
 trait JSClassesExp extends JSClasses with JSClassProxyExp {
@@ -25,6 +28,10 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
 
   case class ClassTemplate[T:Manifest](parent: Option[ParentTemplate], methods: List[MethodTemplate]) extends Def[Constructor[T]]
   case class New[T:Manifest](constructor: Exp[Constructor[T]], args: List[Rep[Any]]) extends Def[T]
+
+  case class BindThis[A:Manifest,B:Manifest](fun: Exp[A => B]) extends Def[A => B]
+  override def bindThis[A:Manifest,B:Manifest](fun: Rep[A => B]): Rep[A => B] =
+    reflectEffect(BindThis(fun))
 
   override def register[T<:AnyRef:Manifest](outer: AnyRef) = {
     val constructor = registerInternal[T](outer)
@@ -261,6 +268,8 @@ trait JSGenClasses extends JSGenBase with JSGenClassProxy {
       }
     case New(constructor, args) =>
       emitValDef(sym, "new " + quote(constructor) + args.map(quote).mkString("(", ", ", ")"))
+    case BindThis(fun) =>
+      emitValDef(sym, quote(fun) + ".bind(this)")
     case _ => super.emitNode(sym, rhs)
   }
 
