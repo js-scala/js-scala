@@ -161,6 +161,9 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
           method.instrument(exprEditor)
 
       if (!deps.isEmpty) {
+        val ccSerializable = cp.get("java.io.Serializable")
+        cc.addInterface(ccSerializable)
+
         val map = new ClassMap()
         map.put(key, bisKey)
 
@@ -180,6 +183,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         ccDeps.foreach(depcc => {
           depcc.replaceClassName(map)
           depcc.instrument(depExprEditor)
+          depcc.addInterface(ccSerializable)
           depcc.toClass()
         })
       }
