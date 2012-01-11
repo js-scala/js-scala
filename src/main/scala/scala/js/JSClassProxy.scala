@@ -82,6 +82,7 @@ trait JSClassProxyExp extends JSClassProxyBase with JSCommonProxyExp {
     !neverHandledMethodNames.contains(method)
   def repMasqueradeProxy(clazz: Class[_], x: Rep[_], parentConstructor: Option[Rep[Any]], outer: AnyRef, notHandledMethodNames: Set[String]): AnyRef = {
     val factory = new ProxyFactory()
+    factory.setInterfaces(Array(classOf[java.io.Serializable]))
     factory.setSuperclass(clazz)
     factory.setFilter(
       new MethodFilter() {

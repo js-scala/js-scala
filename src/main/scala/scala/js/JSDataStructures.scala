@@ -5,7 +5,7 @@ import scala.virtualization.lms.common._
 trait JSDataStructures extends JS with JSClasses {
   def array_push[T:Manifest](a: Rep[Array[T]], x: Rep[T]) = a(a.length) = x
 
-  class Cell[A:Manifest] extends java.io.Serializable {
+  class Cell[A:Manifest] {
     private var value = unit(null).asInstanceOf[Rep[A]]
     private var defined = unit(false)
     private val queue = array[A => Unit]()
