@@ -25,14 +25,14 @@ trait TraitsProg { this: JS with JSTraits =>
   implicit def proxyRepBaz(x: Rep[Baz]) = repProxy[Baz](x)
 
   def test(x: Rep[Int]): Rep[Int] = {
-    val newFoo = register[Foo](this)
+    val newFoo = registerTrait[Foo](this)
     val foo = newFoo()
     foo.someMethod() + x + foo.someVar + foo.someOtherMethod(x) // 2x + 3
   }
 
   def testExtends(x: Rep[Int]): Rep[Int] = {
-    val newFoo = register[Foo](this)
-    val newBar = register[Bar](this)
+    val newFoo = registerTrait[Foo](this)
+    val newBar = registerTrait[Bar](this)
     val foo = newFoo()
     val bar = newBar()
     bar.someVar = 2
@@ -40,19 +40,19 @@ trait TraitsProg { this: JS with JSTraits =>
   }
 
   def testDoubleExtends(x: Rep[Int]): Rep[Int] = {
-    val newBaz = register[Baz](this)
+    val newBaz = registerTrait[Baz](this)
     val baz = newBaz()
     baz.someMethod() // 3
   }
 }
 
 trait TraitsProgInScala extends TraitsProg with JSInScala with JSTraitsInScala { self =>
-  override def create[T<:AnyRef:Manifest](): T = {
+  override def createTrait[T<:AnyRef:Manifest](): T = {
     val m = implicitly[Manifest[T]]
     if      (m.equals(implicitly[Manifest[Foo]]))  (new Foo {}).asInstanceOf[T]
     else if (m.equals(implicitly[Manifest[Bar]]))  (new Bar {}).asInstanceOf[T]
     else if (m.equals(implicitly[Manifest[Baz]]))  (new Baz {}).asInstanceOf[T]
-    else super.create[T]()
+    else super.createTrait[T]()
   }
 }
 

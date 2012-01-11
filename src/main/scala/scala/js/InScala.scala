@@ -187,11 +187,11 @@ trait JSProxyInScala extends JSProxyBase with InScala {
 }
 
 trait JSTraitsInScala extends JSTraits with JSProxyInScala {
-  def create[T<:AnyRef:Manifest](): T =
+  def createTrait[T<:AnyRef:Manifest](): T =
     throw new RuntimeException("don't know how to create " + implicitly[Manifest[T]].erasure.getName)
-  def register[T<:AnyRef:Manifest](outer: AnyRef): Factory[T] =
-    new Factory[T] {
-      override def apply() = create[T]()
+  def registerTrait[T<:AnyRef:Manifest](outer: AnyRef): TraitFactory[T] =
+    new TraitFactory[T] {
+      override def apply() = createTrait[T]()
     }
 }
 

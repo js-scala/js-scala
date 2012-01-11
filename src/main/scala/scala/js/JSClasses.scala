@@ -9,10 +9,10 @@ import scala.collection.JavaConversions._
 import java.io.PrintWriter
 
 trait JSClasses extends JSClassProxyBase with Functions {
-  trait Factory[+T] {
+  trait ClassFactory[+T] {
     def apply(args: Rep[Any]*): Rep[T]
   }
-  def register[T<:AnyRef:Manifest](outer: AnyRef): Factory[T]
+  def registerClass[T<:AnyRef:Manifest](outer: AnyRef): ClassFactory[T]
   abstract override def doLambda[A:Manifest,B:Manifest](fun: Rep[A] => Rep[B]): Rep[A => B] =
     bindThis(super.doLambda(fun))
   def bindThis[A:Manifest,B:Manifest](fun: Rep[A => B]): Rep[A => B]
@@ -33,9 +33,9 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
   override def bindThis[A:Manifest,B:Manifest](fun: Rep[A => B]): Rep[A => B] =
     reflectEffect(BindThis(fun))
 
-  override def register[T<:AnyRef:Manifest](outer: AnyRef) = {
+  override def registerClass[T<:AnyRef:Manifest](outer: AnyRef) = {
     val constructor = registerInternal[T](outer)
-    new Factory[T] {
+    new ClassFactory[T] {
       override def apply(args: Rep[Any]*) = create[T](constructor, args.toList)
     }
   }

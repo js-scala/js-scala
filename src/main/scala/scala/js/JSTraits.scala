@@ -5,10 +5,10 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 
 trait JSTraits extends JSProxyBase {
-  trait Factory[+T] {
+  trait TraitFactory[+T] {
     def apply(): Rep[T]
   }
-  def register[T<:AnyRef:Manifest](outer: AnyRef): Factory[T]
+  def registerTrait[T<:AnyRef:Manifest](outer: AnyRef): TraitFactory[T]
 }
 
 trait JSTraitsExp extends JSTraits with JSProxyExp {
@@ -22,9 +22,9 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
   case class ClassTemplate[T:Manifest](parent: Option[ParentTemplate], methods: List[MethodTemplate]) extends Def[Constructor[T]]
   case class New[T:Manifest](constructor: Exp[Constructor[T]]) extends Def[T]
 
-  override def register[T<:AnyRef:Manifest](outer: AnyRef) = {
+  override def registerTrait[T<:AnyRef:Manifest](outer: AnyRef) = {
     val constructor = registerInternal[T](outer)
-    new Factory[T] {
+    new TraitFactory[T] {
       override def apply() = create[T](constructor)
     }
   }

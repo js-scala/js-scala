@@ -65,13 +65,13 @@ trait ClassesProg { this: JS with JSClasses =>
   }
 
   def testReifiedClass(x: Rep[Int]): Rep[Int] = {
-    val newFoo = register[Foo](this)
+    val newFoo = registerClass[Foo](this)
     val foo = newFoo(x)
     foo.f()
   }
 
   def testReifiedExtendedClass(x: Rep[Int]): Rep[Int] = {
-    val newBar = register[Bar](this)
+    val newBar = registerClass[Bar](this)
     val bar = newBar(x)
     bar.g() // 2x+1
   }
@@ -81,21 +81,21 @@ trait ClassesProg { this: JS with JSClasses =>
   }
 
   def testGenericReifiedClass(x: Rep[Int]): Rep[Int] = {
-    val newSimple = register[Simple[Int]](this)
+    val newSimple = registerClass[Simple[Int]](this)
     val simple = newSimple(0)
     simple.set(x)
     simple.get()
   }
 
   def testPrivateReifiedClass(x: Rep[Int]): Rep[Int] = {
-    val newCounter = register[Counter](this)
+    val newCounter = registerClass[Counter](this)
     val counter = newCounter(x)
     counter.inc()
     counter.inc() // x+2
   }
 
   def testBloat(x: Rep[Int]): Rep[Int] = {
-    val newBloat = register[Bloat](this)
+    val newBloat = registerClass[Bloat](this)
     val bloat = newBloat(x)
     bloat.get()
   }
@@ -105,7 +105,7 @@ trait ClassesProg { this: JS with JSClasses =>
   }
 
   def testManifestReifiedClass(x: Rep[Int]): Rep[Int] = {
-    val newFancyPair = register[FancyPair[Int,Int]](this)
+    val newFancyPair = registerClass[FancyPair[Int,Int]](this)
     val fp = newFancyPair(x,x+1)
     fp.fst() + fp.snd() // 2x+1
   }
@@ -120,7 +120,7 @@ trait ClassesProg { this: JS with JSClasses =>
   }
 
   def testQueue(x: Rep[Int]): Rep[Int] = {
-    val newQueue = register[Queue[Int]](this)
+    val newQueue = registerClass[Queue[Int]](this)
     val queue = newQueue()
     queue.put(x)
     queue.put(x+1)
@@ -130,13 +130,13 @@ trait ClassesProg { this: JS with JSClasses =>
   }
 
   def testSimpleFunctionInReifiedMethod(x: Rep[Int]): Rep[Int] = {
-    val newFooSimpleFun = register[FooSimpleFun](this)
+    val newFooSimpleFun = registerClass[FooSimpleFun](this)
     val fooSimpleFun = newFooSimpleFun(x)
     (fooSimpleFun.producer())()
   }
 
   def testFunctionInReifiedMethod(x: Rep[Int]): Rep[Int] = {
-    val newFooFun = register[FooFun](this)
+    val newFooFun = registerClass[FooFun](this)
     val fooFun = newFooFun(x)
     (fooFun.producer())()
   }
