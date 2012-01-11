@@ -77,6 +77,8 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     }
     def doReifyMethod(method: String) =
       !method.contains("$") && !isFieldAccess(method)
+    def doReifyField(field: String) =
+      field != "$outer"
 
     var bisClazz = null: Class[_]
     try {
@@ -100,7 +102,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         }
 
       for (field <- cc.getDeclaredFields;
-           if field.getName != "$outer") {
+           if doReifyField(field.getName)) {
         try {
           cc.getDeclaredMethod(field.getName)
         } catch {
@@ -123,7 +125,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
       def fieldUpdate(field: String) =
         "$0." + updateMethodFromField(field) + "($1);"
       def editField(f: expr.FieldAccess) = {
-        if (f.getClassName == bisKey && f.getFieldName != "$outer") {
+        if (f.getClassName == bisKey && doReifyField(f.getFieldName)) {
           f.replace((if (f.isReader) fieldAccess _ else fieldUpdate _) (f.getFieldName))
         }
       }
