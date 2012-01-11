@@ -60,6 +60,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c, List[Rep[Any]]())))
 
     def rename(name: String) = name + "$bis"
+    val initMethodName = "$init$"
 
     val bisKey = rename(key)
     val cp = ClassPool.getDefault
@@ -162,7 +163,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
 
       val ctConstructor = new CtConstructor((cc.getDeclaredConstructors())(0), cc, null)
       ctConstructor.instrument(exprEditor)
-      val ctConstructorMethod = ctConstructor.toMethod("$init$", cc)
+      val ctConstructorMethod = ctConstructor.toMethod(initMethodName, cc)
       cc.addMethod(ctConstructorMethod)
 
       for (method <- cc.getDeclaredMethods)
@@ -201,7 +202,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     }
 
     val jConstructor = (bisClazz.getDeclaredConstructors())(0)
-    val jConstructorMethod = bisClazz.getDeclaredMethod("$init$", jConstructor.getParameterTypes: _*)
+    val jConstructorMethod = bisClazz.getDeclaredMethod(initMethodName, jConstructor.getParameterTypes: _*)
     val constructorTemplate = {
       val paramTypes = jConstructorMethod.getParameterTypes
       val n = paramTypes.length
@@ -211,8 +212,8 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
       })
       val allArgs = (outer::args).toArray
       val params = args.filter(_.isInstanceOf[Sym[_]]).map(_.asInstanceOf[Sym[Any]])
-      val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, Set("$init$"))
-      MethodTemplate("$init$", params, reifyEffects(jConstructorMethod.invoke(self, allArgs: _*).asInstanceOf[Exp[Any]]))
+      val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, Set(initMethodName))
+      MethodTemplate(initMethodName, params, reifyEffects(jConstructorMethod.invoke(self, allArgs: _*).asInstanceOf[Exp[Any]]))
     }
 
     val methods = 
