@@ -119,7 +119,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp with JSReifiedComponen
 
     if (bisClazz == null) {
       def getDeps(refs: List[_]) =
-        refs.map((_:Any).asInstanceOf[String]).filter(x => x.startsWith(key) && x != key)
+        refs.map((_:Any).asInstanceOf[String]).filter(x => x.startsWith(key + "$"))
       var deps = getDeps(cc.getRefClasses.toList)
       var depsQueue = deps
       while (!depsQueue.isEmpty) {
@@ -131,6 +131,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp with JSReifiedComponen
         }
         depsQueue = newDepsQueue
       }
+
       cc.setName(bisKey)
 
       val superMethod = CtNewMethod.make(
