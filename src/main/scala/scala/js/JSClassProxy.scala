@@ -12,7 +12,19 @@ trait JSClassProxyBase extends Base {
   def repClassProxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T
 }
 
-trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
+trait JSCommonProxyExp extends BaseExp with EffectExp {
+  case class MethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
+  case class SuperMethodCall[T](receiver: Exp[Any], parentConstructor: Option[Exp[Any]], method: String, args: List[Exp[Any]]) extends Def[T]
+  case class FieldAccess[T](receiver: Exp[Any], field: String) extends Def[T]
+  case class FieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
+
+  private val fieldUpdateMarker = "_$eq"
+  def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
+  def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
+  def updateMethodFromField(name: String) = name + fieldUpdateMarker
+}
+
+trait JSClassProxyExp extends JSClassProxyBase with JSCommonProxyExp {
   // TODO: should this go in core Effects?
   def ignoreEffects[A](block: => A): A = {
     val save = context
@@ -21,11 +33,6 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
     context = save
     result
   }
-
-  case class MethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
-  case class SuperMethodCall[T](receiver: Exp[Any], parentConstructor: Option[Exp[Any]], method: String, args: List[Exp[Any]]) extends Def[T]
-  case class FieldAccess[T](receiver: Exp[Any], field: String) extends Def[T]
-  case class FieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
 
   def repClassProxy[T<:AnyRef](x: Rep[T], outer: AnyRef)(implicit m: Manifest[T]): T = {
     val clazz = m.erasure
@@ -59,13 +66,8 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
     classProxy
   }
 
-  private val fieldUpdateMarker = "_$eq"
-  def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
-  def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
-  def updateMethodFromField(name: String) = name + fieldUpdateMarker
-
   val superMethodName = "$super$"
-  class JSInvocationHandler(receiver: Exp[Any], parentConstructor: Option[Rep[Any]], outer: AnyRef) extends MethodHandler with java.io.Serializable {
+  private class JSInvocationHandler(receiver: Exp[Any], parentConstructor: Option[Rep[Any]], outer: AnyRef) extends MethodHandler with java.io.Serializable {
     def invoke(classProxy: AnyRef, m: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
       def checkArgs(args: Array[AnyRef]): Array[Exp[Any]] = {
         //TODO: Make a check when constructing classProxy, not when executing it. Also, check using
@@ -114,8 +116,8 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
 
 }
 
-trait JSGenClassProxy extends JSGenBase with JSGenEffect {
-  val IR: JSClassProxyExp
+trait JSGenCommonProxy extends JSGenBase with JSGenEffect {
+  val IR: JSCommonProxyExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
@@ -130,4 +132,9 @@ trait JSGenClassProxy extends JSGenBase with JSGenEffect {
       quote(receiver) + "." + field + " = " + quote(value))
     case _ => super.emitNode(sym, rhs)
   }
+}
+
+trait JSGenClassProxy extends JSGenCommonProxy {
+  val IR: JSClassProxyExp
+  import IR._
 }

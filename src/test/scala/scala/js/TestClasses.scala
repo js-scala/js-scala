@@ -274,4 +274,20 @@ class TestClasses extends FileDiffSuite {
     }
     assertFileEqualsCheck(prefix+"reified-class-fun")
   }
+
+  def testMixInClassesAndTraitsProxy = {
+    trait ClassesAndTraitsProxyProg { this: JS with JSClassProxyBase with JSProxyBase =>
+    }
+    new ClassesAndTraitsProxyProg with JSExp with JSClassProxyExp with JSProxyExp { self =>
+      val codegen = new JSGen with JSGenClassProxy with JSGenProxy { val IR: self.type = self }
+    }
+  }
+
+  // def testMixInClassesAndTraits = {
+  //   trait ClassesAndTraitsProg { this: JS with JSClasses with JSTraits =>
+  //   }
+  //   new ClassesAndTraitsProg with JSExp with JSClassesExp with JSTraitsExp { self =>
+  //     val codegen = new JSGen with JSGenClasses with JSGenTraits { val IR: self.type = self }
+  //   }
+  // }
 }

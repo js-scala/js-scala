@@ -10,12 +10,7 @@ trait JSProxyBase extends Base {
   def repProxy[T<:AnyRef](x: Rep[T])(implicit m: Manifest[T]): T
 }
 
-trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
-
-  case class MethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
-  case class SuperMethodCall[T](receiver: Exp[Any], parentConstructor: Option[Exp[Any]], method: String, args: List[Exp[Any]]) extends Def[T]
-  case class FieldAccess[T](receiver: Exp[Any], field: String) extends Def[T]
-  case class FieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
+trait JSProxyExp extends JSProxyBase with JSCommonProxyExp {
 
   def repProxy[T<:AnyRef](x: Rep[T])(implicit m: Manifest[T]): T = {
     proxy[T](x, None, null)(m)
@@ -32,12 +27,7 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
     proxy.asInstanceOf[T]
   }
 
-  class JSInvocationHandler(receiver: Exp[Any], parentConstructor: Option[Rep[Any]], outer: AnyRef) extends jreflect.InvocationHandler with java.io.Serializable {
-    private val fieldUpdateMarker = "_$eq"
-    private def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
-    private def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
-    private def updateMethodFromField(name: String) = name + fieldUpdateMarker
-
+  private class JSInvocationHandler(receiver: Exp[Any], parentConstructor: Option[Rep[Any]], outer: AnyRef) extends jreflect.InvocationHandler with java.io.Serializable {
     def invoke(proxy: AnyRef, m: jreflect.Method, args: Array[AnyRef]): AnyRef = {
       //TODO: Make a check when constructing proxy, not when executing it. Also, check using
       //reflection by enumerating all methods and checking their signatures
@@ -78,20 +68,7 @@ trait JSProxyExp extends JSProxyBase with BaseExp with EffectExp {
 
 }
 
-trait JSGenProxy extends JSGenBase with JSGenEffect {
+trait JSGenProxy extends JSGenCommonProxy {
   val IR: JSProxyExp
   import IR._
-
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case MethodCall(receiver, method, args) =>  emitValDef(sym,
-      quote(receiver) + "." + method + args.map(quote).mkString("(", ",", ")"))
-    case SuperMethodCall(receiver, parentConstructor, method, args) =>  emitValDef(sym,
-      (parentConstructor match { case Some(parentConstructor) => quote(parentConstructor); case None => "Object" }) +
-      ".prototype." + method + ".call" + (receiver::args).map(quote).mkString("(", ",", ")"))
-    case FieldAccess(receiver, field) =>  emitValDef(sym,
-      quote(receiver) + "." + field)
-    case FieldUpdate(receiver, field, value) =>  emitValDef(sym,
-      quote(receiver) + "." + field + " = " + quote(value))
-    case _ => super.emitNode(sym, rhs)
-  }
 }
