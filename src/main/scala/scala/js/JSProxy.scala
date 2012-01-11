@@ -29,10 +29,7 @@ trait JSProxyExp extends JSProxyBase with JSCommonProxyExp {
 
   private class JSInvocationHandler(receiver: Exp[Any], parentConstructor: Option[Rep[Any]], outer: AnyRef) extends jreflect.InvocationHandler with java.io.Serializable {
     def invoke(proxy: AnyRef, m: jreflect.Method, args: Array[AnyRef]): AnyRef = {
-      //TODO: Make a check when constructing proxy, not when executing it. Also, check using
-      //reflection by enumerating all methods and checking their signatures
-      assert(args == null || args.forall(_.isInstanceOf[Exp[_]]), "At the moment only Exps can be passed as arguments.")
-      val args_ : Array[Exp[Any]] = if (args == null) Array.empty else args.map(_.asInstanceOf[Exp[Any]])
+      val args_ = checkArgs(args)
 
       // For now, we can only detect field access for vars, as we rely
       // on the existence of the update method.  For vals, Java

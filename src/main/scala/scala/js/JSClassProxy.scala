@@ -22,6 +22,14 @@ trait JSCommonProxyExp extends BaseExp with EffectExp {
   def isFieldUpdateMethod(name: String) = name.endsWith(fieldUpdateMarker)
   def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
   def updateMethodFromField(name: String) = name + fieldUpdateMarker
+
+  def checkArgs(args: Array[AnyRef]): Array[Exp[Any]] = {
+    //TODO: Make a check when constructing proxy, not when executing it. Also, check using
+    //reflection by enumerating all methods and checking their signatures.
+    assert(args == null || args.forall(_.isInstanceOf[Exp[_]]), "At the moment only Exps can be passed as arguments.")
+    if (args == null) Array.empty else args.map(_.asInstanceOf[Exp[Any]])
+  }
+
 }
 
 trait JSClassProxyExp extends JSClassProxyBase with JSCommonProxyExp {
@@ -69,13 +77,6 @@ trait JSClassProxyExp extends JSClassProxyBase with JSCommonProxyExp {
   val superMethodName = "$super$"
   private class JSInvocationHandler(receiver: Exp[Any], parentConstructor: Option[Rep[Any]], outer: AnyRef) extends MethodHandler with java.io.Serializable {
     def invoke(classProxy: AnyRef, m: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
-      def checkArgs(args: Array[AnyRef]): Array[Exp[Any]] = {
-        //TODO: Make a check when constructing classProxy, not when executing it. Also, check using
-        //reflection by enumerating all methods and checking their signatures
-        assert(args == null || args.forall(_.isInstanceOf[Exp[_]]), "At the moment only Exps can be passed as arguments.")
-        if (args == null) Array.empty else args.map(_.asInstanceOf[Exp[Any]])
-      }
-
       if (m.getName == superMethodName) {
         val methodName = args(0).asInstanceOf[String]
         val actualArgs = args(1).asInstanceOf[Array[AnyRef]]
