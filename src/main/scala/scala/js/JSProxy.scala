@@ -31,23 +31,6 @@ trait JSProxyExp extends JSProxyBase with JSCommonProxyExp {
     def invoke(proxy: AnyRef, m: jreflect.Method, args: Array[AnyRef]): AnyRef = {
       val args_ = checkArgs(args)
 
-      // For now, we can only detect field access for vars, as we rely
-      // on the existence of the update method.  For vals, Java
-      // reflection gives us no way to distinguish abstract vals from
-      // 0-argument methods.
-      def isFieldAccess: Boolean = {
-	if (args != null) return false
-
-	try {
-	  m.getDeclaringClass.getMethod(updateMethodFromField(m.getName), m.getReturnType)
-	  return true
-	} catch {
-	  case _ : NoSuchMethodException => return false
-	}
-      }
-
-      def isFieldUpdate: Boolean =  isFieldUpdateMethod(m.getName) && args_.length == 1
-
       if (m.getName.endsWith("$$$outer")) outer
       else if (m.getName.contains("$$super$")) {
 	val methodName = m.getName.slice(m.getName.indexOf("$$super$") + "$$super$".length, m.getName.length)
@@ -57,8 +40,8 @@ trait JSProxyExp extends JSProxyBase with JSCommonProxyExp {
       // something like reflectMutable and reflectWrite to achieve a
       // finer-granularity? We will need a similar solution for
       // reified new with vars and for dynamic select.
-      } else if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
-      else if (isFieldUpdate) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
+      } else if (isFieldAccess(args_, m)) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
+      else if (isFieldUpdate(args_, m)) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
       else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList)) : Exp[Any]
     }
   }

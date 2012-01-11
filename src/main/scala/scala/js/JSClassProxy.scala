@@ -30,6 +30,22 @@ trait JSCommonProxyExp extends BaseExp with EffectExp {
     if (args == null) Array.empty else args.map(_.asInstanceOf[Exp[Any]])
   }
 
+  // For now, we can only detect field access by relying
+  // on the existence of the update method.  For vals, Java
+  // reflection gives us no way to distinguish abstract vals from
+  // 0-argument methods.
+  def isFieldAccess(args: Array[Exp[Any]], m: jreflect.Method): Boolean = {
+    if (!args.isEmpty) return false
+    try {
+      m.getDeclaringClass.getDeclaredMethod(updateMethodFromField(m.getName), m.getReturnType)
+      return true
+    } catch {
+      case _ : NoSuchMethodException => return false
+    }
+  }
+
+  def isFieldUpdate(args: Array[Exp[Any]], m: jreflect.Method): Boolean =
+    isFieldUpdateMethod(m.getName) && args.length == 1
 }
 
 trait JSClassProxyExp extends JSClassProxyBase with JSCommonProxyExp {
@@ -86,31 +102,14 @@ trait JSClassProxyExp extends JSClassProxyBase with JSCommonProxyExp {
 
       val args_ = checkArgs(args)
 
-      // For now, we can only detect field access for vars, as we rely
-      // on the existence of the update method.  For vals, Java
-      // reflection gives us no way to distinguish abstract vals from
-      // 0-argument methods.
-      def isFieldAccess: Boolean = {
-	if (!args_.isEmpty) return false
-
-	try {
-	  m.getDeclaringClass.getDeclaredMethod(updateMethodFromField(m.getName), m.getReturnType)
-	  return true
-	} catch {
-	  case _ : NoSuchMethodException => return false
-	}
-      }
-
-      def isFieldUpdate: Boolean =  isFieldUpdateMethod(m.getName) && args_.length == 1
-
       if (m.getName.endsWith("$$$outer")) outer
       // We use reflectEffect for field access to ensure that reads
       // are serialized with respect to updates.  TODO: Could we use
       // something like reflectMutable and reflectWrite to achieve a
       // finer-granularity? We will need a similar solution for
       // reified new with vars and for dynamic select.
-      else if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
-      else if (isFieldUpdate) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
+      else if (isFieldAccess(args_, m)) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
+      else if (isFieldUpdate(args_, m)) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
       else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList)) : Exp[Any]
     }
   }
