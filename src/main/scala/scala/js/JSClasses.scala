@@ -92,7 +92,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
       cc.setName(bisKey)
 
       val superMethod = CtNewMethod.make(
-        "protected Object $super$(String name, Object[] args) { return null; }",
+        "protected Object " + superMethodName + "(String name, Object[] args) { return null; }",
         cc)
       cc.addMethod(superMethod)
 
@@ -138,7 +138,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
             var src = "Object[] args = new Object[" + n + "];"
             for (i <- 1 to n)
               src += "args[" + (i-1) + "] = $" + i + ";"
-            src += "$_ = $super$(\"" + name + "\", args);"
+            src += "$_ = " + superMethodName + "(\"" + name + "\", args);"
             if (m.getMethod.getReturnType == CtClass.voidType)
               src = src.replace("$_ =", "")
             m.replace(src)
@@ -159,7 +159,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
             var src = "Object[] args = new Object[" + n + "];"
             for (i <- 1 to n)
               src += "args[" + (i-1) + "] = $" + (i+1) + ";"
-            src += "$super$(\"$init$\", args);"
+            src += superMethodName + "(\"$init$\", args);"
             c.replace(src)
           }
         }

@@ -62,6 +62,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
   def fieldFromUpdateMethod(name: String) = name.slice(0, name.length - fieldUpdateMarker.length)
   def updateMethodFromField(name: String) = name + fieldUpdateMarker
 
+  val superMethodName = "$super$"
   class JSInvocationHandler(receiver: Exp[Any], parentConstructor: Option[Rep[Any]], outer: AnyRef) extends MethodHandler with java.io.Serializable {
     def invoke(classProxy: AnyRef, m: jreflect.Method, proceed: jreflect.Method, args: Array[AnyRef]): AnyRef = {
       def checkArgs(args: Array[AnyRef]): Array[Exp[Any]] = {
@@ -71,7 +72,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
         if (args == null) Array.empty else args.map(_.asInstanceOf[Exp[Any]])
       }
 
-      if (m.getName == "$super$") {
+      if (m.getName == superMethodName) {
         val methodName = args(0).asInstanceOf[String]
         val actualArgs = args(1).asInstanceOf[Array[AnyRef]]
         val methodArgs = checkArgs(actualArgs).toList
