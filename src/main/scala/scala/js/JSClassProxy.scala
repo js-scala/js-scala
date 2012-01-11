@@ -46,6 +46,18 @@ trait JSCommonProxyExp extends BaseExp with EffectExp {
 
   def isFieldUpdate(args: Array[Exp[Any]], m: jreflect.Method): Boolean =
     isFieldUpdateMethod(m.getName) && args.length == 1
+
+  def stageMethodCall(args: Array[Exp[Any]], m: jreflect.Method, receiver: Exp[Any], outer: AnyRef): AnyRef = {
+    if (m.getName.endsWith("$$$outer")) outer
+    // We use reflectEffect for field access to ensure that reads
+    // are serialized with respect to updates.  TODO: Could we use
+    // something like reflectMutable and reflectWrite to achieve a
+    // finer-granularity? We will need a similar solution for
+    // reified new with vars and for dynamic select.
+    else if (isFieldAccess(args, m)) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)): Exp[Any]
+    else if (isFieldUpdate(args, m)) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args(0))): Exp[Any]
+    else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args.toList)): Exp[Any]
+  }
 }
 
 trait JSClassProxyExp extends JSClassProxyBase with JSCommonProxyExp {
@@ -102,15 +114,7 @@ trait JSClassProxyExp extends JSClassProxyBase with JSCommonProxyExp {
 
       val args_ = checkArgs(args)
 
-      if (m.getName.endsWith("$$$outer")) outer
-      // We use reflectEffect for field access to ensure that reads
-      // are serialized with respect to updates.  TODO: Could we use
-      // something like reflectMutable and reflectWrite to achieve a
-      // finer-granularity? We will need a similar solution for
-      // reified new with vars and for dynamic select.
-      else if (isFieldAccess(args_, m)) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
-      else if (isFieldUpdate(args_, m)) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
-      else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList)) : Exp[Any]
+      stageMethodCall(args_, m, receiver, outer)
     }
   }
 

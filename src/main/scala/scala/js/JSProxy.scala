@@ -31,18 +31,12 @@ trait JSProxyExp extends JSProxyBase with JSCommonProxyExp {
     def invoke(proxy: AnyRef, m: jreflect.Method, args: Array[AnyRef]): AnyRef = {
       val args_ = checkArgs(args)
 
-      if (m.getName.endsWith("$$$outer")) outer
-      else if (m.getName.contains("$$super$")) {
+      if (m.getName.contains("$$super$")) {
 	val methodName = m.getName.slice(m.getName.indexOf("$$super$") + "$$super$".length, m.getName.length)
 	reflectEffect(SuperMethodCall[AnyRef](receiver, parentConstructor, methodName, args_.toList)) : Exp[Any]
-      // We use reflectEffect for field access to ensure that reads
-      // are serialized with respect to updates.  TODO: Could we use
-      // something like reflectMutable and reflectWrite to achieve a
-      // finer-granularity? We will need a similar solution for
-      // reified new with vars and for dynamic select.
-      } else if (isFieldAccess(args_, m)) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
-      else if (isFieldUpdate(args_, m)) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
-      else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList)) : Exp[Any]
+      } else {
+        stageMethodCall(args_, m, receiver, outer)
+      }
     }
   }
 
