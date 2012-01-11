@@ -87,7 +87,7 @@ class TestCPS extends FileDiffSuite {
 
   val prefix = "test-out/"
 
-  def testArrays = {
+  def testCPS = {
     withOutFile(prefix+"cps") {
 
       new CPSProg with JSExp with JSDebugExp with JSLibExp with CPSExp with AjaxExp { self =>
