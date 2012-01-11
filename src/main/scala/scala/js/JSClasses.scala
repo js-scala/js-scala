@@ -59,7 +59,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
       else Some(registerInternal[AnyRef](outer)(Manifest.classType(clazz.getSuperclass)))
     val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c, List[Rep[Any]]())))
 
-    def rename(name: String) = name + "$bis"
+    def rename(className: String) = className + "$bis"
     val initMethodName = "$init$"
 
     val bisKey = rename(key)
@@ -75,6 +75,8 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
         case e: NotFoundException => false
       }
     }
+    def doReifyMethod(method: String) =
+      !method.contains("$") && !isFieldAccess(method)
 
     var bisClazz = null: Class[_]
     try {
@@ -167,7 +169,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
       cc.addMethod(ctConstructorMethod)
 
       for (method <- cc.getDeclaredMethods)
-        if (!method.getName.contains("$") && !isFieldAccess(method.getName))
+        if (doReifyMethod(method.getName))
           method.instrument(exprEditor)
 
       if (!deps.isEmpty) {
@@ -218,7 +220,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
 
     val methods = 
       for (method <- bisClazz.getDeclaredMethods.toList;
-           if !method.getName.contains("$") && !isFieldAccess(method.getName))
+           if (doReifyMethod(method.getName)))
       yield {
         val n = method.getParameterTypes.length
         val params = (1 to n).toList.map(_ => fresh[Any])
