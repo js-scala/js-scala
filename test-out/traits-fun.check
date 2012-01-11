@@ -1,0 +1,21 @@
+function main(x0) {
+var x3 = function() {
+var x4 = this.v
+return x4
+}
+var x8 = function() {
+this.$init$()
+}
+x8.prototype.$init$ = function() {
+var x1 = this.v = 1
+return null
+}
+x8.prototype.produce = function() {
+var x6 = x3.bind(this)
+return x6
+}
+var x9 = new x8()
+var x10 = x9.produce()
+var x11 = x10()
+return x11
+}

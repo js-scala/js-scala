@@ -52,7 +52,7 @@ trait TraitsProg { this: JS with JSTraits =>
   }
 
   def testFun(x: Rep[Int]): Rep[Int] = {
-    val newFooFun = register[FooFun](this)
+    val newFooFun = registerTrait[FooFun](this)
     val fooFun = newFooFun()
     (fooFun.produce())()
   }
@@ -108,7 +108,7 @@ class TestTraits extends FileDiffSuite {
         codegen.emitSource(testFun _, "main", new PrintWriter(System.out))
       }
     }
-    //assertFileEqualsCheck(prefix+"traits-fun")
+    assertFileEqualsCheck(prefix+"traits-fun")
   }
 
   def testTraitsInScala = {
