@@ -2,26 +2,18 @@ package scala.js
 
 import scala.virtualization.lms.common._
 
+import java.lang.{reflect => jreflect}
+
 import java.io.PrintWriter
 
-trait JSTraits extends JSProxyBase {
+trait JSTraits extends JSProxyBase with JSReifiedComponents {
   trait TraitFactory[+T] {
     def apply(): Rep[T]
   }
   def registerTrait[T<:AnyRef:Manifest](outer: AnyRef): TraitFactory[T]
 }
 
-trait JSTraitsExp extends JSTraits with JSProxyExp {
-  trait Constructor[+T]
-
-  case class MethodTemplate(name: String, params: List[Sym[Any]], body: Exp[Any])
-  case class ParentTemplate(constructor: Exp[Any], instance: Exp[Any])
-
-  case class This[+T:Manifest]() extends Exp[T]
-
-  case class ClassTemplate[T:Manifest](parent: Option[ParentTemplate], methods: List[MethodTemplate]) extends Def[Constructor[T]]
-  case class New[T:Manifest](constructor: Exp[Constructor[T]]) extends Def[T]
-
+trait JSTraitsExp extends JSTraits with JSProxyExp with JSReifiedComponentsExp {
   override def registerTrait[T<:AnyRef:Manifest](outer: AnyRef) = {
     val constructor = registerInternal[T](outer)
     new TraitFactory[T] {
@@ -30,7 +22,7 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
   }
 
   private def create[T<:AnyRef:Manifest](constructor: Exp[Constructor[T]]): Exp[T] =
-    reflectEffect(New(constructor))
+    reflectEffect(New(constructor, Nil))
 
   private var registered : Map[String, Exp[Constructor[Any]]] = Map()
   private def registerInternal[T<:AnyRef:Manifest](outer: AnyRef) : Exp[Constructor[T]] = {
@@ -50,60 +42,23 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
     val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c)))
 
     val self = proxyTrait[T](This[T](), parentConstructor, outer)
+    def createMethodTemplate(method: jreflect.Method) = {
+      val n = method.getParameterTypes.length
+      val params = (1 to (n-1)).toList.map(_ => fresh[Any])
+      val args = (self::params).toArray
+      MethodTemplate(method.getName, params, reifyEffects(method.invoke(null, args: _*).asInstanceOf[Exp[Any]]))
+    }
     val methods = 
       for (method <- implClazz.getDeclaredMethods.toList)
-	yield {
-	  val n = method.getParameterTypes.length
-	  val params = (1 to (n-1)).toList.map(_ => fresh[Any])
-	  val args = (self::params).toArray
-	  MethodTemplate(method.getName, params, reifyEffects(method.invoke(null, args: _*).asInstanceOf[Exp[Any]]))
-	}
+	yield createMethodTemplate(method)
 
     val constructor = ClassTemplate[T](parent, methods) : Exp[Constructor[T]]
     registered = registered.updated(key, constructor)
     constructor
   }
-
-  
-  override def syms(e: Any): List[Sym[Any]] = e match {
-    case MethodTemplate(_, params, body) => syms(body)
-    case _ => super.syms(e)
-  }
-
-  override def boundSyms(e: Any): List[Sym[Any]] = e match {
-    case MethodTemplate(_, params, body) => params.flatMap(syms) ::: effectSyms(body)
-    case _ => super.boundSyms(e)
-  }
-
-  override def symsFreq(e: Any): List[(Sym[Any], Double)] = e match {
-    case MethodTemplate(_, params, body) => freqHot(body)
-    case _ => super.symsFreq(e)
-  }
 }
 
-trait JSGenTraits extends JSGenBase with JSGenProxy {
+trait JSGenTraits extends JSGenBase with JSGenProxy with JSGenReifiedComponents {
   val IR: JSTraitsExp
   import IR._
-
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case ClassTemplate(parentTemplate, methodTemplates) =>
-      stream.println("var " + quote(sym) + " = function() {")
-      stream.println("this.$init$()")
-      stream.println("}")
-      parentTemplate.foreach(pt => stream.println(quote(sym) + ".prototype = " + quote(pt.instance)))
-      for (MethodTemplate(name, params, body) <- methodTemplates) {
-	stream.println(quote(sym) + ".prototype." + name + " = function" + params.map(quote).mkString("(", ",", ")") + " {")
-	emitBlock(body)
-	stream.println("return " + quote(getBlockResult(body)))
-	stream.println("}")
-      }
-    case New(constructor) =>
-      emitValDef(sym, "new " + quote(constructor) + "()")
-    case _ => super.emitNode(sym, rhs)
-  }
-
-  override def quote(x: Exp[Any]) : String = x match {
-    case This() => "this"
-    case _ => super.quote(x)
-  }
 }

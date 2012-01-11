@@ -1,5 +1,5 @@
 function main(x0) {
-var x25 = function(){
+var x25 = function() {
 this.$init$()
 }
 x25.prototype.$init$ = function() {

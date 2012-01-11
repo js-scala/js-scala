@@ -1,5 +1,5 @@
 function main(x0) {
-var x6 = function(x1){
+var x6 = function(x1) {
 if (arguments.length != 0) {
 this.$init$(x1)
 }
@@ -13,7 +13,7 @@ var x4 = this.v
 return x4
 }
 var x7 = new x6()
-var x18 = function(x8){
+var x18 = function(x8) {
 if (arguments.length != 0) {
 this.$init$(x8)
 }

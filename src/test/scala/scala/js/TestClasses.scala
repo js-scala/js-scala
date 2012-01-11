@@ -283,11 +283,11 @@ class TestClasses extends FileDiffSuite {
     }
   }
 
-  // def testMixInClassesAndTraits = {
-  //   trait ClassesAndTraitsProg { this: JS with JSClasses with JSTraits =>
-  //   }
-  //   new ClassesAndTraitsProg with JSExp with JSClassesExp with JSTraitsExp { self =>
-  //     val codegen = new JSGen with JSGenClasses with JSGenTraits { val IR: self.type = self }
-  //   }
-  // }
+  def testMixInClassesAndTraits = {
+    trait ClassesAndTraitsProg { this: JS with JSClasses with JSTraits =>
+    }
+    new ClassesAndTraitsProg with JSExp with JSClassesExp with JSTraitsExp { self =>
+      val codegen = new JSGen with JSGenClasses with JSGenTraits { val IR: self.type = self }
+    }
+  }
 }

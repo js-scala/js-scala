@@ -1,5 +1,5 @@
 function main(x0) {
-var x13 = function(x1,x2){
+var x13 = function(x1,x2) {
 if (arguments.length != 0) {
 this.$init$(x1,x2)
 }

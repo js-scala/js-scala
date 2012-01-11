@@ -8,17 +8,18 @@ import scala.collection.JavaConversions._
 
 import java.io.PrintWriter
 
-trait JSClasses extends JSClassProxyBase with Functions {
+trait JSReifiedComponents extends Base with JSFunctions
+
+trait JSClasses extends JSClassProxyBase with JSReifiedComponents {
   trait ClassFactory[+T] {
     def apply(args: Rep[Any]*): Rep[T]
   }
   def registerClass[T<:AnyRef:Manifest](outer: AnyRef): ClassFactory[T]
-  abstract override def doLambda[A:Manifest,B:Manifest](fun: Rep[A] => Rep[B]): Rep[A => B] =
-    bindThis(super.doLambda(fun))
-  def bindThis[A:Manifest,B:Manifest](fun: Rep[A => B]): Rep[A => B]
 }
 
-trait JSClassesExp extends JSClasses with JSClassProxyExp {
+trait JSReifiedComponentsExp extends JSReifiedComponents with BaseExp with EffectExp with JSFunctionsExp {
+  val initMethodName = "$init$"
+
   trait Constructor[+T]
 
   case class MethodTemplate(name: String, params: List[Sym[Any]], body: Exp[Any])
@@ -30,9 +31,29 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
   case class New[T:Manifest](constructor: Exp[Constructor[T]], args: List[Rep[Any]]) extends Def[T]
 
   case class BindThis[A:Manifest,B:Manifest](fun: Exp[A => B]) extends Def[A => B]
-  override def bindThis[A:Manifest,B:Manifest](fun: Rep[A => B]): Rep[A => B] =
+
+  override def doLambda[A:Manifest,B:Manifest](fun: Rep[A] => Rep[B]): Rep[A => B] =
+    bindThis(super.doLambda(fun))
+  def bindThis[A:Manifest,B:Manifest](fun: Rep[A => B]): Rep[A => B] =
     reflectEffect(BindThis(fun))
 
+  override def syms(e: Any): List[Sym[Any]] = e match {
+    case MethodTemplate(_, params, body) => syms(body)
+    case _ => super.syms(e)
+  }
+
+  override def boundSyms(e: Any): List[Sym[Any]] = e match {
+    case MethodTemplate(_, params, body) => params.flatMap(syms) ::: effectSyms(body)
+    case _ => super.boundSyms(e)
+  }
+
+  override def symsFreq(e: Any): List[(Sym[Any], Double)] = e match {
+    case MethodTemplate(_, params, body) => freqHot(body)
+    case _ => super.symsFreq(e)
+  }
+}
+
+trait JSClassesExp extends JSClasses with JSClassProxyExp with JSReifiedComponentsExp {
   override def registerClass[T<:AnyRef:Manifest](outer: AnyRef) = {
     val constructor = registerInternal[T](outer)
     new ClassFactory[T] {
@@ -60,7 +81,6 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c, List[Rep[Any]]())))
 
     def rename(className: String) = className + "$bis"
-    val initMethodName = "$init$"
 
     val bisKey = rename(key)
     val cp = ClassPool.getDefault
@@ -235,32 +255,17 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
     registered = registered.updated(key, constructor)
     constructor
   }
-
-  
-  override def syms(e: Any): List[Sym[Any]] = e match {
-    case MethodTemplate(_, params, body) => syms(body)
-    case _ => super.syms(e)
-  }
-
-  override def boundSyms(e: Any): List[Sym[Any]] = e match {
-    case MethodTemplate(_, params, body) => params.flatMap(syms) ::: effectSyms(body)
-    case _ => super.boundSyms(e)
-  }
-
-  override def symsFreq(e: Any): List[(Sym[Any], Double)] = e match {
-    case MethodTemplate(_, params, body) => freqHot(body)
-    case _ => super.symsFreq(e)
-  }
 }
 
-trait JSGenClasses extends JSGenBase with JSGenClassProxy {
-  val IR: JSClassesExp
+trait JSGenReifiedComponents extends JSGenBase with JSGenEffect with JSGenFunctions {
+  val IR: JSReifiedComponentsExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case ClassTemplate(parentTemplate, methodTemplates @ MethodTemplate(_, params, _)::_) =>
-      stream.println("var " + quote(sym) + " = function" + params.map(quote).mkString("(", ",", ")") + "{")
-      var initCall = "this.$init$" + params.map(quote).mkString("(", ",", ")")
+    case ClassTemplate(parentTemplate, methodTemplates @ MethodTemplate(init, params, _)::_) =>
+      assert(init == initMethodName)
+      stream.println("var " + quote(sym) + " = function" + params.map(quote).mkString("(", ",", ")") + " {")
+      var initCall = "this." + init + params.map(quote).mkString("(", ",", ")")
       if (!params.isEmpty) {
         initCall = "if (arguments.length != 0) {\n" + initCall + "\n}"
       }
@@ -284,4 +289,9 @@ trait JSGenClasses extends JSGenBase with JSGenClassProxy {
     case This() => "this"
     case _ => super.quote(x)
   }
+}
+
+trait JSGenClasses extends JSGenBase with JSGenClassProxy with JSGenReifiedComponents {
+  val IR: JSClassesExp
+  import IR._
 }

@@ -3,7 +3,7 @@ var x4 = function() {
 var x5 = this.scala$js$ClassesProg$FooFun$$v
 return x5
 }
-var x9 = function(x1){
+var x9 = function(x1) {
 if (arguments.length != 0) {
 this.$init$(x1)
 }

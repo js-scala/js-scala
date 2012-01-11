@@ -1,5 +1,5 @@
 function main(x0) {
-var x6 = function(x1){
+var x6 = function(x1) {
 if (arguments.length != 0) {
 this.$init$(x1)
 }

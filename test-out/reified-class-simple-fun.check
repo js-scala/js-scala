@@ -2,7 +2,7 @@ function main(x0) {
 var x2 = function() {
 return 1
 }
-var x5 = function(x1){
+var x5 = function(x1) {
 if (arguments.length != 0) {
 this.$init$(x1)
 }
