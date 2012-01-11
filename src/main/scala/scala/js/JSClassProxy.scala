@@ -34,6 +34,9 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
   }
 
   val neverHandledMethodNames = Set("finalize")
+  def doStageMethodCall(method: String) =
+    """\$\d""".r.findFirstIn(method) == None &&
+    !neverHandledMethodNames.contains(method)
   def repMasqueradeProxy(clazz: Class[_], x: Rep[_], parentConstructor: Option[Rep[Any]], outer: AnyRef, notHandledMethodNames: Set[String]): AnyRef = {
     val factory = new ProxyFactory()
     factory.setSuperclass(clazz)
@@ -41,8 +44,7 @@ trait JSClassProxyExp extends JSClassProxyBase with BaseExp with EffectExp {
       new MethodFilter() {
         override def isHandled(method: jreflect.Method) =
           !notHandledMethodNames.contains(method.getName) &&
-          """\$\d""".r.findFirstIn(method.getName) == None &&
-          !neverHandledMethodNames.contains(method.getName)
+          doStageMethodCall(method.getName)
       })
     val handler = new JSInvocationHandler(x, parentConstructor, outer)
 
