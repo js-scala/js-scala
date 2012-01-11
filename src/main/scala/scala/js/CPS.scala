@@ -5,7 +5,7 @@ import scala.virtualization.lms.common._
 
 import java.io.PrintWriter
 
-trait CPS extends JS with LiftVariables with JSProxyBase {
+trait CPS extends JS with LiftVariables with JSDataStructures {
   
   type suspendable = cps[Rep[Unit]]
 
@@ -61,31 +61,20 @@ trait CPS extends JS with LiftVariables with JSProxyBase {
   }
   
   implicit def pimpCell[A:Manifest](x: Rep[Cell[A]]): DataFlowCell[A] = {
-    new DataFlowCell(repProxy[Cell[A]](x))
+    new DataFlowCell(repClassProxy[Cell[A]](x, this))
   }
-  
-  def createCell[A: Manifest](): Rep[Cell[A]]
-  trait Cell[A] {
-    def get(k: Rep[A => Unit]): Rep[Unit]
-    def set(v: Rep[A]): Rep[Unit]
+
+  def createCell[A: Manifest](): Rep[Cell[A]] = {
+    val newCell = registerClass[Cell[A]](this)
+    newCell()
   }
 
 }
 
-trait CPSExp extends CPS with JSProxyExp {
-  
-  case class CellNode[A: Manifest]() extends Def[Cell[A]]
-  
-  def createCell[A: Manifest](): Rep[Cell[A]] = reflectEffect(CellNode[A]())
+trait CPSExp extends CPS with JSDataStructuresExp
 
-}
-
-trait GenCPS extends JSGenProxy {
+trait GenCPS extends JSGenDataStructures {
   val IR: CPSExp
   import IR._
-
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
-    case CellNode() => emitValDef(sym, "new Cell()")
-    case _ => super.emitNode(sym, rhs)
-  }
 }
+

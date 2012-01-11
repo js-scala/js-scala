@@ -120,261 +120,433 @@ return x96
 }
 function test3(x98) {
 var x99 = [1, 2, 3]
-var x112=x99.map(
+var x132 = function() {
+this.$init$()
+}
+x132.prototype.$init$ = function() {
+var x102 = this.scala$js$JSDataStructures$Cell$$value = null
+var x103 = this.scala$js$JSDataStructures$Cell$$defined = false
+var x104 = []
+var x105 = this.scala$js$JSDataStructures$Cell$$queue = x104
+return null
+}
+x132.prototype.get = function(x107) {
+var x109 = this.scala$js$JSDataStructures$Cell$$defined
+var x117
+if (x109) {
+var x110 = this.scala$js$JSDataStructures$Cell$$value
+var x111 = x107(x110)
+x117=x111
+} else {
+var x113 = this.scala$js$JSDataStructures$Cell$$queue
+var x114 = x113.length
+var x115 = x113[x114] = x107
+x117=x115
+}
+return x117
+}
+x132.prototype.set = function(x119) {
+var x121 = this.scala$js$JSDataStructures$Cell$$defined
+var x130
+if (x121) {
+x130=undefined
+} else {
+var x122 = this.scala$js$JSDataStructures$Cell$$value = x119
+var x123 = this.scala$js$JSDataStructures$Cell$$defined = true
+var x124 = this.scala$js$JSDataStructures$Cell$$queue
+var x128=x124.forEach(
+function(x125,i_,a_){
+var x126 = x125(x119)
+return x126
+})
+x130=x128
+}
+return x130
+}
+var x145=x99.map(
 function(x100){
-var x101 = new Cell()
-var x102 = x100 * 1000
-var x103 = "sleeping for "+x102
-var x104 = console.log(x103)
-var x106 = String(x100)
-var x105 = function() {
-var x107 = console.log(x106)
-var x108 = x101.set(x107)
-return x108
+var x133 = new x132()
+var x134 = x100 * 1000
+var x135 = "sleeping for "+x134
+var x136 = console.log(x135)
+var x138 = String(x100)
+var x137 = function() {
+var x139 = console.log(x138)
+var x141 = x133.set(x139)
+return x141
 }
-var x110 = window.setTimeout(x105,x102)
-return x101
+var x143 = window.setTimeout(x137,x134)
+return x133
 })
-var x113 = 0
-var x126 = function() {
-var x127 = x113 += 1
-var x128 = x121()
-return x128
+var x146 = 0
+var x161 = function() {
+var x162 = x146 += 1
+var x163 = x155()
+return x163
 }
-var x121 = function() {
-var x122 = x113
-var x123 = x112.length
-var x124 = x122 < x123
-var x134
-if (x124) {
-var x125 = x112[x122]
-var x130 = x125.get(x126)
-x134=x130
+var x155 = function() {
+var x156 = x146
+var x157 = x145.length
+var x158 = x156 < x157
+var x169
+if (x158) {
+var x159 = x145[x156]
+var x165 = x159.get(x161)
+x169=x165
 } else {
-var x132 = console.log("done")
-x134=x132
+var x167 = console.log("done")
+x169=x167
 }
-return x134
+return x169
 }
-var x119 = function() {
-var x120 = x113 += 1
-var x136 = x121()
-return x136
-}
-var x114 = function() {
-var x115 = x113
-var x116 = x112.length
-var x117 = x115 < x116
-var x142
-if (x117) {
-var x118 = x112[x115]
-var x138 = x118.get(x119)
-x142=x138
-} else {
-var x140 = console.log("done")
-x142=x140
-}
-return x142
-}
-var x144 = x114()
-return x144
-}
-function test3b(x146) {
-var x147 = [3, 2, 1]
-var x161=x147.map(
-function(x148){
-var x149 = new Cell()
-var x150 = x148 * 1000
-var x151 = "sleeping for "+x150
-var x152 = console.log(x151)
-var x154 = String(x148)
-var x156 = x148 + 1
 var x153 = function() {
-var x155 = console.log(x154)
-var x157 = x149.set(x156)
-return x157
+var x154 = x146 += 1
+var x171 = x155()
+return x171
 }
-var x159 = window.setTimeout(x153,x150)
-return x149
+var x147 = function() {
+var x148 = x146
+var x149 = x145.length
+var x150 = x148 < x149
+var x177
+if (x150) {
+var x151 = x145[x148]
+var x173 = x151.get(x153)
+x177=x173
+} else {
+var x175 = console.log("done")
+x177=x175
+}
+return x177
+}
+var x179 = x147()
+return x179
+}
+function test3b(x181) {
+var x182 = [3, 2, 1]
+var x132 = function() {
+this.$init$()
+}
+x132.prototype.$init$ = function() {
+var x102 = this.scala$js$JSDataStructures$Cell$$value = null
+var x103 = this.scala$js$JSDataStructures$Cell$$defined = false
+var x104 = []
+var x105 = this.scala$js$JSDataStructures$Cell$$queue = x104
+return null
+}
+x132.prototype.get = function(x107) {
+var x109 = this.scala$js$JSDataStructures$Cell$$defined
+var x117
+if (x109) {
+var x110 = this.scala$js$JSDataStructures$Cell$$value
+var x111 = x107(x110)
+x117=x111
+} else {
+var x113 = this.scala$js$JSDataStructures$Cell$$queue
+var x114 = x113.length
+var x115 = x113[x114] = x107
+x117=x115
+}
+return x117
+}
+x132.prototype.set = function(x119) {
+var x121 = this.scala$js$JSDataStructures$Cell$$defined
+var x130
+if (x121) {
+x130=undefined
+} else {
+var x122 = this.scala$js$JSDataStructures$Cell$$value = x119
+var x123 = this.scala$js$JSDataStructures$Cell$$defined = true
+var x124 = this.scala$js$JSDataStructures$Cell$$queue
+var x128=x124.forEach(
+function(x125,i_,a_){
+var x126 = x125(x119)
+return x126
 })
-var x162 = []
-var x163 = 0
-var x164 = 0
-var x181 = function(x182) {
-var x183 = x163
-var x184 = x162[x183] = x182
-var x185 = x163 += 1
-var x186 = x164 += 1
-var x187 = x176()
-return x187
+x130=x128
 }
-var x176 = function() {
-var x177 = x164
-var x178 = x161.length
-var x179 = x177 < x178
-var x194
-if (x179) {
-var x180 = x161[x177]
-var x189 = x180.get(x181)
-x194=x189
-} else {
-var x191 = String(x162)
-var x192 = console.log(x191)
-x194=x192
+return x130
 }
-return x194
+var x197=x182.map(
+function(x183){
+var x184 = new x132()
+var x185 = x183 * 1000
+var x186 = "sleeping for "+x185
+var x187 = console.log(x186)
+var x189 = String(x183)
+var x191 = x183 + 1
+var x188 = function() {
+var x190 = console.log(x189)
+var x193 = x184.set(x191)
+return x193
 }
-var x170 = function(x171) {
-var x172 = x163
-var x173 = x162[x172] = x171
-var x174 = x163 += 1
-var x175 = x164 += 1
-var x196 = x176()
-return x196
-}
-var x165 = function() {
-var x166 = x164
-var x167 = x161.length
-var x168 = x166 < x167
-var x203
-if (x168) {
-var x169 = x161[x166]
-var x198 = x169.get(x170)
-x203=x198
-} else {
-var x200 = String(x162)
-var x201 = console.log(x200)
-x203=x201
-}
-return x203
-}
-var x205 = x165()
-return x205
-}
-function test3c(x207) {
-var x208 = [3, 2, 1]
-var x221=x208.map(
-function(x209){
-var x210 = new Cell()
-var x211 = x209 * 1000
-var x212 = "sleeping for "+x211
-var x213 = console.log(x212)
-var x215 = String(x209)
-var x214 = function() {
-var x216 = console.log(x215)
-var x217 = x210.set(x216)
-return x217
-}
-var x219 = window.setTimeout(x214,x211)
-return x210
+var x195 = window.setTimeout(x188,x185)
+return x184
 })
-var x222 = 0
-var x235 = function() {
-var x236 = x222 += 1
-var x237 = x230()
-return x237
+var x198 = []
+var x199 = 0
+var x200 = 0
+var x219 = function(x220) {
+var x221 = x199
+var x222 = x198[x221] = x220
+var x223 = x199 += 1
+var x224 = x200 += 1
+var x225 = x213()
+return x225
 }
-var x230 = function() {
-var x231 = x222
-var x232 = x221.length
-var x233 = x231 < x232
-var x243
-if (x233) {
-var x234 = x221[x231]
-var x239 = x234.get(x235)
-x243=x239
+var x213 = function() {
+var x214 = x200
+var x215 = x197.length
+var x216 = x214 < x215
+var x232
+if (x216) {
+var x217 = x197[x214]
+var x227 = x217.get(x219)
+x232=x227
 } else {
-var x241 = console.log("done")
-x243=x241
+var x229 = String(x198)
+var x230 = console.log(x229)
+x232=x230
 }
+return x232
+}
+var x207 = function(x208) {
+var x209 = x199
+var x210 = x198[x209] = x208
+var x211 = x199 += 1
+var x212 = x200 += 1
+var x234 = x213()
+return x234
+}
+var x201 = function() {
+var x202 = x200
+var x203 = x197.length
+var x204 = x202 < x203
+var x241
+if (x204) {
+var x205 = x197[x202]
+var x236 = x205.get(x207)
+x241=x236
+} else {
+var x238 = String(x198)
+var x239 = console.log(x238)
+x241=x239
+}
+return x241
+}
+var x243 = x201()
 return x243
 }
-var x228 = function() {
-var x229 = x222 += 1
-var x245 = x230()
-return x245
+function test3c(x245) {
+var x246 = [3, 2, 1]
+var x132 = function() {
+this.$init$()
 }
-var x223 = function() {
-var x224 = x222
-var x225 = x221.length
-var x226 = x224 < x225
-var x251
-if (x226) {
-var x227 = x221[x224]
-var x247 = x227.get(x228)
-x251=x247
+x132.prototype.$init$ = function() {
+var x102 = this.scala$js$JSDataStructures$Cell$$value = null
+var x103 = this.scala$js$JSDataStructures$Cell$$defined = false
+var x104 = []
+var x105 = this.scala$js$JSDataStructures$Cell$$queue = x104
+return null
+}
+x132.prototype.get = function(x107) {
+var x109 = this.scala$js$JSDataStructures$Cell$$defined
+var x117
+if (x109) {
+var x110 = this.scala$js$JSDataStructures$Cell$$value
+var x111 = x107(x110)
+x117=x111
 } else {
-var x249 = console.log("done")
-x251=x249
+var x113 = this.scala$js$JSDataStructures$Cell$$queue
+var x114 = x113.length
+var x115 = x113[x114] = x107
+x117=x115
 }
-return x251
+return x117
 }
-var x253 = x223()
-return x253
-}
-function test4(x255) {
-var x256 = ["gkossakowski", "odersky", "adriaanm"]
-var x275=x256.map(
-function(x257){
-var x258 = new Cell()
-var x259 = "fetching "+x257
-var x260 = console.log(x259)
-var x261 = {'screen_name' : x257,'include_rts' : true,'count' : 5,'include_entities' : true}
-var x262 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x261}
-var x263 = function(x264) {
-var x270=x264.forEach(
-function(x265,i_,a_){
-var x266 = x265.text
-var x267 = "fetched "+x266
-var x268 = console.log(x267)
-return x268
+x132.prototype.set = function(x119) {
+var x121 = this.scala$js$JSDataStructures$Cell$$defined
+var x130
+if (x121) {
+x130=undefined
+} else {
+var x122 = this.scala$js$JSDataStructures$Cell$$value = x119
+var x123 = this.scala$js$JSDataStructures$Cell$$defined = true
+var x124 = this.scala$js$JSDataStructures$Cell$$queue
+var x128=x124.forEach(
+function(x125,i_,a_){
+var x126 = x125(x119)
+return x126
 })
-var x271 = x258.set(x270)
-return x271
+x130=x128
 }
-x262.success = x263
-var x273 = $.ajax(x262)
-return x258
+return x130
+}
+var x260=x246.map(
+function(x247){
+var x248 = new x132()
+var x249 = x247 * 1000
+var x250 = "sleeping for "+x249
+var x251 = console.log(x250)
+var x253 = String(x247)
+var x252 = function() {
+var x254 = console.log(x253)
+var x256 = x248.set(x254)
+return x256
+}
+var x258 = window.setTimeout(x252,x249)
+return x248
 })
-var x276 = 0
-var x289 = function() {
-var x290 = x276 += 1
-var x291 = x284()
-return x291
+var x261 = 0
+var x276 = function() {
+var x277 = x261 += 1
+var x278 = x270()
+return x278
 }
-var x284 = function() {
-var x285 = x276
-var x286 = x275.length
-var x287 = x285 < x286
-var x295
-if (x287) {
-var x288 = x275[x285]
-var x293 = x288.get(x289)
-x295=x293
+var x270 = function() {
+var x271 = x261
+var x272 = x260.length
+var x273 = x271 < x272
+var x284
+if (x273) {
+var x274 = x260[x271]
+var x280 = x274.get(x276)
+x284=x280
 } else {
-x295=undefined
+var x282 = console.log("done")
+x284=x282
 }
-return x295
+return x284
 }
-var x282 = function() {
-var x283 = x276 += 1
-var x297 = x284()
-return x297
+var x268 = function() {
+var x269 = x261 += 1
+var x286 = x270()
+return x286
 }
-var x277 = function() {
-var x278 = x276
-var x279 = x275.length
-var x280 = x278 < x279
-var x301
-if (x280) {
-var x281 = x275[x278]
-var x299 = x281.get(x282)
-x301=x299
+var x262 = function() {
+var x263 = x261
+var x264 = x260.length
+var x265 = x263 < x264
+var x292
+if (x265) {
+var x266 = x260[x263]
+var x288 = x266.get(x268)
+x292=x288
 } else {
-x301=undefined
+var x290 = console.log("done")
+x292=x290
 }
-return x301
+return x292
 }
-var x303 = x277()
-return x303
+var x294 = x262()
+return x294
+}
+function test4(x296) {
+var x297 = ["gkossakowski", "odersky", "adriaanm"]
+var x132 = function() {
+this.$init$()
+}
+x132.prototype.$init$ = function() {
+var x102 = this.scala$js$JSDataStructures$Cell$$value = null
+var x103 = this.scala$js$JSDataStructures$Cell$$defined = false
+var x104 = []
+var x105 = this.scala$js$JSDataStructures$Cell$$queue = x104
+return null
+}
+x132.prototype.get = function(x107) {
+var x109 = this.scala$js$JSDataStructures$Cell$$defined
+var x117
+if (x109) {
+var x110 = this.scala$js$JSDataStructures$Cell$$value
+var x111 = x107(x110)
+x117=x111
+} else {
+var x113 = this.scala$js$JSDataStructures$Cell$$queue
+var x114 = x113.length
+var x115 = x113[x114] = x107
+x117=x115
+}
+return x117
+}
+x132.prototype.set = function(x119) {
+var x121 = this.scala$js$JSDataStructures$Cell$$defined
+var x130
+if (x121) {
+x130=undefined
+} else {
+var x122 = this.scala$js$JSDataStructures$Cell$$value = x119
+var x123 = this.scala$js$JSDataStructures$Cell$$defined = true
+var x124 = this.scala$js$JSDataStructures$Cell$$queue
+var x128=x124.forEach(
+function(x125,i_,a_){
+var x126 = x125(x119)
+return x126
+})
+x130=x128
+}
+return x130
+}
+var x317=x297.map(
+function(x298){
+var x299 = new x132()
+var x300 = "fetching "+x298
+var x301 = console.log(x300)
+var x302 = {'screen_name' : x298,'include_rts' : true,'count' : 5,'include_entities' : true}
+var x303 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x302}
+var x304 = function(x305) {
+var x311=x305.forEach(
+function(x306,i_,a_){
+var x307 = x306.text
+var x308 = "fetched "+x307
+var x309 = console.log(x308)
+return x309
+})
+var x313 = x299.set(x311)
+return x313
+}
+x303.success = x304
+var x315 = $.ajax(x303)
+return x299
+})
+var x318 = 0
+var x333 = function() {
+var x334 = x318 += 1
+var x335 = x327()
+return x335
+}
+var x327 = function() {
+var x328 = x318
+var x329 = x317.length
+var x330 = x328 < x329
+var x339
+if (x330) {
+var x331 = x317[x328]
+var x337 = x331.get(x333)
+x339=x337
+} else {
+x339=undefined
+}
+return x339
+}
+var x325 = function() {
+var x326 = x318 += 1
+var x341 = x327()
+return x341
+}
+var x319 = function() {
+var x320 = x318
+var x321 = x317.length
+var x322 = x320 < x321
+var x345
+if (x322) {
+var x323 = x317[x320]
+var x343 = x323.get(x325)
+x345=x343
+} else {
+x345=undefined
+}
+return x345
+}
+var x347 = x319()
+return x347
 }

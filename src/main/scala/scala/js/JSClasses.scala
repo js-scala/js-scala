@@ -118,7 +118,20 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp with JSReifiedComponen
     }
 
     if (bisClazz == null) {
-      val deps = cc.getRefClasses.map(_.asInstanceOf[String]).filter(_.startsWith(key + "$"))
+      def getDeps(refs: List[_]) =
+        refs.map((_:Any).asInstanceOf[String]).filter(x => x.startsWith(key + "$"))
+      var deps = getDeps(cc.getRefClasses.toList)
+      var depsQueue = deps
+      while (!depsQueue.isEmpty) {
+        var newDepsQueue = List[String]()
+        for (depKey <- depsQueue) {
+          val newDeps = getDeps(cp.get(depKey).getRefClasses.toList).filter(!deps.contains(_))
+          newDepsQueue = newDeps ++ newDepsQueue
+          deps = newDeps ++ deps
+        }
+        depsQueue = newDepsQueue
+      }
+
       cc.setName(bisKey)
 
       val superMethod = CtNewMethod.make(
@@ -206,7 +219,11 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp with JSReifiedComponen
 
       if (!deps.isEmpty) {
         val ccSerializable = cp.get("java.io.Serializable")
-        cc.addInterface(ccSerializable)
+        def serializable(ctClass: CtClass) {
+          if (!ctClass.getInterfaces.contains(ccSerializable))
+            ctClass.addInterface(ccSerializable)
+        }
+        serializable(cc)
 
         val map = new ClassMap()
         map.put(key, bisKey)
@@ -227,7 +244,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp with JSReifiedComponen
         ccDeps.foreach(depcc => {
           depcc.replaceClassName(map)
           depcc.instrument(depExprEditor)
-          depcc.addInterface(ccSerializable)
+          serializable(depcc)
           depcc.toClass()
         })
       }
