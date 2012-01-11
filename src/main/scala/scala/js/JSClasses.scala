@@ -59,7 +59,9 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
       else Some(registerInternal[AnyRef](outer)(Manifest.classType(clazz.getSuperclass)))
     val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c, List[Rep[Any]]())))
 
-    val bisKey = key + "$bis"
+    def rename(name: String) = name + "$bis"
+
+    val bisKey = rename(key)
     val cp = ClassPool.getDefault
     cp.insertClassPath(new ClassClassPath(clazz))
     val cc = cp.get(key)
@@ -180,7 +182,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp {
 
         val ccDeps = deps.map(depKey => {
           val depcc = cp.get(depKey)
-          val depBisKey = depKey + "$bis"
+          val depBisKey = rename(depKey)
           depcc.setName(depBisKey)
           map.put(depKey, depBisKey)
           depcc
