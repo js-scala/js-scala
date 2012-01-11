@@ -140,6 +140,13 @@ trait ClassesProg { this: JS with JSClasses =>
     val fooFun = newFooFun(x)
     (fooFun.producer())()
   }
+
+  def testFunctionInAndOutReifiedMethod(x: Rep[Int]): Rep[Int] = {
+    val newFooFun = registerClass[FooFun](this)
+    val fooFun = newFooFun(x)
+    val outProducer = fun { () => 1 }
+    (outProducer() + (fooFun.producer())()) // x+1
+  }
 }
 
 class TestClasses extends FileDiffSuite {
@@ -273,6 +280,16 @@ class TestClasses extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"reified-class-fun")
+  }
+
+  def testFunctionInAndOutReifiedMethod = {
+    withOutFile(prefix+"reified-class-fun-in-and-out") {
+      new ClassesProg with JSExp with JSClassesExp { self =>
+        val codegen = new JSGen with JSGenClasses { val IR: self.type = self }
+        codegen.emitSource(testFunctionInAndOutReifiedMethod _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"reified-class-fun-in-and-out")
   }
 
   def testMixInClassesAndTraitsProxy = {

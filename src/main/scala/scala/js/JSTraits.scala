@@ -46,7 +46,7 @@ trait JSTraitsExp extends JSTraits with JSProxyExp with JSReifiedComponentsExp {
       val n = method.getParameterTypes.length
       val params = (1 to (n-1)).toList.map(_ => fresh[Any])
       val args = (self::params).toArray
-      MethodTemplate(method.getName, params, reifyEffects(method.invoke(null, args: _*).asInstanceOf[Exp[Any]]))
+      MethodTemplate(method.getName, params, reifyEffects(doBindThis(method.invoke(null, args: _*)).asInstanceOf[Exp[Any]]))
     }
     val methods = 
       for (method <- implClazz.getDeclaredMethods.toList)

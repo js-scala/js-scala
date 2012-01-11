@@ -32,10 +32,20 @@ trait JSReifiedComponentsExp extends JSReifiedComponents with BaseExp with Effec
 
   case class BindThis[A:Manifest,B:Manifest](fun: Exp[A => B]) extends Def[A => B]
 
-  override def doLambda[A:Manifest,B:Manifest](fun: Rep[A] => Rep[B]): Rep[A => B] =
-    bindThis(super.doLambda(fun))
+  var shouldBindThis = false
+  override def doLambda[A:Manifest,B:Manifest](fun: Rep[A] => Rep[B]): Rep[A => B] = {
+    if (shouldBindThis) bindThis(super.doLambda(fun))
+    else super.doLambda(fun)
+  }
   def bindThis[A:Manifest,B:Manifest](fun: Rep[A => B]): Rep[A => B] =
     reflectEffect(BindThis(fun))
+  def doBindThis[A](block: => A): A = {
+    val save = shouldBindThis
+    shouldBindThis = true
+    val result = block
+    shouldBindThis = save
+    result
+  }
 
   override def syms(e: Any): List[Sym[Any]] = e match {
     case MethodTemplate(_, params, body) => syms(body)
@@ -237,7 +247,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp with JSReifiedComponen
       val allArgs = (outer::args).toArray
       val params = args.filter(_.isInstanceOf[Sym[_]]).map(_.asInstanceOf[Sym[Any]])
       val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, Set(initMethodName))
-      MethodTemplate(initMethodName, params, reifyEffects(jConstructorMethod.invoke(self, allArgs: _*).asInstanceOf[Exp[Any]]))
+      MethodTemplate(initMethodName, params, reifyEffects(doBindThis(jConstructorMethod.invoke(self, allArgs: _*)).asInstanceOf[Exp[Any]]))
     }
 
     val methods = 
@@ -248,7 +258,7 @@ trait JSClassesExp extends JSClasses with JSClassProxyExp with JSReifiedComponen
         val params = (1 to n).toList.map(_ => fresh[Any])
         val args = params.toArray
         val self = repMasqueradeProxy(bisClazz, This[T](), parentConstructor, outer, Set(method.getName))
-        MethodTemplate(method.getName, params, reifyEffects(method.invoke(self, args: _*).asInstanceOf[Exp[Any]]))
+        MethodTemplate(method.getName, params, reifyEffects(doBindThis(method.invoke(self, args: _*)).asInstanceOf[Exp[Any]]))
       }
     
     val constructor = ClassTemplate[T](parent, constructorTemplate::methods) : Exp[Constructor[T]]
