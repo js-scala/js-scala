@@ -38,3 +38,7 @@ scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:contin
 
 //Our tests are not threadsafe so disabling parallel execution for now
 parallelExecution in Test := false
+
+// disable publishing of main docs
+publishArtifact in (Compile, packageDoc) := false
+
