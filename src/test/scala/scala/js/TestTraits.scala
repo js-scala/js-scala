@@ -35,7 +35,8 @@ trait TraitsProg { this: JS with JSTraits =>
     val newBar = register[Bar](this)
     val foo = newFoo()
     val bar = newBar()
-    bar.someVar = 2
+    //TODO: regression...
+    bar.someVar = unit(2)
     bar.someNewMethod(x) + bar.someMethod() + foo.someVar // 2x + 4
   }
 
