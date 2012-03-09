@@ -1,5 +1,10 @@
 # JavaScript as an embedded DSL in Scala #
 
+### Presentations / Papers
+
+* _draft_ ECOOP 2012 paper ([PDF](http://dl.dropbox.com/u/12870350/article.pdf))
+* [_upcoming_ Scala Days 2012 talk](http://days2012.scala-lang.org/node/383)
+
 ### Setup
 
 1. Setup [virtualization-lms-core](http://github.com/gkossakowski/virtualization-lms-core), including Scala-Virtualized.
