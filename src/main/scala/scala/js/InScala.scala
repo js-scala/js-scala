@@ -8,7 +8,7 @@ trait InScala extends Base {
   protected def unit[T:Manifest](x: T) = x
 }
 
-trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala with WhileInScala with BooleanOpsInScala with StringOpsInScala with DynamicInScala with ArraysInScala with JSFunctionsInScala with JSLiteralInScala with TupleOpsInScala
+trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala with WhileInScala with BooleanOpsInScala with StringOpsInScala with DynamicInScala with ArraysInScala with JSFunctionsInScala with JSLiteralInScala with JSRegExpsInScala with TupleOpsInScala
 
 trait VariablesInScala extends Variables with ReadVarImplicit with InScala with ImplicitOpsInScala {
   implicit def readVar[T:Manifest](v: Var[T]) : T = ???
@@ -101,6 +101,8 @@ object OriginalOps {
   def array_map[T:Manifest,U:Manifest](a: Array[T], block: T => U): Array[U] = a.map(block)
   def array_flatMap[T:Manifest,U:Manifest](a: Array[T], block: T => Array[U]): Array[U] = a.flatMap(block andThen (x => x : scala.collection.GenTraversableOnce[U]))
   def array_filter[T:Manifest](a: Array[T], block: T => Boolean): Array[T] = a.filter(block)
+
+  def string_regexp(r: String) = r.r
 }
 
 trait IfThenElseInScala extends IfThenElse with InScala {
@@ -155,6 +157,17 @@ trait JSFunctionsInScala extends JSFunctions with InScala {
 trait JSLiteralInScala extends JSLiteral with InScala {
   def newJSLiteral(args: (String, JSLiteral => (t forSome{type t}))*): JSLiteral = ???
   implicit def jsLiteralOps(receiver: JSLiteral): JSLiteralOps = ???
+}
+
+trait JSRegExpsInScala extends JSRegExps with InScala {
+  import scala.util.matching.Regex
+
+  override def string_regexp(r: String): Regex =
+    OriginalOps.string_regexp(r)
+  override def regexp_test(re: Regex, str: String): Boolean =
+    re.findFirstIn(str) != None
+  override def string_search(str: String, re: Regex): Int =
+    re.findFirstMatchIn(str).map(_.start).getOrElse(-1)
 }
 
 trait TupleOpsInScala extends TupleOps with InScala {
