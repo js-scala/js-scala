@@ -101,7 +101,7 @@ One challenge in developing a large code base in JavaScript is the lack of stati
 
 % Motivation for our approach vs other approaches
 
-There are three widely known approaches for addressing the challenges outlined above. One is to create a standalone language or DSL that is compiled to JavaScript and provides different abstractions compared to JavaScript. Examples include WebDSL~\cite{webdsl}, Links~\cite{links,links-form} and Dart~\cite{dart}. However, this approach usually requires a lot effort in terms of language and compiler design, and tooling support, although WebDSL leverages Spoofax~\cite{spoofax} to alleviate this effort. Furthermore, it is not always clear how these languages interact with other languages on the server-side or with the existing JavaScript ecosystem on the client-side.
+There are three widely known approaches for addressing the challenges outlined above. One is to create a standalone language or DSL that is compiled to JavaScript and provides different abstractions compared to JavaScript. Examples include WebDSL~\cite{webdsl}, Links~\cite{links,links-form} and Dart~\cite{dart}. However, this approach usually requires a lot of effort in terms of language and compiler design, and tooling support, although WebDSL leverages Spoofax~\cite{spoofax} to alleviate this effort. Furthermore, it is not always clear how these languages interact with other languages on the server-side or with the existing JavaScript ecosystem on the client-side.
 
 Another approach is to start with an existing language like Java, Scala or Clojure and compile it to JavaScript. Examples include GWT~\cite{gwt}, Scala+GWT~\cite{scala-gwt} and Clojurescript~\cite{clojurescript}. This approach addresses the problem of impedance mismatch between client and server programming but comes with its own set of challenges. In particular, compiling Scala code to JavaScript requires compiling Scala's standard library to JavaScript as any non-trivial Scala program uses Scala collections. This leads to not taking full advantage of libraries and abstractions provided by the target platform which results in big code size and suboptimal performance of Scala applications compiled to JavaScript. For example, a map keyed by strings would be implemented natively in JavaScript as an object literal, while, in Scala, one would likely use the hash map from the standard library, causing it to be compiled to and emulated in JavaScript. Moreover, both approaches tend to not accommodate very well to different API design and programming styles seen in many existing JavaScript libraries.
 
@@ -191,7 +191,7 @@ For \code{prog2}, notice that the \code{if} got transformed into an IR
 node. To achieve this, LMS uses an extension of Scala,
 Scala-Virtualized~\cite{scala-virtualized}, in which control
 structures such as \code{if} can be reified into method calls, so that
-alternative implementation can be provided. In our case, we provide an
+alternative implementations can be provided. In our case, we provide an
 implementation of \code{if} that constructs an IR node instead of
 acting as a conditional. In addition, the \code{+} operation is
 overloaded to act on both staged and unstaged expressions. This is
@@ -253,7 +253,7 @@ trait DebugExp extends Debug with EffectExp {
 The \code{EffectExp} trait is part of the core LMS framework. It
 inherits from \code{BaseExp} which instantiates \code{Rep} as
 \code{Exp}. \code{Exp} represents an IR via two subclasses:
-\code{Const} for constants, \code{Sym} for named values defining a
+\code{Const} for constants and \code{Sym} for named values defining a
 \code{Def}. \code{Def} is the base class for all IR nodes. In our
 \code{DebugExp} trait, we extend \code{Def} to support a new IR node:
 \code{Log}.
@@ -314,7 +314,7 @@ fully-typed way into our DSL. As an example, consider the following
 DSL snippet, which gets the context of an HTML5 canvas element
 selected by id:
 \begin{lstlisting}
-val context = document.getElementById("canvas").as[Canvas].geContext()
+val context = document.getElementById("canvas").as[Canvas].getContext()
 \end{lstlisting}
 
 At the DSL interface level, we declare our typed APIs as abstract
@@ -345,7 +345,7 @@ this using an implicit conversion from \code{Rep[Element]} to
 \code{ElementOps}.  At the DSL implementation level, the \code{ElementOps}
 returned by this implicit conversion needs to generate an IR node for
 each method call, as shown in the walkthrough
-in~\ref{sec:defineDslComponent}. For example,
+in section~\ref{sec:defineDslComponent}. For example,
 \code{document.getElementById("canvas")} becomes the IR node {\tt\small
   MethodCall(document, "getElementById", List("canvas"))}. This is a
 mechanical transformation, implemented by \code{repProxy} using
@@ -366,7 +366,7 @@ trait DomLift extends Dom with JSProxyBase {
 
 Note also that since \code{getElementById} returns an arbitrary DOM
 element, we need to cast it to a \code{Canvas} using
-\code{as[Canvas]}. \code{as} is implemented simply as a cast in the
+\code{as[Canvas]}. The \code{as} operation is implemented simply as a cast in the
 host language (no IR node is created):
 \begin{lstlisting}
   trait AsRep {
@@ -458,7 +458,7 @@ This possibility to escape into dynamic typing is particularly useful
 in simplifying the incorporation of external JavaScript APIs and
 libraries. Sometimes, the user might not want to build a statically
 typed API for each external JavaScript library. In addition, for
-some library, it might awkward to come up with such a statically-typed
+some library, it might be awkward to come up with such a statically-typed
 interface. In general, we expect users to start with a dynamic API for
 an external library, and progressively migrate it to a typed API as
 the code matures. Consider again the example introduced in the typed
@@ -476,7 +476,7 @@ trait Dom extends JSDynamic {
 The \code{as[Canvas]} cast is not necessary in this dynamically typed
 setting:
 \begin{lstlisting}[escapechar=+]
-val context = document.getElementById("canvas").geContext()
+val context = document.getElementById("canvas").getContext()
 \end{lstlisting}
 
 As a first step towards statically typing the API, we declare the type \code{Element}:
@@ -494,7 +494,7 @@ trait Dom extends JSProxyBase with JSDynamic {
 Since the method \code{getElementById} returns a \code{DynamicRep},
 only the emphasized part of the expression is statically typed:
 \begin{lstlisting}[escapechar=+]
-val context = +{\it document.getElementById("canvas")}+.geContext()
+val context = +{\it document.getElementById("canvas")}+.getContext()
 \end{lstlisting}
 
 We can then complete the static typing by declaring types for
@@ -624,7 +624,7 @@ inc(4*x)
 
 First-class functions are widely used in JavaScript. One particular
 common case is for callback-driven programming. Therefore, staged
-functions are important to interface with existingn libraries. They
+functions are important to interface with existing libraries. They
 will also play a crucial role in section~\ref{sec:cps}, where we
 abstract over callback-driven programming.
 
@@ -651,7 +651,7 @@ object literals, such as \code{JSON.stringify} or jQuery's \code{css}.
 As for implementation, notice that the type of a \code{new JSLiteral
   \{...\}} expression is not \code{JSLiteral \{...\}} but
 \code{Rep[JSLiteral \{...\}]}. This is achieved with support from the
-Scala-Virtualized compiler. JSLiteral inherits from a special marker
+Scala-Virtualized compiler. \code{JSLiteral} inherits from a special marker
 trait, which indicates its \code{new} expressions should be
 reified. So the \code{new} expression is turned into a method call,
 with information about all the field definitions. A complication is
@@ -691,7 +691,7 @@ We'll implement this program both in JavaScript and in our DSL. Let's start by i
 \end{changemargin}
 \end{figure}
 
-Note that JavaScript version takes a callback as second argument that will be used to process the fetched tweets. We provide the rest of the logic that iterates over array of users and makes Ajax requests (listings~\ref{code:js:twitter_example}~\&~\ref{code:twitter_example}).
+Note that JavaScript version takes a callback as second argument that will be used to process the fetched tweets. We provide the rest of the logic that iterates over an array of users and makes Ajax requests (listings~\ref{code:js:twitter_example}~\&~\ref{code:twitter_example}).
 
 \begin{figure}
 \begin{changemargin}{-0.7cm}{-0.7cm}
@@ -770,7 +770,7 @@ def sleep(time: Int): ControlContext =
 After the rewriting, all CPS-related type annotations are dropped and use of the \code{ControlContext} class that supports continuation passing is introduced. The \code{shiftR} method is an internal method that takes a block (which itself is a function) and wraps it in \code{ControlContext} structure.
 
 \subsection{CPS and Staging}
-Let's write the example from listing \ref{code:cps_scala} in our DSL. We need to define \code{sleep} to use JavaScript's \code{setTimeout} as a replacement for the \code{Timer} abstraction.
+Let's write the example from listing~\ref{code:cps_scala} in our DSL. We need to define \code{sleep} to use JavaScript's \code{setTimeout} as a replacement for the \code{Timer} abstraction.
 \begin{lstlisting}
 def sleep(delay: Rep[Int]) = shift { k: (Rep[Unit]=>Rep[Unit]) =>
   window.setTimeout(fun(k), delay)
@@ -782,7 +782,7 @@ The \code{setTimeout} method expects an argument of type \code{Rep[Unit=>Unit]} 
 It's important to note that reification preserves function composition. Specifically, let \code{f: Rep[A] => Rep[B]} and \code{g: Rep[B] => Rep[C]} then {\tt\small fun(g compose f) == (fun(g) compose fun(f))} where we consider two reified functions to be equal if they yield the same observable effects at runtime. That property of function reification is at the core of reusing the continuation monad in our DSL. Thanks to the fact that the continuation monad composes functions, we can just insert reification at some places (like in a \code{sleep}) and make sure that we reify \emph{effects} of the continuation monad without the need to reify the monad itself.
 
 \subsection{CPS for Interruptible Traversals}
-We need to be able to interrupt our execution while traversing an array in order to implement functionality from listing \ref{code:twitter_example}. Let's consider a simplified example where we want to iterate over an array and sleep during each iteration. We present both code written in JavaScript and our DSL that achieves that (listings~\ref{code:js:sleep_iter}~\&~\ref{code:sleep_iter}).
+We need to be able to suspend our execution while traversing an array in order to implement functionality from listing~\ref{code:twitter_example}. Let's consider a simplified example where we want to iterate over an array and sleep during each iteration. We present both code written in JavaScript and our DSL that achieves that (listings~\ref{code:js:sleep_iter}~\&~\ref{code:sleep_iter}).
 \begin{figure}
 \lstset{basicstyle=\ttfamily\scriptsize}
 \begin{changemargin}{-0.7cm}{-0.7cm}
@@ -826,7 +826,7 @@ log("done")
 \lstset{basicstyle=\ttfamily}
 \end{figure}
 
-Both programs, when executed, will print following to the JavaScript console:
+Both programs, when executed, will print the following to the JavaScript console:
 \begin{lstlisting}
 //pause for 1s
 1
@@ -933,7 +933,7 @@ trait GenAjax extends JSGenBase {
 It's interesting to note that, since the request already has the right structure for the \code{jQuery.ajax} function, we can simply pass it to the framework-provided \code{quote} method, which knows how to generate JavaScript representations of any \code{JSLiteral}.
 
 The Ajax component completes the functionality required to run the Twitter example with one caveat:
-The outer loop in listing \ref{code:twitter_example} uses \code{parSuspendable} to traverse arrays instead of the \code{suspendable} traversal variant we have defined in listing \ref{code:suspendable_foreach}. 
+The outer loop in listing~\ref{code:twitter_example} uses \code{parSuspendable} to traverse arrays instead of the \code{suspendable} traversal variant we have defined in listing~\ref{code:suspendable_foreach}. 
 
 In fact, if we change the code to use \code{suspendable} instead of \code{parSuspendable} and run the generated JavaScript program, we'll get following output printed to the JavaScript console:
 \begin{lstlisting}
@@ -993,7 +993,7 @@ function Cell() {
 }
 \end{lstlisting}
 
-A cell object allows us to track dependencies between values. Whenever the \code{get} method is called and the value is not in the cell yet, the continuation will be added to a queue so it can be suspended until the value arrives. The \code{set} method takes care of resuming queued continuations. We expose \code{Cell} as external library using our typed API mechanism and we use it for implementing an abstraction for futures.
+A cell object allows us to track dependencies between values. Whenever the \code{get} method is called and the value is not in the cell yet, the continuation will be added to a queue so it can be suspended until the value arrives. The \code{set} method takes care of resuming queued continuations. We expose \code{Cell} as an external library using our typed API mechanism and we use it for implementing an abstraction for futures.
 
 \begin{lstlisting}
 def createCell(): Rep[Cell[A]]
@@ -1049,8 +1049,8 @@ The only difference between the parallel and serial versions of the Twitter exam
 
 \section{Evaluation}\label{sec:eval}
 
-We've implemented our DSL in Scala~\footnote{The code can be found at
-  \url{http://github.com/namin/lms-sandbox}.}. We used our DSL to
+We've implemented our DSL in Scala.\footnote{The code can be found at
+  \url{http://github.com/namin/lms-sandbox} We used our DSL to
 develop a few web applications, which are simple but not
 trivial. First, we implemented a few drawing examples like the
 snowflakes of figure~\ref{fig:snowflakes}. We extended the Twitter
@@ -1073,7 +1073,7 @@ simple improvement is to make the server execute the drawing
 commands as well, and keep an up-to-date bitmap of the drawing -- this
 can easily be achieved by using the trivial embedding described in
 section~\ref{sec:trivial-embedding}. New clients then just obtain the
-bitmap instead of replaying the history, which is potentially be large.
+bitmap instead of replaying the history, which is potentially large.
 
 \section{Conclusion}\label{sec:conclusion}
 
