@@ -146,7 +146,8 @@ We propose to embed JavaScript as a DSL in a host language. Through LMS, we tack
 \item In addition to generating JavaScript code, our DSL can be executed directly in the host language, allowing code to be shared between client and server (section~\ref{sec:trivial-embedding}).
 \item We use advanced object-oriented techniques to achieve modularity in our DSL: each language primitive and API is defined in a separate module (section~\ref{sec:modularity}).
 \item Our DSL supports typed object literals and class-based objects. The translations to JavaScript are lightweight and intuitive: the object literals translate to JSON-like object literals and the class-based objects to JavaScript constructor-based objects (section~\ref{sec:reification}).
-\item With minimal effort, we exploit the selective CPS transform already existing in the host language to provide a compelling abstraction over asynchronous callback-driven programming in our DSL (section~\ref{sec:cps}). This case-study demonstrates the fruitfulness of re-using host language features to enhance our embedded DSL.
+\item With minimal effort, we exploit the selective CPS transform already existing in the host language to provide a compelling abstraction over asynchronous callback-driven programming in our DSL (section~\ref{sec:cps}). This case-study demonstrates the fruitfulness of re-using host language features to enhance our embedded DSL. A novel insight is that CPS transforming a program generator allows it to generate code that is in CPS.
+\item The present work extends both the range of virtualizable language features and the LMS framework, which is beneficial to future DSL efforts taking the JavaScript work as a case study. Previous LMS embeddings had to define each operation explicitly (like in section~\ref{sec:defineDslComponent}). This paper contributes lifting of whole traits or classes (through the \code{repProxy} mechanism described and used in sections~\ref{sec:typedApis}\&~\ref{sec:reified-classes}), untyped or optionally typed operations (sections~\ref{sec:casting},~\ref{sec:dynamic}\&~\ref{sec:dynamic2static}), and typed object literals (section~\ref{sec:object-literals}) including the necessary Scala-Virtualized support.
 \end{itemize}
 
 In section~\ref{sec:eval}, we describe our experience in using the DSL, and conclude in section~\ref{sec:conclusion}.
@@ -379,7 +380,7 @@ host language (no IR node is created):
 Instead of this no-op implementation, it is possible to insert
 run-time check-cast assertions in the generated JavaScript code.
 
-\subsection{Casting and Optional Runtime Type Checks}
+\subsection{Casting and Optional Runtime Type Checks}\label{sec:casting}
 The need for casting arises in a few contexts. One of them is the
 boundary between typed and untyped portions of a
 program~\cite{wadler-blame,blame-for-all}. Passing a value from an
@@ -420,7 +421,7 @@ performance reasons.
 %implicit casts can be disabled. On the other hand, casts related to
 %external service calls should be always enabled for security reasons.
 
-\subsection{Scala Dynamic}
+\subsection{Scala Dynamic}\label{sec:dynamic}
 Since our DSL compiles to JavaScript, which is dynamically typed, it
 is appealing to allow expressions and APIs in our DSL to also,
 selectively, be dynamically typed. This is especially useful for
@@ -452,7 +453,7 @@ like {\tt\small MethodCall(x, "foo", List(Const(1), Const(2)))}. From this
 IR node, it is easy to generate the JavaScript code \code{x.foo(1,
   2)}. Note the similarity with the IR nodes generated for typed APIs.
 
-\subsection{From Dynamic to Static}
+\subsection{From Dynamic to Static}\label{sec:dynamic2static}
 
 This possibility to escape into dynamic typing is particularly useful
 in simplifying the incorporation of external JavaScript APIs and
@@ -662,7 +663,7 @@ above). So each definition is represented by its name and a {\it
 definition functions are evaluated in an order which allows the self
 references to be resolved.
 
-\subsection{Classes}
+\subsection{Classes}\label{sec:reified-classes}
 Our DSL also supports reified classes. For convenience, these are
 defined as traits, use the \code{repProxy} mechanism underlying typed
 APIs and are also implemented using reflection. The translation to
