@@ -719,7 +719,7 @@ As an alternative to the callback-driven programming style, one can use an expli
 
 In fact, the Scala compiler already does selective, \code{@suspendable} type-annotation-driven CPS transformations of Scala programs~\cite{cps-scala,danvy90,danvy92}. We show how this mechanism can be used for transforming our DSL code before staging and stripping out most CPS abstractions at staging time. The generated JavaScript code doesn't have any CPS-specific code but is written in CPS-style by use of JavaScript anonymous functions.
 
-Our implementation of continuations is an example of an interesting technique of applying selective cps
+Our implementation to support continuations is an example of an interesting technique of applying selective cps
 transformation to embedded DSLs by means of a deep linguistic reuse, exploiting a host language feature to
 implement the corresponding DSL feature without (much) additional work. An interesting insight is that CPS
 transforming a program generator allows it to generate code that is in CPS.
