@@ -789,7 +789,9 @@ def sleep(time: Int): ControlContext =
 After the rewriting, all CPS-related type annotations are dropped and use of the \code{ControlContext} class that supports continuation passing is introduced. The \code{shiftR} method is an internal method that takes a block (which itself is a function) and wraps it in \code{ControlContext} structure.
 
 \subsection{CPS and Staging}
-Let's write the example from listing~\ref{code:cps_scala} in our DSL. We need to define \code{sleep} to use JavaScript's \code{setTimeout} as a replacement for the \code{Timer} abstraction.
+Let's write the example from listing~\ref{code:cps_scala} in our DSL. We need to define \code{sleep} to use JavaScript's \code{setTimeout}
+\footnote{The \code{setTimeout} function executes asynchronously a function passed as an argument after specified delay.}
+as a replacement for the \code{Timer} abstraction.
 \begin{lstlisting}
 def sleep(delay: Rep[Int]) = shift { k: (Rep[Unit]=>Rep[Unit]) =>
   window.setTimeout(fun(k), delay)
