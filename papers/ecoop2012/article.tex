@@ -771,7 +771,7 @@ rewritten in a similar vein.
 
 Now, let's have a closer look how \code{sleep} itself is implemented:
 
-\begin{lstlisting}[label=code:cps_scala]
+\begin{lstlisting}[label={code:cps_scala},caption={\code{sleep} implementation}]
 import java.util.{Timer,TimerTask}
 val timer = new Timer
 def sleep(delay: Int): Unit @suspendable = shift { k =>
