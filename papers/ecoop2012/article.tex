@@ -140,7 +140,7 @@ to generate SQL queries~\cite{siq}.
 
 % programmable code generator
 
-We propose to embed JavaScript as a DSL in a host language. Through LMS, we tackle the challenges outlined above with minimal effort, as most of the work is off-loaded to the host language. In particular, we make the following contributions:
+We propose to embed JavaScript as a DSL in a host language.\footnote{Surely, the embedded language is not exactly JavaScript: as an embedded language, it naturally is a subset of Scala. However it is quite close to JavaScript: often one can take snippets of JavaScript code and use them in the DSL with minor syntactic tweaking (as demonstrated by the Snowflake example).} Through LMS, we tackle the challenges outlined above with minimal effort, as most of the work is off-loaded to the host language. In particular, we make the following contributions:
 \begin{itemize}
 \item Our DSL is statically typed through the host language, yet supports gradual typing notably for incorporating external JavaScript libraries and APIs (section~\ref{sec:typing}).
 \item In addition to generating JavaScript code, our DSL can be executed directly in the host language, allowing code to be shared between client and server (section~\ref{sec:trivial-embedding}).
