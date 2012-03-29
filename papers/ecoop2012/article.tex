@@ -147,11 +147,11 @@ We propose to embed JavaScript as a DSL in a host language.\footnote{Surely, the
 \item We use advanced object-oriented techniques to achieve modularity in our DSL: each language primitive and API is defined in a separate module (section~\ref{sec:modularity}).
 \item Our DSL supports typed object literals and class-based objects. The translations to JavaScript are lightweight and intuitive: the object literals translate to JSON-like object literals and the class-based objects to JavaScript constructor-based objects (section~\ref{sec:reification}).
 \item With minimal effort, we exploit the selective CPS transform already existing in the host language to provide a compelling abstraction over asynchronous callback-driven programming in our DSL (section~\ref{sec:cps}). This case-study demonstrates the fruitfulness of re-using host language features to enhance our embedded DSL. A novel insight is that CPS transforming a program generator allows it to generate code that is in CPS.
-\item The present work extends both the range of virtualizable language features and the LMS framework, which is beneficial to future DSL efforts taking the JavaScript work as a case study. Previous LMS embeddings had to define each operation explicitly (like in section~\ref{sec:defineDslComponent}). This paper contributes lifting of whole traits or classes (through the \code{repProxy} mechanism described and used in sections~\ref{sec:typedApis}\&~\ref{sec:reified-classes}), untyped or optionally typed operations (sections~\ref{sec:casting},~\ref{sec:dynamic}\&~\ref{sec:dynamic2static}), and typed object literals (section~\ref{sec:object-literals}) including the necessary Scala-Virtualized support.
 \end{itemize}
 
 In section~\ref{sec:eval}, we describe our experience in using the DSL, and conclude in section~\ref{sec:conclusion}.
 
+The present work extends both the range of virtualizable language features and the LMS framework, which is beneficial to future DSL efforts taking the JavaScript work as a case study. Previous LMS embeddings had to define each operation explicitly (like in section~\ref{sec:defineDslComponent}). This paper contributes lifting of whole traits or classes (through the \code{repProxy} mechanism described and used in sections~\ref{sec:typedApis}\&~\ref{sec:reified-classes}), untyped or optionally typed operations (sections~\ref{sec:casting},~\ref{sec:dynamic}\&~\ref{sec:dynamic2static}), and typed object literals (section~\ref{sec:object-literals}) including the necessary Scala-Virtualized support.
 
 \section{Introduction to LMS}
 
