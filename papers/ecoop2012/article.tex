@@ -225,14 +225,13 @@ function test(x0) {
   }
   return x6
 }
+\end{lstlisting}
 
 The generated code ressembles single-assignment form. The nested
 \code{for}-loop is desugared into a \code{flatMap} which generates the
 nested \code{for}-loop and the \code{splice} pattern concatenating the
 inner \code{x4} arrays into one \code{x6} array in the JavaScript
 code.\footnote{Obviously, the generated code can be optimized further.}
-
-\end{lstlisting}
 
 \subsection{Walkthrough: defining a DSL component}\label{sec:defineDslComponent}
 
