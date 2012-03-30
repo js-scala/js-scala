@@ -79,7 +79,7 @@
 Developing rich web applications requires mastering different
 environments on the client and server sides. While there is
 considerable choice on the server-side, the client-side is tied to
-JavaScript, which poses considerable software engineering challenges,
+JavaScript, which poses substantial software engineering challenges,
 such as moving or sharing pieces of code between the environments. We
 embed JavaScript as a DSL in Scala, using Lightweight Modular Staging.
 DSL code can be compiled to JavaScript or executed as part of the
@@ -97,15 +97,19 @@ callback-driven programming in our DSL.
 
 Developing rich web applications requires mastering a heterogeneous environment: though the server-side can be implemented in any language, on the client-side, the choice is limited to JavaScript. The trend towards alternative approaches to client-side programming (as embodied by CoffeeScript~\cite{coffeescript}, Dart~\cite{dart} \& GWT~\cite{gwt}) shows the need for more options on the client-side. How do we bring advances in programming languages to client-side programming?
 
-One challenge in developing a large code base in JavaScript is the lack of static typing, as types are helpful for maintenance, refactoring, and reasoning about correctness. Furthermore, there is a need for more abstraction and modularity. ``Inversion of control'' in asynchronous callback-driven programming leads to code with control structures that are difficult to reason about. A challenge is to introduce helpful abstractions without a big hit on performance and/or code size. Communication between the server side and the client side aggravates the impedance mismatch: in particular, data validation logic needs to be duplicated on the client-side for interactivity and on the server-side for security.
+One challenge in developing a large code base in JavaScript is the lack of static typing, as types are helpful for maintenance, refactoring, and reasoning about correctness. Furthermore, there is a need for more abstraction and modularity. ``Inversion of control'' in asynchronous callback-driven programming leads to code with control structures that are difficult to reason about. Another challenge is to introduce helpful abstractions without a big hit on performance and/or code size. Communication between the server side and the client side aggravates the impedance mismatch: in particular, data validation logic needs to be duplicated on the client-side for interactivity and on the server-side for security.
 
 % Motivation for our approach vs other approaches
 
 There are three widely known approaches for addressing the challenges outlined above. One is to create a standalone language or DSL that is compiled to JavaScript and provides different abstractions compared to JavaScript. Examples include WebDSL~\cite{webdsl}, Links~\cite{links,links-form} and Dart~\cite{dart}. However, this approach usually requires a lot of effort in terms of language and compiler design, and tooling support, although WebDSL leverages Spoofax~\cite{spoofax} to alleviate this effort. Furthermore, it is not always clear how these languages interact with other languages on the server-side or with the existing JavaScript ecosystem on the client-side.
 
-Another approach is to start with an existing language like Java, Scala or Clojure and compile it to JavaScript. Examples include GWT~\cite{gwt}, Scala+GWT~\cite{scala-gwt} and Clojurescript~\cite{clojurescript}. This approach addresses the problem of impedance mismatch between client and server programming but comes with its own set of challenges. In particular, compiling Scala code to JavaScript requires compiling Scala's standard library to JavaScript as any non-trivial Scala program uses Scala collections. This leads to not taking full advantage of libraries and abstractions provided by the target platform which results in big code size and suboptimal performance of Scala applications compiled to JavaScript. For example, a map keyed by strings would be implemented natively in JavaScript as an object literal, while, in Scala, one would likely use the hash map from the standard library, causing it to be compiled to and emulated in JavaScript. Moreover, both approaches tend to not accommodate very well to different API design and programming styles seen in many existing JavaScript libraries. The F\# Web Tools~\cite{tomasp-fsharp} is another example of starting with an existing language, F\#, and compiling it to both the client and the server sides. This work has similar goals to ours but the underlying techniques are very different (explicit quotations vs LMS, monads vs cps). A drawback of this second approach is that the whole starting language needs to be translated to JavaScript: there is no easy or modular way to limit the scope of the source language.
+Another approach is to start with an existing language like Java, Scala or Clojure and compile it to JavaScript. Examples include GWT~\cite{gwt}, Scala+GWT~\cite{scala-gwt} and Clojurescript~\cite{clojurescript}. This approach addresses the problem of impedance mismatch between client and server programming but comes with its own set of challenges. In particular, compiling Scala code to JavaScript requires compiling Scala's standard library to JavaScript as any non-trivial Scala program uses Scala collections. This leads to not taking full advantage of libraries and abstractions provided by the target platform which results in big code size and suboptimal performance of Scala applications compiled to JavaScript. For example, a map keyed by strings would be implemented natively in JavaScript as an object literal, while, in Scala, one would likely use the hash map from the standard library, causing it to be compiled to and emulated in JavaScript. Moreover, both approaches tend to not accommodate very well to different API design and programming styles seen in many existing JavaScript libraries. 
+%The F\# Web Tools~\cite{tomasp-fsharp} is another example of starting with an existing language, F\#, and compiling it to both the client and the server sides. This work has similar goals to ours but the underlying techniques are very different (explicit quotations vs LMS, monads vs cps). 
+A drawback of this second approach is that the whole starting language needs to be translated to JavaScript: there is no easy or modular way to limit the scope of the source language.
+The F\# Web Tools~\cite{tomasp-fsharp} are an interesting variation of this approach that employ F\# quotations to translate only
+parts of a program and allow programmers to define custom mappings for individual data types.
 
-A third approach is to design a language than is a thin layer on top of JavaScript but provides some new features. A prime example of this idea is CoffeeScript~\cite{coffeescript}. This approach makes it easy to integrate with existing JavaScript libraries but does not solve the impedance mismatch problem. In addition, it typically does not give rise to new abstractions addressing problems seen in callback-driven programming style, though some JavaScript libraries such as Flapjax~\cite{flapjax} and Arrowlets~\cite{arrowlets} are specifically designed for this purpose.
+A third approach is to design a language that is a thin layer on top of JavaScript but provides some new features. A prime example of this idea is CoffeeScript~\cite{coffeescript}. This approach makes it easy to integrate with existing JavaScript libraries but does not solve the impedance mismatch problem. In addition, it typically does not give rise to new abstractions addressing problems seen in callback-driven programming style, though some JavaScript libraries such as Flapjax~\cite{flapjax} and Arrowlets~\cite{arrowlets} are specifically designed for this purpose.
 
 We present a different approach, based on Lightweight Modular Staging
 (LMS)~\cite{lms}, that aims to incorporate good ideas from all the
@@ -140,20 +144,25 @@ to generate SQL queries~\cite{siq}.
 
 % programmable code generator
 
-We propose to embed JavaScript as a DSL in a host language.\footnote{Surely, the embedded language is not exactly JavaScript: it naturally is a subset of Scala, the host language. However, it is quite close to JavaScript: often one can take snippets of JavaScript code and use them in the DSL with minor syntactic tweaking (as demonstrated by the Snowflake example described in section \ref{sec:trivial-embedding}).} Through LMS, we tackle the challenges outlined above with minimal effort, as most of the work is off-loaded to the host language. In particular, we make the following contributions:
+We propose to embed JavaScript as a DSL in a host language. \footnote{Surely, the embedded language is not \emph{exactly} JavaScript: it naturally is a subset of Scala, the host language. However, it is quite close to JavaScript. Often one can take snippets of JavaScript code and use them in the DSL with minor syntactic tweaking, as demonstrated by the Snowflake example described in section \ref{sec:trivial-embedding}.}
+Through LMS (reviewed in section~\ref{sec:lms}), we tackle the challenges outlined above with minimal effort, as most of the work is off-loaded to the host language. In particular, we make the following contributions:
 \begin{itemize}
 \item Our DSL is statically typed through the host language, yet supports gradual typing notably for incorporating external JavaScript libraries and APIs (section~\ref{sec:typing}).
 \item In addition to generating JavaScript code, our DSL can be executed directly in the host language, allowing code to be shared between client and server (section~\ref{sec:trivial-embedding}).
 \item We use advanced object-oriented techniques to achieve modularity in our DSL: each language primitive and API is defined in a separate module (section~\ref{sec:modularity}).
 \item Our DSL supports typed object literals and class-based objects. The translations to JavaScript are lightweight and intuitive: the object literals translate to JSON-like object literals and the class-based objects to JavaScript constructor-based objects (section~\ref{sec:reification}).
-\item With minimal effort, we exploit the selective CPS transform already existing in the host language to provide a compelling abstraction over asynchronous callback-driven programming in our DSL (section~\ref{sec:cps}). This case-study demonstrates the fruitfulness of re-using host language features to enhance our embedded DSL. A novel insight is that CPS transforming a program generator allows it to generate code that is in CPS.
+\item On top of the straightforward embedding, we implement advanced abstractions in the host language.
+With minimal effort, we exploit the selective CPS transform already existing in Scala to provide a compelling abstraction over asynchronous callback-driven programming in our DSL (section~\ref{sec:cps}). The new insight here is that CPS transforming a program generator allows it to generate code that is in CPS. This case-study demonstrates the fruitfulness of re-using existing host language features to enhance our embedded DSL. 
 \end{itemize}
 
 In section~\ref{sec:eval}, we describe our experience in using the DSL, and conclude in section~\ref{sec:conclusion}.
 
-The present work extends both the range of virtualizable language features and the LMS framework, which is beneficial to future DSL efforts taking the JavaScript work as a case study. Previous LMS embeddings had to define each operation explicitly (like in section~\ref{sec:defineDslComponent}). This paper contributes lifting of whole traits or classes (through the \code{repProxy} mechanism described and used in sections~\ref{sec:typedApis}\&~\ref{sec:reified-classes}), untyped or optionally typed operations (sections~\ref{sec:casting},~\ref{sec:dynamic}\&~\ref{sec:dynamic2static}), and typed object literals (section~\ref{sec:object-literals}) including the necessary Scala-Virtualized support.
+In addition to the contributions above, the present work significantly extends the LMS framework, which is beneficial to future DSL efforts taking the JavaScript work as a case study. Previous LMS embeddings had to define each staged operation explicitly (like in section~\ref{sec:defineDslComponent}). This paper contributes lifting of whole traits or classes (through the \code{repProxy} mechanism described and used in sections~\ref{sec:typedApis}\&~\ref{sec:reified-classes}), untyped or optionally typed operations (sections~\ref{sec:casting},~\ref{sec:dynamic}\&~\ref{sec:dynamic2static}), and typed object 
+literals (section~\ref{sec:object-literals}) including necessary language support of the 
+Scala-Virtualized~\cite{scala-virtualized} compiler.
 
 \section{Introduction to LMS}
+\label{sec:lms}
 
 In LMS, a DSL is split into two parts, its
 interface and its implementation. Both parts can be assembled from
@@ -189,8 +198,9 @@ boolean. So \code{prog2(b, x)} evaluates to an IR node for the \code{if}:
 {\tt\small If(b, x, Plus(x, Const(1)))}.
 
 For \code{prog2}, notice that the \code{if} got transformed into an IR
-node. To achieve this, LMS uses an extension of Scala,
-Scala-Virtualized~\cite{scala-virtualized}, in which control
+node. To achieve this, LMS uses
+Scala-Virtualized~\cite{scala-virtualized}, a suite of minimal
+extensions to the regular Scala compiler, in which control
 structures such as \code{if} can be reified into method calls, so that
 alternative implementations can be provided. In our case, we provide an
 implementation of \code{if} that constructs an IR node instead of
@@ -227,7 +237,7 @@ function test(x0) {
 }
 \end{lstlisting}
 
-The generated code ressembles single-assignment form. The nested
+The generated code resembles single-assignment form. The nested
 \code{for}-loop is desugared into a \code{flatMap} which generates the
 nested \code{for}-loop and the \code{splice} pattern concatenating the
 inner \code{x4} arrays into one \code{x6} array in the JavaScript
@@ -276,8 +286,9 @@ this symbol from the \code{Def}.
 In general, the framework provides an implicit conversion from
 \code{Def} to \code{Exp}, which performs common subexpression
 elimination by re-using the same symbol for identical definitions. We
-don't use it here, because \code{log} is a side-effecting operation,
-and we don't want to (re)move any such calls even if their message
+do not use the automatic conversion here, because \code{log} is a 
+side-effecting operation, and we do not want 
+to (re)move any such calls even if their message
 is the same.
 
 The framework schedules the code generation from the graph of
@@ -416,7 +427,7 @@ are implicit casts introduced for argument and return types of the
 defined methods. These casts can also be checked at runtime to
 ensure compliance.
 
-We've implemented a component that generates JavaScript code that
+We have implemented a component that generates JavaScript code that
 asserts casts at runtime. It was fairly straightforward as the host
 language allows us to easily inspect types involved in casting. Since
 this component just provides a different implementation of the same
@@ -440,8 +451,8 @@ method call, field access and field update is possible. A dynamic
 method call and field access returns another \code{DynamicRep}
 expression, so dynamic expressions can be chained.
 
-\code{DynamicRep} exploits a new Scala feature\footnote{C\# 4.0 type ``dynamic''~\cite{csharp-dynamic} can serve the same purpose.}, based on a
-special trait \code{Dynamic}: An expression whose type \code{T} is a
+\code{DynamicRep} exploits a new Scala feature\footnote{C\#'s type ``dynamic''~\cite{csharp-dynamic} can serve the same purpose.}, 
+based on a special trait \code{Dynamic}: An expression whose type \code{T} is a
 subtype of \code{Dynamic} is subject to the following rewrites:
 \begin{itemize}
 \item \code{x.f} rewrites to \code{x.selectDynamic("f")},
@@ -539,7 +550,7 @@ We can also use this DSL snippet directly in Scala via the trivial embedding (de
     }
 \end{lstlisting}
 
-In the JavaScript example, when \code{abs} gets evaluated, through mixing in \code{JSExp}, it results in an IR tree roughly equivalent to {\tt\small If(LessThan(Sym("x"), Const(0)), Neg(Sym("x")), Sym("x"))}. In the trivial embedding, when \code{abs(-3)} gets called, it evaluates to \code{3} by executing the virtualized \code{if} as a normal condition. In short, in the trivial embedding, the virtualized method calls are evaluated in-place without constructing IR nodes.
+In the JavaScript example (when mixing in \code{JSExp}) evaluating \code{abs(x)} results in an IR tree roughly equivalent to {\tt\small If(LessThan(Sym("x"), Const(0)), Neg(Sym("x")), Sym("x"))}. In the trivial embedding, when \code{abs(-3)} gets called, it evaluates to \code{3} by executing the virtualized \code{if} as a normal condition. In short, in the trivial embedding, the virtualized method calls are evaluated in-place without constructing IR nodes.
 
 In the previous section, we showed how to define typed APIs to represent JavaScript external libraries or dependencies. In the trivial embedding, we need to give an interpretation to these APIs. For example, we can implement a Canvas context in Scala by using native graphics to draw on a desktop widget instead of a web page. We translated David Flanagan's Canvas example from the book ``JavaScript: The Definitive Guide''~\cite{flanagan}, which draws Koch snowflakes on a canvas~\cite{koch-code}. First, the translation from JavaScript to our DSL is straightforward: the code looks the same except for some minor declarations. Then, from our DSL code, we can generate JavaScript code to draw the snowflakes on a canvas as in the original code. In addition, via the trivial embedding, we can execute the DSL code in Scala to draw snowflakes on a desktop widget. Screenshot presenting snowflakes rendered in a browser using HTML5 Canvas and Java's 2D are presented in figure \ref{fig:snowflakes}.
 
@@ -553,7 +564,7 @@ In the previous section, we showed how to define typed APIs to represent JavaScr
 
 HTML5 Canvas is a standard that is not implemented by all browsers yet so a fall-back mechanism is needed to support users of older browsers. This can be achieved through the trivial embedding by drawing using Java's 2D API, saving the result as an image and sending it to the browser. The decision to either generate a JavaScript snippet that draws on canvas and send it to the browser, or render the image on the server can be made at runtime (e.g. after inspecting information about the client's browser). In the case of rendering on the server-side, one can store computation that renders an image using Java's graphics 2D in a hash map and send back to the client the key as an url for an image. When a browser makes a second request, computation can be restored from the hash map, executed and the result sent back to the browser. All of that is possible because the computation itself is expressed against an abstract DSL API so we can swap implementations to either generate JavaScript or run the computation at the server side. Moreover, our DSL is just a library and computations are expressed as first-class values in a host language so they can be passed around the server program, stored in a hash map, etc.
 
-A drawback of the trivial embedding is that the virtualization overhead is incurred each time the program is evaluated. To avoid this, we could generate Scala code in the same way as we now generate JavaScript code, relying on a mechanism to incorporate the generated Scala code into the rest of the program. In fact, this approach is taken by the Delite framework.
+A drawback of the trivial embedding is that although lightweight, virtualization is not completely free, and a small virtualization overhead is incurred each time the program is evaluated. To avoid this, we could generate Scala code in the same way as we now generate JavaScript code, relying on a mechanism to incorporate the generated Scala code into the rest of the program. In fact, this approach is taken by the Delite framework.
 
 %- DOM Canvas Koch example: generate both client-side code or desktop widget
 
@@ -611,7 +622,7 @@ We also want the ability to treat functions as first-class staged
 values, since JavaScript supports them. In order to do this, we
 provide a higher-order function \code{fun} which takes a function of
 type \code{Rep[A] => Rep[B]} and converts\footnote{We refer the reader
-  to ~\cite{lms} for implementation details} it to a staged function
+  to~\cite{lms} for implementation details.} it to a staged function
 of type \code{Rep[A => B]}. For example, if we define \code{inc} in
 the following way, its type is \code{Rep[Int => Int]}:
 \begin{lstlisting}
@@ -619,7 +630,7 @@ val inc = fun { (x: Rep[Int]) => x + 1 }
 \end{lstlisting}
 Calling \code{inc(4*x)} results in an \code{Apply} IR node. We
 actually generate JavaScript code for the staged \code{inc} function,
-while we didn't for the unstaged one, since it's inlined at every call
+while we did not for the unstaged one, since it is inlined at every call
 site during staging. The generated code looks roughly like the
 following:
 \begin{lstlisting}[language=JavaScript]
@@ -714,19 +725,19 @@ Note that JavaScript version takes a callback as second argument that will be us
 
 Because of the inverted control flow of callbacks, synchronization between callbacks has to be handled manually. Also, the inverted control flow leads to a code structure that is distant from the programmer's intent. Notice that the in JavaScript version, the call to console that prints ``done" is put inside of the foreach loop. If it was put it after the loop, we would get ``done'' printed \emph{before} any Ajax call has been made leading to counterintuitive behaviour.
 
-As an alternative to the callback-driven programming style, one can use an explicit monadic style, possibly sugared by a Haskell-like ``do''-notation. However, this requires rewriting possibly large parts of a program into monadic style when a single async operation is added. Another possibility is to automatically transform the program into continuation passing style (CPS), enabling the programmer to express the algorithm in a straightforward, sequential way and creating all the necessary callbacks and book-keeping code automatically. Links~\cite{links} uses this approach. However, a whole-program CPS transformation can cause performance degradation, code size blow-up, and stack overflows. In addition, it is not clear how to interact with existing non-CPS libraries as the whole program needs to adhere to the CPS style. We suggest using a {\it selective} CPS transformation, which precisely identifies what needs to be CPS transformed.
+As an alternative to the callback-driven programming style, one can use an explicit monadic style, possibly sugared by a Haskell-like ``do''-notation. This is the approach taken by F\# Web Tools~\cite{tomasp-fsharp}. However, this requires rewriting possibly large parts of a program into monadic style when a single async operation is added. Another possibility is to automatically transform the program into continuation passing style (CPS), enabling the programmer to express the algorithm in a straightforward, sequential way and creating all the necessary callbacks and book-keeping code automatically. Links~\cite{links} uses this approach. However, a whole-program CPS transformation can cause performance degradation, code size blow-up, and stack overflows. In addition, it is not clear how to interact with existing non-CPS libraries as the whole program needs to adhere to the CPS style. We suggest using a {\it selective} CPS transformation, which precisely identifies what needs to be CPS transformed.
 
-In fact, the Scala compiler already does selective, \code{@suspendable} type-annotation-driven CPS transformations of Scala programs~\cite{cps-scala,danvy90,danvy92}. We show how this mechanism can be used for transforming our DSL code before staging and stripping out most CPS abstractions at staging time. The generated JavaScript code doesn't have any CPS-specific code but is written in CPS-style by use of JavaScript anonymous functions.
+In fact, the Scala compiler already does selective CPS transformations of Scala programs, driven by \code{@suspendable} type annotations ~\cite{cps-scala,danvy90,danvy92}. We show how this mechanism can be used for transforming our DSL code before staging and stripping out most CPS abstractions at staging time. The generated JavaScript code does not contain any CPS-specific code but is written in CPS-style by use of JavaScript anonymous functions.
 
 Our implementation to support continuations is an example of an interesting technique of applying selective cps
 transformation to embedded DSLs by means of a deep linguistic reuse, exploiting a host language feature to
-implement the corresponding DSL feature without (much) additional work. An interesting insight is that CPS
-transforming a program generator allows it to generate code that is in CPS.
+implement the corresponding DSL feature without (much) additional work. An interesting insight is that our method of
+CPS transforming a direct-style program generator allows it to generate code that is in CPS.
 
 \subsection{CPS in Scala}
 Before presenting how CPS transformations are used in our DSL, let's consider a typical situation where CPS rewrites act on Scala programs.
 
-As an example, we'll consider a \code{sleep} method implemented in non-blocking, asynchronous style. This is useful, for example, when using \code{ThreadPool}s as no thread is being blocked during the sleep period. Let's see how our \code{sleep} method written in CPS can be used:
+As an example, we consider a \code{sleep} method implemented in non-blocking, asynchronous style. This is useful, for example, when using \code{ThreadPool}s as no thread is being blocked during the sleep period. Let's see how our \code{sleep} method written in CPS can be used:
 
 \begin{lstlisting}
 def foo() = {
@@ -804,7 +815,7 @@ def sleep(delay: Rep[Int]) = shift { k: (Rep[Unit]=>Rep[Unit]) =>
 
 The \code{setTimeout} method expects an argument of type \code{Rep[Unit=>Unit]} which denotes a \emph{representation} of a function of type \code{Unit=>Unit}. The \code{shift} method offers us a function of type \code{Rep[Unit] => Rep[Unit]}, so we need to reify it to obtain the desired representation. The reification is achieved by the \code{fun} function (described in \ref{sec:functions}) provided by our framework and performed at staging time.
 
-It's important to note that reification preserves function composition (roughly speaking it's homomorphism between DSL code and generated JavaScript code).
+It is important to note that reification preserves function composition (roughly speaking it is a homomorphism between DSL code and generated JavaScript code).
 Specifically, let \code{f: Rep[A] => Rep[B]} and \code{g: Rep[B] => Rep[C]} then {\tt\small fun(g compose f) == (fun(g) compose fun(f))}
 where we consider two reified functions to be equal if they yield the same observable effects at runtime
 \footnote{Note that composition on the left and the right hand side of the equation is not the same operation but they have the same observable runtime effect.}.
@@ -965,12 +976,12 @@ trait GenAjax extends JSGenBase {
 }
 \end{lstlisting}
 
-It's interesting to note that, since the request already has the right structure for the \code{jQuery.ajax} function, we can simply pass it to the framework-provided \code{quote} method, which knows how to generate JavaScript representations of any \code{JSLiteral}.
+It is interesting to note that, since the request already has the right structure for the \code{jQuery.ajax} function, we can simply pass it to the framework-provided \code{quote} method, which knows how to generate JavaScript representations of any \code{JSLiteral}.
 
 The Ajax component completes the functionality required to run the Twitter example with one caveat:
 The outer loop in listing~\ref{code:twitter_example} uses \code{parSuspendable} to traverse arrays instead of the \code{suspendable} traversal variant we have defined in listing~\ref{code:suspendable_foreach}. 
 
-In fact, if we change the code to use \code{suspendable} instead of \code{parSuspendable} and run the generated JavaScript program, we'll get following output printed to the JavaScript console:
+In fact, if we change the code to use \code{suspendable} instead of \code{parSuspendable} and run the generated JavaScript program, we will get following output printed to the JavaScript console:
 \begin{lstlisting}
 fetching gkossakowski
 finished fetching gkossakowski
@@ -1063,7 +1074,7 @@ implicit def richCellOps(x: Rep[Cell[A]]): RichCell[A] =
   new RichCellOps(x)
 \end{lstlisting}
 
-It's worth noting that \code{RichCellOps} is not reified so it will be dropped at staging time and its method will get inlined whenever used. Also, it contains CPS-specific code that allows us to capture the continuation. The \code{fun} function reifies the captured continuation.
+It is worth noting that \code{RichCellOps} is not reified so it will be dropped at staging time and its method will get inlined whenever used. Also, it contains CPS-specific code that allows us to capture the continuation. The \code{fun} function reifies the captured continuation.
 
 We are ready to present the parallel version of \code{foreach} defined in listing \ref{code:suspendable_foreach}.
 
@@ -1077,14 +1088,14 @@ def foreach(yld: Rep[A] => Rep[Unit] @suspendable):
 
 We instantiate each future separately so they can be executed in parallel. As a second step we make sure that all futures are evaluated before we leave the \code{foreach} method by forcing evaluation of each future and ``waiting'' for its completion. Thanks to CPS transformations, all of that will be implemented in a non-blocking style.
 
-The only difference between the parallel and serial versions of the Twitter example~\ref{code:twitter_example} is the use of \code{parSuspendable} instead of \code{suspendable} so the parallel implementation of the \code{foreach} method is used. The rest of the code stays the same. It's easy to switch between both versions, and users are free to make their choice according to their needs and performance requirements.
+The only difference between the parallel and serial versions of the Twitter example~\ref{code:twitter_example} is the use of \code{parSuspendable} instead of \code{suspendable} so the parallel implementation of the \code{foreach} method is used. The rest of the code stays the same. It is easy to switch between both versions, and users are free to make their choice according to their needs and performance requirements.
 
 
-%Parallelism doesn't come for free as it involves more CPS rewritings and involves indirections introduced by our abstractions. However, since it's easy to switch between both versions, users are free to make those choices according to their needs and performance requirements.
+%Parallelism doesn't come for free as it involves more CPS rewritings and involves indirections introduced by our abstractions. However, since it is easy to switch between both versions, users are free to make those choices according to their needs and performance requirements.
 
 \section{Evaluation}\label{sec:eval}
 
-We've implemented our DSL in Scala.\footnote{The code can be found at
+We have implemented our DSL in Scala.\footnote{The code can be found at
   \url{http://github.com/js-scala}} We used our DSL to
 develop a few web applications, which are simple but not
 trivial. First, we implemented a few drawing examples like the
@@ -1094,9 +1105,9 @@ from selected users in an interactive way. In order to do so, we
 incorporated a useful subset of the DOM API and jQuery library using our
 typed APIs.
 
-Also, we integrated our DSL with an existing web framework, Play 2.0.\footnote{\url{http://www.playframework.org}}
+Moreover, we integrated our DSL with an existing web framework, Play 2.0.\footnote{\url{http://www.playframework.org}}
 Our DSL can be used to define Play form validators that are executed on both the client and server sides.
-We managed to achieve that without deep changes to how the framework works internally proving that our
+We managed to achieve that without deep changes to the framework, proving that our
 DSL can be used as a library.
 
 \begin{wrapfigure}{r}{5cm}
@@ -1108,12 +1119,13 @@ server). We use web sockets to communicate between the server and
 clients. Each client transmits drawing commands to the server, which
 broadcasts them to all the clients. When a new client joins, the
 server sends the complete drawing history to the new client, and the
-client reconstructs the image by playing the commands. A very
+client reconstructs the image by playing back the commands. A very
 simple improvement is to make the server execute the drawing
 commands as well, and keep an up-to-date bitmap of the drawing -- this
 can easily be achieved by using the trivial embedding described in
 section~\ref{sec:trivial-embedding}. New clients then just obtain the
-bitmap instead of replaying the history, which is potentially large.
+bitmap instead of replaying the history, which can be large and grow
+unboundedly.
 
 \section{Conclusion}\label{sec:conclusion}
 
@@ -1126,10 +1138,14 @@ the generated code. We believe this approach addresses some important
 challenges of developing rich web applications.
 
 \section{Acknowledgments}
-We thank Adriaan Moors for maintaining the Scala-Virtualized compiler, adding our feature requests, fixing our reported bugs, and for insightful discussions.
+We thank Adriaan Moors for maintaining the Scala-Virtualized compiler, adding our feature requests, 
+fixing our reported bugs, and for insightful discussions.
 
+{
+%\clearpage
+%\linespread{0.99}
 \bibliographystyle{abbrv}
 \bibliography{refs,ppl}
-
+}
 
 \end{document}
