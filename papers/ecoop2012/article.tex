@@ -804,7 +804,11 @@ def sleep(delay: Rep[Int]) = shift { k: (Rep[Unit]=>Rep[Unit]) =>
 
 The \code{setTimeout} method expects an argument of type \code{Rep[Unit=>Unit]} which denotes a \emph{representation} of a function of type \code{Unit=>Unit}. The \code{shift} method offers us a function of type \code{Rep[Unit] => Rep[Unit]}, so we need to reify it to obtain the desired representation. The reification is achieved by the \code{fun} function (described in \ref{sec:functions}) provided by our framework and performed at staging time.
 
-It's important to note that reification preserves function composition. Specifically, let \code{f: Rep[A] => Rep[B]} and \code{g: Rep[B] => Rep[C]} then {\tt\small fun(g compose f) == (fun(g) compose fun(f))} where we consider two reified functions to be equal if they yield the same observable effects at runtime. That property of function reification is at the core of reusing the continuation monad in our DSL. Thanks to the fact that the continuation monad composes functions, we can just insert reification at some places (like in a \code{sleep}) and make sure that we reify \emph{effects} of the continuation monad without the need to reify the monad itself.
+It's important to note that reification preserves function composition (roughly speaking it's homomorphism between DSL code and generated JavaScript code).
+Specifically, let \code{f: Rep[A] => Rep[B]} and \code{g: Rep[B] => Rep[C]} then {\tt\small fun(g compose f) == (fun(g) compose fun(f))}
+where we consider two reified functions to be equal if they yield the same observable effects at runtime
+\footnote{Note that composition on the left and the right hand side of the equation is not the same operation but they have the same observable runtime effect.}.
+That property of function reification is at the core of reusing the continuation monad in our DSL. Thanks to the fact that the continuation monad composes functions, we can just insert reification at some places (like in a \code{sleep}) and make sure that we reify \emph{effects} of the continuation monad without the need to reify the monad itself.
 
 \subsection{CPS for Suspendable Traversals}
 We need to be able to suspend our execution while traversing an array in order to implement functionality from listing~\ref{code:twitter_example}. Let's consider a simplified example where we want to iterate over an array and sleep during each iteration. We present both code written in JavaScript and our DSL that achieves that (listings~\ref{code:js:sleep_iter}~\&~\ref{code:sleep_iter}).
