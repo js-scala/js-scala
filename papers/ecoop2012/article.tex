@@ -515,7 +515,7 @@ declared \code{ElementOps} interface. If needed, it is always possible to
 explicitly move from a statically-typed expression to a
 dynamically-typed one by wrapping it in a \code{dynamic} call.
 
-\section{Sharing Code between Client and Server}\label{sec:trivial-embedding} % adriaan: rename without trivial
+\section{Sharing Code between Client and Server}\label{sec:trivial-embedding}
 In addition to generating JavaScript / client-side code, we want to be able to re-use our DSL code on the Scala / server-side. In the LMS approach, the DSL uses the abstract type constructor \code{Rep}~\cite{higher-kind}. When generating JavaScript, this abstract type constructor is defined by IR nodes. Another definition, which we dub ``trivial embedding'', is to use the identity type constructor: \code{Rep[T] = T}. By stripping out \code{Rep}s in this way, our DSL can operate on concrete Scala types, replacing staging with direct evaluation. Even in the trivial embedding, when the DSL code operates on concrete Scala types, virtualization still occurs because the usage layer of the DSL is still in terms of abstract \code{Rep}s.
 
 As an example, consider the following DSL snippet, which computes the absolute value:
