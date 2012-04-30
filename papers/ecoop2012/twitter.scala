@@ -1,4 +1,5 @@
-val users = array("gkossakowski", "odersky", "adriaanm")
+val users = array("gkossakowski", "odersky",
+  "adriaanm")
 for (user <- users.parSuspendable) {
   console.log("fetching " + user)
   val tweets = fetchTweets(user)

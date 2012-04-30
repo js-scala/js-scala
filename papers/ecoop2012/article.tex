@@ -701,24 +701,20 @@ We'll implement this program both in JavaScript and in our DSL. Let's start by i
 \lstset{basicstyle=\ttfamily\scriptsize}
 \begin{figure}
 \setlength{\columnseprule}{0.5pt}
-\begin{changemargin}{-1.5cm}{-1.5cm}
 \begin{multicols}{2}
 \lstinputlisting[language=JavaScript,caption=Fetching tweets in JavaScript,label=code:js:twitter_fetch]{fetchTweets.js}
 \lstinputlisting[escapechar=|,caption=Fetching tweets in DSL,label=code:twitter_fetch]{fetchTweets.scala}
 \end{multicols}
-\end{changemargin}
 \end{figure}
 
 Note that JavaScript version takes a callback as second argument that will be used to process the fetched tweets. We provide the rest of the logic that iterates over an array of users and makes Ajax requests (listings~\ref{code:js:twitter_example}~\&~\ref{code:twitter_example}).
 
 \begin{figure}
-\begin{changemargin}{-0.7cm}{-0.7cm}
 \setlength{\columnseprule}{0.5pt}
 \begin{multicols}{2}
 \lstinputlisting[language=JavaScript,caption=Twitter example in JavaScript,label=code:js:twitter_example]{twitter.js}
 \lstinputlisting[escapechar=|,caption=Twitter example in DSL,label=code:twitter_example]{twitter.scala}
 \end{multicols}
-\end{changemargin}
 \end{figure}
 
 \lstset{basicstyle=\ttfamily}
@@ -825,7 +821,6 @@ That property of function reification is at the core of reusing the continuation
 We need to be able to suspend our execution while traversing an array in order to implement functionality from listing~\ref{code:twitter_example}. Let's consider a simplified example where we want to iterate over an array and sleep during each iteration. We present both code written in JavaScript and our DSL that achieves that (listings~\ref{code:js:sleep_iter}~\&~\ref{code:sleep_iter}).
 \begin{figure}
 \lstset{basicstyle=\ttfamily\scriptsize}
-\begin{changemargin}{-0.7cm}{-0.7cm}
 \setlength{\columnseprule}{0.5pt}
 \begin{multicols}{2}
 \begin{lstlisting}[caption=JavaScript,label=code:js:sleep_iter]
@@ -866,7 +861,6 @@ log("done")
 |$\quad$|
 \end{lstlisting}
 \end{multicols}
-\end{changemargin}
 \lstset{basicstyle=\ttfamily}
 \end{figure}
 

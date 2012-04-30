@@ -1,5 +1,6 @@
 var processed = 0
-var users = ["gkossakowski", "odersky", "adriaanm"]
+var users = ["gkossakowski", "odersky",
+  "adriaanm"]
 users.forEach(function (user) {
   console.log("fetching " + user)
   fetchTweets(user, function(data) {

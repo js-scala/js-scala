@@ -1,7 +1,7 @@
 function fetchTweets(username, callback) {
   jQuery.ajax({
-    url: 
-"http://api.twitter.com/1/statuses/user_timeline.json/",
+    url: "http://api.twitter.com/1/
+      statuses/user_timeline.json/",
     type: "GET",
     dataType: "jsonp",
     data: {
