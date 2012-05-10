@@ -71,4 +71,6 @@ object Main extends App {
     Koch.run()
   Birds.writeJs("examples/birds/Bird_.js")
   Twitter.writeJs("examples/ajax/twitter_.js")
+
+  D3.writeHtml("d3.html")
 }
