@@ -2,8 +2,8 @@
 
 ### Presentations / Papers
 
-* _draft_ ECOOP 2012 paper ([PDF](http://dl.dropbox.com/u/12870350/article.pdf))
-* [_upcoming_ Scala Days 2012 talk](http://days2012.scala-lang.org/node/383)
+* ECOOP 2012 paper ([PDF](https://github.com/js-scala/js-scala/blob/paper-revision/papers/ecoop2012/article.pdf?raw=true))
+* [Scala Days 2012 talk](http://skillsmatter.com/podcast/scala/javascript-embedded-dsl-scala)
 
 ### Setup
 
