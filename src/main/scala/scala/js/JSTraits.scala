@@ -49,7 +49,7 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
     val parentConstructor = if (parents.length == 0) None else Some(registerInternal[AnyRef](outer)(Manifest.classType(parents(0))))
     val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c)))
 
-    val self = proxyTrait[T](This[T](), outer)
+    val self = proxyTrait[T](This[T](), parentConstructor, outer)
     val methods = 
       for (method <- implClazz.getDeclaredMethods.toList)
 	yield {
@@ -88,7 +88,6 @@ trait JSGenTraits extends JSGenBase with JSGenProxy {
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
     case ClassTemplate(parentTemplate, methodTemplates) =>
       stream.println("var " + quote(sym) + " = function() {")
-      parentTemplate.foreach(pt => stream.println("this.$super$ = " + quote(pt.constructor) + ".prototype"))
       stream.println("this.$init$()")
       stream.println("}")
       parentTemplate.foreach(pt => stream.println(quote(sym) + ".prototype = " + quote(pt.instance)))

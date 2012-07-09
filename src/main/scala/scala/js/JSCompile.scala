@@ -39,7 +39,7 @@ trait JSCodegen extends Codegen {
 
   override def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
     val argsStr = args.map(quote).mkString(", ")
-    stream.println("function "+methName+"("+argsStr+") {")
+    stream.println("function"+(if (methName.isEmpty) "" else (" "+methName))+"("+argsStr+") {")
 
     emitBlock(body)(stream)
     stream.println("return "+quote(getBlockResult(body)))

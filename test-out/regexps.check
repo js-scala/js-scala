@@ -1,0 +1,21 @@
+function mainTest(x0) {
+var x1 = new RegExp("[0-9.+]+")
+var x2 = x1.test(x0)
+return x2
+}
+function mainTestWhole(x3) {
+var x4 = new RegExp("^[0-9.+]+$")
+var x5 = x4.test(x3)
+return x5
+}
+function mainSearch(x6) {
+var x1 = new RegExp("[0-9.+]+")
+var x7 = x6.search(x1)
+return x7
+}
+function mainSearchMatch(x8) {
+var x1 = new RegExp("[0-9.+]+")
+var x9 = x8.search(x1)
+var x10 = x9!=-1
+return x10
+}

@@ -1,20 +1,18 @@
+# JavaScript as an embedded DSL in Scala #
+
+### Presentations / Papers
+
+* _draft_ ECOOP 2012 paper ([PDF](http://dl.dropbox.com/u/12870350/article.pdf))
+* [_upcoming_ Scala Days 2012 talk](http://days2012.scala-lang.org/node/383)
+
 ### Setup
 
-* From [`scala-dev`](http://github.com/gkossakowski/scala-dev):
-  * Run `git checkout virtualized-master`.
-  * Run `ant replacelocker`.
-  * Run `git checkout js`.
-  * Run `ant clean && ant fastdist`.
+1. Setup [virtualization-lms-core](http://github.com/gkossakowski/virtualization-lms-core), including Scala-Virtualized.
 
-* From [`virtualization-lms-core`](http://github.com/TiarkRompf/virtualization-lms-core):
-  * Run `git checkout delite-develop`.
-  * Create a file `local.properties` with the line `scala.virtualized.home=<path-to-scala-virtualized>/dists/latest`.
-  * Run `sbt update`, then `sbt publish-local`. You can run the tests with `sbt test`.
+2. Copy the file `local.properties` from virtualization-lms-core to this root project directory.
 
-* From this project:
-  * Create a file `local.properties` with the line `scala.virtualized.home=<path-to-scala-virtualized>/dists/latest`.
-  * Run `sbt update`.
+3. Run `sbt`. `test` to ensure everything works. Then `publish-local`. You can also run the dummy `Main` program with `run`.
 
-### Run
-* From this project:
-  * Run `sbt run`.
+### Further projects
+
+[play-js-validation](http://github.com/namin/play-js-validation) uses this DSL to enable form validation code in Play 2.0 to be written once and checked on both client and server sides.

@@ -39,10 +39,13 @@ libraryDependencies ++= Seq(
 
 //--- End of Dependencies
 
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize")
 
 //Our tests are not threadsafe so disabling parallel execution for now
 parallelExecution in Test := false
 
 //import web plugin keys
 seq(webSettings :_*)
+
+// disable publishing of main docs
+publishArtifact in (Compile, packageDoc) := false
