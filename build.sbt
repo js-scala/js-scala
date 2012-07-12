@@ -1,8 +1,8 @@
-name := "lms-sandbox"
+name := "js-scala"
 
 organization := "EPFL"
 
-version := "0.1"
+version := "0.2"
 
 scalaVersion := Option(System.getenv("SCALA_VIRTUALIZED_VERSION")).getOrElse("2.10.0-M1-virtualized")
 
