@@ -11,6 +11,10 @@
 
 2. Run `sbt`. `test` to ensure everything works. Then `publish-local`.
 
+### Use it in Play 2!
+
+* [build-play20](http://github.com/js-scala/build-play20) builds Play 2! and all its transitive Scala dependencies with Scala-Virtualized, for compatibility with this DSL. Deployment on [dotcloud](http://github.com/js-scala/play2-on-dotcloud) is an option.
+
 ### Further projects
 
 * [play-js-validation](http://github.com/js-scala/play-js-validation) uses this DSL to enable form validation code in Play 2.0 to be written once and checked on both client and server sides.
