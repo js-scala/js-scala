@@ -2,7 +2,7 @@
 
 ### Documentation
 
-* ECOOP 2012 paper ([PDF](https://github.com/js-scala/js-scala/blob/master/papers/ecoop2012/article.pdf?raw=true))
+* ECOOP 2012 paper ([PDF](http://infoscience.epfl.ch/record/179888/files/js-scala-ecoop.pdf)) and slides ([PDF](http://pldi12.cs.purdue.edu/sites/default/files/slides_ecoop_gkossakowski.pdf))
 * [Scala Days 2012 talk](http://skillsmatter.com/podcast/scala/javascript-embedded-dsl-scala)
 
 ### Setup
