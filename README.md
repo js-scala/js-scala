@@ -1,4 +1,4 @@
-# JavaScript as an embedded DSL in Scala #
+# js.scala: JavaScript as an embedded DSL in Scala #
 
 ### Documentation
 
