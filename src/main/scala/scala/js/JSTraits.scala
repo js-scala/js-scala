@@ -14,7 +14,7 @@ trait JSTraits extends JSProxyBase {
 trait JSTraitsExp extends JSTraits with JSProxyExp {
   trait Constructor[+T]
 
-  case class MethodTemplate(name: String, params: List[Sym[Any]], body: Exp[Any])
+  case class MethodTemplate(name: String, params: List[Sym[Any]], body: Block[Any])
   case class ParentTemplate(constructor: Exp[Any], instance: Exp[Any])
 
   case class This[+T:Manifest]() extends Exp[T]
@@ -85,7 +85,7 @@ trait JSGenTraits extends JSGenBase with JSGenProxy {
   val IR: JSTraitsExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case ClassTemplate(parentTemplate, methodTemplates) =>
       stream.println("var " + quote(sym) + " = function() {")
       stream.println("this.$init$()")

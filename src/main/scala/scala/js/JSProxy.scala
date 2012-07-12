@@ -82,7 +82,7 @@ trait JSGenProxy extends JSGenBase with JSGenEffect {
   val IR: JSProxyExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case MethodCall(receiver, method, args) =>  emitValDef(sym,
       quote(receiver) + "." + method + args.map(quote).mkString("(", ",", ")"))
     case SuperMethodCall(receiver, parentConstructor, method, args) =>  emitValDef(sym,

@@ -30,7 +30,7 @@ trait JSGenRegExps extends JSGenBase {
   val IR: JSRegExpsExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case StringRegExp(r) => emitValDef(sym, "new RegExp(" + quote(r) + ")")
     case RegExpTest(re, str) => emitValDef(sym, quote(re) + ".test(" + quote(str) + ")")
     case StringSearch(str, re) => emitValDef(sym, quote(str) + ".search(" + quote(re) + ")")

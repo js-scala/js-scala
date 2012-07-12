@@ -57,7 +57,7 @@ object Koch {
 
   def codegen(pw: PrintWriter) {
     new KochProg with JSExp with DomsExp { self =>
-      val codegen = new JSGenOpt with GenDoms { val IR: self.type = self }
+      val codegen = new JSGen with GenDoms { val IR: self.type = self }
       codegen.emitSource0(draw _, "draw", pw)
     }
   }

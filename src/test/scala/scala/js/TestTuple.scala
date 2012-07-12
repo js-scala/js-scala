@@ -39,7 +39,7 @@ class TestTuple extends FileDiffSuite {
   def testTwoArgs = {
     withOutFile(prefix+"tuple") {
       new TwoArgsProg with TupleOpsExp with NumericOpsExpOpt { self =>
-        val codegen = new JSTupledCodegen with JSGenNumericOps { val IR: self.type = self }
+        val codegen = new JSNestedCodegen with JSTupledCodegen with JSGenNumericOps { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
