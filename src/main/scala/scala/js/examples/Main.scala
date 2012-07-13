@@ -1,6 +1,4 @@
-package scala.js
-
-import scala.virtualization.lms.common._
+package scala.js.examples
 
 object Main extends App {
   Koch.writeHtml("examples/canvas/koch_.html")

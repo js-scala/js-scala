@@ -1,5 +1,6 @@
-package scala.js
+package scala.js.examples
 
+import scala.js._
 import scala.virtualization.lms.common._
 import scala.util.continuations._
 

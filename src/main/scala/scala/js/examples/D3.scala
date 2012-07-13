@@ -1,5 +1,6 @@
-package scala.js
+package scala.js.examples
 
+import scala.js._
 import java.io.PrintWriter
 
 object D3 {
