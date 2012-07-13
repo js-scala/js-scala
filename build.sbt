@@ -16,11 +16,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
     "org.scalatest" % "scalatest_2.10.0-virtualized-SNAPSHOT" % "1.6.1-SNAPSHOT" % "test",
-    "EPFL" %% "lms" % "0.2",
-    "org.eclipse.jetty" % "jetty-webapp" % "8.0.1.v20110908" % "container",
-    "org.eclipse.jetty" % "jetty-websocket" % "8.0.1.v20110908",
-    "org.eclipse.jetty" % "jetty-servlet" % "8.0.1.v20110908",
-    "javax.servlet" % "servlet-api" % "2.5" % "provided->default")
+    "EPFL" %% "lms" % "0.2")
     
 //--- End of Dependencies
 
@@ -28,9 +24,6 @@ scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:contin
 
 //Our tests are not threadsafe so disabling parallel execution for now
 parallelExecution in Test := false
-
-// import web plugin keys
-seq(webSettings :_*)
 
 // disable publishing of main docs
 publishArtifact in (Compile, packageDoc) := false
