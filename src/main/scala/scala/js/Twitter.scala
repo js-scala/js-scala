@@ -21,7 +21,7 @@ trait JSGenTwitterApi extends JSGen with JSGenLib with GenCPS with GenAjax with 
   val IR: TwitterApiExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case Append(loc, html) => emitValDef(sym,
       "$(" + quote(loc) + ").append(" + quote(html) + ")")
     case _ => super.emitNode(sym, rhs)

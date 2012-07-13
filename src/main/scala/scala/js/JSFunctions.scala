@@ -12,7 +12,7 @@ trait JSGenFunctions extends JSGenEffect with BaseGenFunctions {
   val IR: TupledFunctionsExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case Lambda(fun, UnboxedTuple(xs), y) =>
       stream.println("var " + quote(sym) + " = function" + xs.map(quote).mkString("(", ",", ")") + " {")
       emitBlock(y)

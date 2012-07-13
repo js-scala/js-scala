@@ -1,6 +1,6 @@
 function test1(x0) {
-var x1 = [1, 2, 3]
 var x2 = 0
+var x1 = [1, 2, 3]
 var x15 = function() {
 var x16 = x2
 var x17 = x1.length
@@ -55,10 +55,10 @@ var x43 = x3()
 return x43
 }
 function test2(x45) {
+var x49 = 0
 var x46 = [4, 5, 6]
 var x47 = []
 var x48 = 0
-var x49 = 0
 var x64 = function() {
 var x65 = x49
 var x66 = x46.length
@@ -119,6 +119,12 @@ var x96 = x50()
 return x96
 }
 function test3(x98) {
+var x113 = 0
+var x126 = function() {
+var x127 = x113 += 1
+var x128 = x121()
+return x128
+}
 var x99 = [1, 2, 3]
 var x112=x99.map(
 function(x100){
@@ -135,12 +141,6 @@ return x108
 var x110 = window.setTimeout(x105,x102)
 return x101
 })
-var x113 = 0
-var x126 = function() {
-var x127 = x113 += 1
-var x128 = x121()
-return x128
-}
 var x121 = function() {
 var x122 = x113
 var x123 = x112.length
@@ -180,6 +180,17 @@ var x144 = x114()
 return x144
 }
 function test3b(x146) {
+var x163 = 0
+var x162 = []
+var x164 = 0
+var x181 = function(x182) {
+var x183 = x163
+var x184 = x162[x183] = x182
+var x185 = x163 += 1
+var x186 = x164 += 1
+var x187 = x176()
+return x187
+}
 var x147 = [3, 2, 1]
 var x161=x147.map(
 function(x148){
@@ -197,17 +208,6 @@ return x157
 var x159 = window.setTimeout(x153,x150)
 return x149
 })
-var x162 = []
-var x163 = 0
-var x164 = 0
-var x181 = function(x182) {
-var x183 = x163
-var x184 = x162[x183] = x182
-var x185 = x163 += 1
-var x186 = x164 += 1
-var x187 = x176()
-return x187
-}
 var x176 = function() {
 var x177 = x164
 var x178 = x161.length
@@ -252,6 +252,12 @@ var x205 = x165()
 return x205
 }
 function test3c(x207) {
+var x222 = 0
+var x235 = function() {
+var x236 = x222 += 1
+var x237 = x230()
+return x237
+}
 var x208 = [3, 2, 1]
 var x221=x208.map(
 function(x209){
@@ -268,12 +274,6 @@ return x217
 var x219 = window.setTimeout(x214,x211)
 return x210
 })
-var x222 = 0
-var x235 = function() {
-var x236 = x222 += 1
-var x237 = x230()
-return x237
-}
 var x230 = function() {
 var x231 = x222
 var x232 = x221.length
@@ -313,6 +313,12 @@ var x253 = x223()
 return x253
 }
 function test4(x255) {
+var x276 = 0
+var x289 = function() {
+var x290 = x276 += 1
+var x291 = x284()
+return x291
+}
 var x256 = ["gkossakowski", "odersky", "adriaanm"]
 var x275=x256.map(
 function(x257){
@@ -336,12 +342,6 @@ x262.success = x263
 var x273 = $.ajax(x262)
 return x258
 })
-var x276 = 0
-var x289 = function() {
-var x290 = x276 += 1
-var x291 = x284()
-return x291
-}
 var x284 = function() {
 var x285 = x276
 var x286 = x275.length
