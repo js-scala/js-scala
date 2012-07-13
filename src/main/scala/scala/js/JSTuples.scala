@@ -8,7 +8,7 @@ trait JSGenTupleOps extends JSGenBase {
   val IR: TupleOpsExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case ETuple2(a,b)  =>
       emitValDef(sym, "{_1:"+ quote(a) + ",_2:" + quote(b) + "}")
     case Tuple2Access1(t) => emitValDef(sym, quote(t) + "._1")

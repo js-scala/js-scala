@@ -19,6 +19,8 @@ trait Doms extends JSProxyBase {
     def moveTo(x: Rep[Int], y: Rep[Int])
     def closePath(): Rep[Unit]
     def stroke(): Rep[Unit]
+    var fillStyle: Rep[String]
+    def fillRect(x: Rep[Int], y: Rep[Int], width: Rep[Int], height: Rep[Int])
   }
   val document: Rep[Element]
   implicit def repToElement(x: Rep[Element]): Element = repProxy[Element](x)

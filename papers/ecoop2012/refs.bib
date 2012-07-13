@@ -1,0 +1,744 @@
+% --- put paper-specific BibTeX entries here --- %
+
+@MISC{tomasp-fsharp,
+    author = {Tomáš Petříček and Don Syme},
+    title = {F\# Web Tools: Rich client/server web applications in F\#}
+}
+
+@inproceedings{csharp-dynamic,
+ author = {Bierman, Gavin and Meijer, Erik and Torgersen, Mads},
+ title = {Adding dynamic types to C},
+ booktitle = {Proceedings of the 24th European conference on Object-oriented programming},
+ series = {ECOOP'10},
+ year = {2010},
+ isbn = {3-642-14106-4, 978-3-642-14106-5},
+ location = {Maribor, Slovenia},
+ pages = {76--100},
+ numpages = {25},
+ url = {http://dl.acm.org/citation.cfm?id=1883978.1883986},
+ acmid = {1883986},
+ publisher = {Springer-Verlag},
+ address = {Berlin, Heidelberg},
+} 
+
+@inproceedings{staging,
+ author = {J{\o}rring, Ulrik and Scherlis, William L.},
+ title = {Compilers and staging transformations},
+ booktitle = {Proceedings of the 13th ACM SIGACT-SIGPLAN symposium on Principles of programming languages},
+ series = {POPL '86},
+ year = {1986},
+ location = {St. Petersburg Beach, Florida},
+ pages = {86--96},
+ numpages = {11},
+ url = {http://doi.acm.org/10.1145/512644.512652},
+ doi = {http://doi.acm.org/10.1145/512644.512652},
+ acmid = {512652},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 
+
+@InProceedings{lms,
+   abstract    = {Software engineering demands generality and abstraction,
+                 performance demands specialization and concretization.
+                 Generative programming can provide both, but the effort
+                 required to develop high-quality program generators
+                 likely offsets their benefits, even if a multi-stage
+                 programming language is used. We present lightweight
+                 modular staging, a library-based multi-stage programming
+                 approach that breaks with the tradition of syntactic
+                 quasi-quotation and instead uses only types to
+                 distinguish between binding times. Through extensive use
+                 of component technology, lightweight modular staging
+                 makes an optimizing compiler framework available at the
+                 library level, allowing programmers to tightly integrate
+                 domain-specific abstractions and optimizations into the
+                 generation process. We argue that lightweight modular
+                 staging enables a form of language virtualization, i.e.
+                 allows to go from a pure-library embedded language to one
+                 that is practically equivalent to a stand-alone
+                 implementation with only modest effort.},
+   affiliation = {EPFL},
+   author      = {Rompf, Tiark and Odersky, Martin},
+   booktitle   = {{GPCE}},
+   details     = {http://infoscience.epfl.ch/record/150347},
+   documenturl = {http://infoscience.epfl.ch/record/150347/files/gpce63-rompf.pdf},
+   keywords    = {Code Generation; Multi-stage programming;
+                 Domain-specific languages; Language Virtualization},
+   location    = {Eindhoven, The Netherlands},
+   oai-id      = {oai:infoscience.epfl.ch:150347},
+   oai-set     = {conf; fulltext-public; fulltext},
+   review      = {REVIEWED},
+   status      = {PUBLISHED},
+   submitter   = {185682},
+   title       = {Lightweight {M}odular {S}taging: {A} {P}ragmatic
+                 {A}pproach to {R}untime {C}ode {G}eneration and
+                 {C}ompiled {DSL}s},
+   unit        = {LAMP},
+   year        = 2010
+}
+
+@inproceedings{scala-virtualized,
+   affiliation = {EPFL},
+   author      = {Moors, Adrian and Rompf, Tiark and Haller, Philipp and Odersky, Martin},
+   booktitle   = {PEPM12},
+   title = {Scala-Virtualized},
+   year = 2012
+}
+
+@InProceedings{cps-scala,
+   abstract    = {We describe the implementation of first-class
+                 polymorphic delimited continuations in the programming
+                 language Scala. We use Scala's pluggable typing
+                 architecture to implement a simple type and effect
+                 system, which discriminates expressions with control
+                 effects from those without and accurately tracks answer
+                 type modification incurred by control effects. To tackle
+                 the problem of implementing first-class continuations
+                 under the adverse conditions brought upon by the Java VM,
+                 we employ a selective CPS transform, which is driven
+                 entirely by effect-annotated types and leaves pure code
+                 in direct style. Benchmarks indicate that this high-level
+                 approach performs competitively.},
+   address     = {New York, NY, USA},
+   affiliation = {EPFL},
+   author      = {Rompf, Tiark and Maier, Ingo and Odersky, Martin},
+   booktitle   = {Proceedings of the 14th {ACM} {SIGPLAN} international
+                 conference on {F}unctional programming},
+   details     = {http://infoscience.epfl.ch/record/149136},
+   documenturl = {http://infoscience.epfl.ch/record/149136/files/icfp113-rompf.pdf},
+   doi         = {10.1145/1596550.1596596},
+   extra-id    = {000280546200033; 000271211700034},
+   keywords    = {delimited continuations; selective CPS transform;
+                 control effects; program transformation},
+   location    = {Edinburgh, Scotland},
+   oai-id      = {oai:infoscience.epfl.ch:149136},
+   oai-set     = {conf; fulltext-public; fulltext},
+   publisher   = {ACM},
+   review      = {REVIEWED},
+   status      = {PUBLISHED},
+   submitter   = {185682},
+   title       = {Implementing {F}irst-{C}lass {P}olymorphic {D}elimited
+                 {C}ontinuations by a {T}ype-{D}irected {S}elective
+                 {CPS}-{T}ransform},
+   unit        = {LAMP},
+   year        = 2009
+}
+
+@InProceedings{components-scala,
+   abstract    = {We identify three programming language abstractions for
+                 the construction of reusable components: abstract type
+                 members, explicit selftypes, and modular mixin
+                 composition. Together, these abstractions enable us to
+                 transform an arbitrary assembly of static program parts
+                 with hard references between them into a system of
+                 reusable components. The transformation maintains the
+                 structure of the original system. We demonstrate this
+                 approach in two case studies, a subject/observer
+                 framework and a compiler front-end.},
+   affiliation = {EPFL},
+   author      = {Odersky, Martin and Zenger, Matthias},
+   booktitle   = {Proceedings of {OOPSLA} 2005},
+   details     = {http://infoscience.epfl.ch/record/64423},
+   documenturl = {http://infoscience.epfl.ch/record/64423/files/ScalableComponent.pdf},
+   location    = {San Diego},
+   oai-id      = {oai:infoscience.epfl.ch:64423},
+   oai-set     = {conf; fulltext; fulltext-public},
+   status      = {PUBLISHED},
+   title       = {Scalable {C}omponent {A}bstractions},
+   unit        = {LAMP},
+   year        = 2005
+}
+
+@inproceedings{links,
+ author = {Cooper, Ezra and Lindley, Sam and Wadler, Philip and Yallop, Jeremy},
+ title = {Links: web programming without tiers},
+ booktitle = {Proceedings of the 5th international conference on Formal methods for components and objects},
+ series = {FMCO'06},
+ year = {2007},
+ isbn = {3-540-74791-5, 978-3-540-74791-8},
+ location = {Amsterdam, The Netherlands},
+ pages = {266--296},
+ numpages = {31},
+ url = {http://dl.acm.org/citation.cfm?id=1777707.1777724},
+ acmid = {1777724},
+ publisher = {Springer-Verlag},
+ address = {Berlin, Heidelberg},
+}
+
+@inproceedings{links-form,
+ author = {Cooper, Ezra and Lindley, Sam and Wadler, Philip and Yallop, Jeremy},
+ title = {The Essence of Form Abstraction},
+ booktitle = {Proceedings of the 6th Asian Symposium on Programming Languages and Systems},
+ series = {APLAS '08},
+ year = {2008},
+ isbn = {978-3-540-89329-5},
+ location = {Bangalore, India},
+ pages = {205--220},
+ numpages = {16},
+ url = {http://dx.doi.org/10.1007/978-3-540-89330-1_15},
+ doi = {http://dx.doi.org/10.1007/978-3-540-89330-1_15},
+ acmid = {1485361},
+ publisher = {Springer-Verlag},
+ address = {Berlin, Heidelberg},
+}
+
+@inproceedings{spoofax,
+  title = {The {Spoofax} Language Workbench. {Rules} for Declarative Specification of Languages and {IDEs}},
+  author = {Lennart C. L. Kats and Eelco Visser},
+  year = {2010},
+  doi = {http://dx.doi.org/10.1145/1869459.1869497},
+  researchr = {http://researchr.org/publication/KatsVisser2010},
+  pages = {444-463},
+  booktitle = {Proceedings of the 25th Annual ACM SIGPLAN Conference on Object-Oriented Programming, Systems, Languages, and Applications, OOPSLA 2010, October 17-21, 2010, Reno, NV, USA},
+  editor = {Martin Rinard},
+}
+
+@article {webdsl11valid,
+   year = {2011},
+   author = {Groenewegen, Danny and Visser, Eelco},
+   affiliation = {Software Engineering Research Group, Delft University of Technology, Delft, The Netherlands},
+   title = {Integration of data validation and user interface concerns in a DSL for web applications},
+   journal = {Software and Systems Modeling},
+   publisher = {Springer Berlin / Heidelberg},
+   issn = {1619-1366},
+   keyword = {Computer Science},
+   pages = {1-18},
+   url = {http://dx.doi.org/10.1007/s10270-010-0173-9},
+   note = {10.1007/s10270-010-0173-9},
+   abstract = {Data validation rules constitute the constraints that data input and processing must adhere to in addition to the structural constraints imposed by a data model. Web modeling tools do not make all types of data validation explicit in their models, hampering full code generation and model expressivity. Web application frameworks do not offer a consistent interface for data validation. In this paper, we present a solution for the integration of declarative data validation rules with user interface models in the domain of web applications, unifying syntax, mechanisms for error handling, and semantics of validation checks, and covering value well-formedness, data invariants, input assertions, and action assertions. We have implemented the approach in WebDSL, a domain-specific language for the definition of web applications.},
+}
+
+@article{webdsl11check,
+title = "Static consistency checking of web applications with WebDSL",
+journal = "Journal of Symbolic Computation",
+volume = "46",
+number = "2",
+pages = "150 - 182",
+year = "2011",
+note = "<ce:title>Automated Specification and Verification of Web Systems</ce:title>",
+issn = "0747-7171",
+doi = "10.1016/j.jsc.2010.08.006",
+url = "http://www.sciencedirect.com/science/article/pii/S0747717110001367",
+author = "Zef Hemel and Danny M. Groenewegen and Lennart C.L. Kats and Eelco Visser",
+keywords = "Domain-specific language",
+keywords = "Web application development",
+keywords = "Linguistic integration",
+keywords = "Consistency checking",
+keywords = "Verification",
+keywords = "Static analysis",
+abstract = "Modern web application development frameworks provide web application developers with high-level abstractions to improve their productivity. However, their support for static verification of applications is limited. Inconsistencies in an application are often not detected statically, but appear as errors at run-time. The reports about these errors are often obscure and hard to trace back to the source of the inconsistency. A major part of this inadequate consistency checking can be traced back to the lack of linguistic integration of these frameworks. Parts of an application are defined with separate domain-specific languages, which are not checked for consistency with the rest of the application. Examples include regular expressions, query languages and XML-based languages for definition of user interfaces. We give an overview and analysis of typical problems arising in development with frameworks for web application development, with Ruby on Rails, Lift and Seam as representatives.
+
+To remedy these problems, in this paper, we argue that domain-specific languages should be designed from the ground up with static verification and cross-aspect consistency checking in mind, providing linguistic integration of domain-specific sub-languages. We show how this approach is applied in the design of WebDSL, a domain-specific language for web applications, by examining how its compiler detects inconsistencies not caught by web frameworks, providing accurate and clear error messages. Furthermore, we show how this consistency analysis can be expressed with a declarative rule-based approach using the Stratego transformation language."
+}
+
+@inproceedings{webdsl11db,
+  title = {Generating Database Migration for Evolving Web Applications},
+  author = {Sander D. Vermolen and Guido Wachsmuth and Eelco Visser},
+  year = {2011},
+  tags = {software evolution, code generation, WebDSL, coupled evolution, coupled transformation, migration, modeling, language modeling, relational database, database, modeling language, web applications, domain-specific language},
+  researchr = {http://researchr.org/publication/Vermolen-GPCE-2011},
+  cites = {0},
+  citedby = {0},
+  booktitle = {Generative Programming and Component Engineering, 7th International Conference, GPCE 2011, Portland, OR, USA, October 22-23, 2011, Proceedings},
+  editor = {Ewen Denney and Ulrik Pagh Schultz},
+  publisher = {ACM},
+}
+
+@ARTICLE{webdsl10,
+author={Groenewegen, D. and Hemel, Z. and Visser, E.},
+journal={Software, IEEE},
+title={Separation of Concerns and Linguistic Integration in WebDSL},
+year={2010},
+month={sept.-oct. },
+volume={27},
+number={5},
+pages={31 -37},
+abstract={WebDSL is a domain-specific language for Web information systems that maintains separation of concerns while integrating its sublanguages, enabling consistency checking and reusing common language concepts.},
+keywords={Web information systems;WebDSL;domain specific language;linguistic integration;Web sites;computational linguistics;information systems;specification languages;},
+doi={10.1109/MS.2010.92},
+ISSN={0740-7459},}
+
+@INPROCEEDINGS{webdsl08,
+author={Groenewegen, D. and Visser, E.},
+booktitle={Web Engineering, 2008. ICWE '08. Eighth International Conference on},
+title={Declarative Access Control for WebDSL: Combining Language Integration and Separation of Concerns},
+year={2008},
+month={july},
+volume={},
+number={},
+pages={175 -188},
+abstract={In this paper, we present the extension of WebDSL, a domain-specific language for web application development, with abstractions for declarative definition of access control. The extension supports the definition of a wide range of access control policies concisely and transparently as a separate concern. In addition to regulating the access to pages and actions, access control rules are used to infer navigation options not accessible to the current user, preventing the presentation of inaccessible links. The extension is an illustration of a general approach to the design of domain-specific languages for different technical domains to support separation of concerns in application development, while preserving linguistic integration. This approach is realized by means of a transformational semantics that weaves separately defined aspects into an integrated implementation.},
+keywords={WebDSL;access control;domain-specific language;Internet;authorisation;specification languages;},
+doi={10.1109/ICWE.2008.15},
+ISSN={},}
+
+%note = {10.1007/978-3-540-88643-3_7},
+@incollection{webdsl,
+   author = {Visser, Eelco},
+   affiliation = {Delft University of Technology Software Engineering Research Group},
+   title = {WebDSL: A Case Study in Domain-Specific Language Engineering},
+   booktitle = {Generative and Transformational Techniques in Software Engineering II},
+   series = {Lecture Notes in Computer Science},
+   editor = {Lämmel, Ralf and Visser, Joost and Saraiva, João},
+   publisher = {Springer Berlin / Heidelberg},
+   isbn = {978-3-540-88642-6},
+   keyword = {Computer Science},
+   pages = {291-373},
+   volume = {5235},
+   url = {http://dx.doi.org/10.1007/978-3-540-88643-3_7},
+   abstract = {The goal of domain-specific languages (DSLs) is to increase the productivity of software engineers by abstracting from low-level boilerplate code. Introduction of DSLs in the software development process requires a smooth workflow for the production of DSLs themselves. This requires technology for designing and implementing DSLs, but also a methodology for using that technology. That is, a collection of guidelines, design patterns, and reusable DSL components that show developers how to tackle common language design and implementation issues. This paper presents a case study in domain-specific language engineering. It reports on a project in which the author designed and built WebDSL, a DSL for web applications with a rich data model, using several DSLs for DSL engineering: SDF for syntax definition and Stratego/XT for code generation. The paper follows the stages in the development of the DSL. The contributions of the paper are three-fold. (1) A tutorial in the application of the specific SDF and Stratego/XT technology for building DSLs. (2) A description of an incremental DSL development process. (3) A domain-specific language for web-applications with rich data models. The paper concludes with a survey of related approaches.},
+   year = {2008}
+}
+
+@article{mobl,
+ author = {Hemel, Zef and Visser, Eelco},
+ title = {Declaratively programming the mobile web with Mobl},
+ journal = {SIGPLAN Not.},
+ issue_date = {October 2011},
+ volume = {46},
+ issue = {10},
+ month = oct,
+ year = {2011},
+ issn = {0362-1340},
+ pages = {695--712},
+ numpages = {18},
+ url = {http://doi.acm.org/10.1145/2076021.2048121},
+ doi = {http://doi.acm.org/10.1145/2076021.2048121},
+ acmid = {2048121},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {domain-specific language, mobile, mobile development, mobile web},
+} 
+
+@article{swift,
+ author = {Chong, Stephen and Liu, Jed and Myers, Andrew C. and Qi, Xin and Vikram, K. and Zheng, Lantian and Zheng, Xin},
+ title = {Secure web applications via automatic partitioning},
+ journal = {SIGOPS Oper. Syst. Rev.},
+ issue_date = {December 2007},
+ volume = {41},
+ issue = {6},
+ month = {October},
+ year = {2007},
+ issn = {0163-5980},
+ pages = {31--44},
+ numpages = {14},
+ url = {http://doi.acm.org/10.1145/1323293.1294265},
+ doi = {http://doi.acm.org/10.1145/1323293.1294265},
+ acmid = {1294265},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {compilers, information flow, security policies},
+}
+
+@inproceedings{sif,
+ author = {Chong, Stephen and Vikram, K. and Myers, Andrew C.},
+ title = {SIF: enforcing confidentiality and integrity in web applications},
+ booktitle = {Proceedings of 16th USENIX Security Symposium on USENIX Security Symposium},
+ year = {2007},
+ isbn = {111-333-5555-77-9},
+ location = {Boston, MA},
+ pages = {1:1--1:16},
+ articleno = {1},
+ numpages = {16},
+ url = {http://dl.acm.org/citation.cfm?id=1362903.1362904},
+ acmid = {1362904},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+}
+
+@inproceedings{flapjax,
+ author = {Meyerovich, Leo A. and Guha, Arjun and Baskin, Jacob and Cooper, Gregory H. and Greenberg, Michael and Bromfield, Aleks and Krishnamurthi, Shriram},
+ title = {Flapjax: a programming language for Ajax applications},
+ booktitle = {Proceedings of the 24th ACM SIGPLAN conference on Object oriented programming systems languages and applications},
+ series = {OOPSLA '09},
+ year = {2009},
+ isbn = {978-1-60558-766-0},
+ location = {Orlando, Florida, USA},
+ pages = {1--20},
+ numpages = {20},
+ url = {http://doi.acm.org/10.1145/1640089.1640091},
+ doi = {http://doi.acm.org/10.1145/1640089.1640091},
+ acmid = {1640091},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {functional reactive programming, javascript, web programming},
+}
+
+%  crossref  = {DBLP:conf/oopsla/2007c},
+@inproceedings{volta,
+  author    = {Erik Meijer},
+  title     = {Democratizing the cloud},
+  booktitle = {OOPSLA Companion},
+  year      = {2007},
+  pages     = {858-859},
+  ee        = {http://doi.acm.org/10.1145/1297846.1297925},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@inproceedings{obrowser,
+ author = {Canou, Benjamin and Balat, Vincent and Chailloux, Emmanuel},
+ title = {O'browser: objective caml on browsers},
+ booktitle = {Proceedings of the 2008 ACM SIGPLAN workshop on ML},
+ series = {ML '08},
+ year = {2008},
+ isbn = {978-1-60558-062-3},
+ location = {Victoria, BC, Canada},
+ pages = {69--78},
+ numpages = {10},
+ url = {http://doi.acm.org/10.1145/1411304.1411315},
+ doi = {http://doi.acm.org/10.1145/1411304.1411315},
+ acmid = {1411315},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {document object model, javascript, objective caml, virtual machine, web browsers},
+}
+
+@article{arrowlets,
+ author = {Khoo, Yit Phang and Hicks, Michael and Foster, Jeffrey S. and Sazawal, Vibha},
+ title = {Directing JavaScript with arrows},
+ journal = {SIGPLAN Not.},
+ issue_date = {December 2009},
+ volume = {44},
+ issue = {12},
+ month = {October},
+ year = {2009},
+ issn = {0362-1340},
+ pages = {49--58},
+ numpages = {10},
+ url = {http://doi.acm.org/10.1145/1837513.1640143},
+ doi = {http://doi.acm.org/10.1145/1837513.1640143},
+ acmid = {1640143},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {arrowlets, arrows, events, javascript, web programming},
+} 
+
+@inproceedings{hop,
+ author = {Serrano, Manuel},
+ title = {Programming web multimedia applications with hop},
+ booktitle = {Proceedings of the 15th international conference on Multimedia},
+ series = {MULTIMEDIA '07},
+ year = {2007},
+ isbn = {978-1-59593-702-5},
+ location = {Augsburg, Germany},
+ pages = {1001--1004},
+ numpages = {4},
+ url = {http://doi.acm.org/10.1145/1291233.1291450},
+ doi = {http://doi.acm.org/10.1145/1291233.1291450},
+ acmid = {1291450},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {functionnal programming, web programming},
+}
+
+@inproceedings{itasks10,
+ author = {Jansen, Jan Martin and Plasmeijer, Rinus and Koopman, Pieter and Achten, Peter},
+ title = {Embedding a web-based workflow management system in a functional language},
+ booktitle = {Proceedings of the Tenth Workshop on Language Descriptions, Tools and Applications},
+ series = {LDTA '10},
+ year = {2010},
+ isbn = {978-1-4503-0063-6},
+ location = {Paphos, Cyprus},
+ pages = {7:1--7:8},
+ articleno = {7},
+ numpages = {8},
+ url = {http://doi.acm.org/10.1145/1868281.1868288},
+ doi = {http://doi.acm.org/10.1145/1868281.1868288},
+ acmid = {1868288},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {embedded domain specific language, experience paper, functional combinator library, workflow system},
+} 
+
+
+@inproceedings{itasks,
+ author = {Plasmeijer, Rinus and Jansen, Jan Martin and Koopman, Pieter and Achten, Peter},
+ title = {Declarative Ajax and client side evaluation of workflows using iTasks},
+ booktitle = {Proceedings of the 10th international ACM SIGPLAN conference on Principles and practice of declarative programming},
+ series = {PPDP '08},
+ year = {2008},
+ isbn = {978-1-60558-117-0},
+ location = {Valencia, Spain},
+ pages = {56--66},
+ numpages = {11},
+ url = {http://doi.acm.org/10.1145/1389449.1389457},
+ doi = {http://doi.acm.org/10.1145/1389449.1389457},
+ acmid = {1389457},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {Ajax, Sapl, clean, generic programming, iData, iTask, web programming, workflow systems},
+}
+
+@inproceedings{ocsigen,
+ author = {Balat, Vincent},
+ title = {Ocsigen: typing web interaction with objective Caml},
+ booktitle = {Proceedings of the 2006 workshop on ML},
+ series = {ML '06},
+ year = {2006},
+ isbn = {1-59593-483-9},
+ location = {Portland, Oregon, USA},
+ pages = {84--94},
+ numpages = {11},
+ url = {http://doi.acm.org/10.1145/1159876.1159889},
+ doi = {http://doi.acm.org/10.1145/1159876.1159889},
+ acmid = {1159889},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {continuations, objective Caml, web programming},
+}
+
+@inproceedings{ur,
+ author = {Chlipala, Adam},
+ title = {Ur: statically-typed metaprogramming with type-level record computation},
+ booktitle = {Proceedings of the 2010 ACM SIGPLAN conference on Programming language design and implementation},
+ series = {PLDI '10},
+ year = {2010},
+ isbn = {978-1-4503-0019-3},
+ location = {Toronto, Ontario, Canada},
+ pages = {122--133},
+ numpages = {12},
+ url = {http://doi.acm.org/10.1145/1806596.1806612},
+ doi = {http://doi.acm.org/10.1145/1806596.1806612},
+ acmid = {1806612},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {dependent types, metaprogramming},
+}
+
+@book{flanagan,
+ author = {Flanagan, David},
+ title = {JavaScript: The Definitive Guide},
+ year = {2011},
+ isbn = {0596805527, 9780596805524},
+ edition = {6th},
+ publisher = {O'Reilly Media, Inc.},
+}
+
+@misc{koch-code,
+  author = {Flanagan, David},
+  year = {2011},
+  howpublished = "\url{https://github.com/davidflanagan/javascript6_examples/blob/master/examples/21.06.koch.js}"
+}
+
+@inproceedings{danvy90,
+ author = {Danvy, Olivier and Filinski, Andrzej},
+ title = {Abstracting control},
+ booktitle = {Proceedings of the 1990 ACM conference on LISP and functional programming},
+ series = {LFP '90},
+ year = {1990},
+ isbn = {0-89791-368-X},
+ location = {Nice, France},
+ pages = {151--160},
+ numpages = {10},
+ url = {http://doi.acm.org/10.1145/91556.91622},
+ doi = {http://doi.acm.org/10.1145/91556.91622},
+ acmid = {91622},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 
+
+@article{danvy92,
+  author    = {Olivier Danvy and
+               Andrzej Filinski},
+  title     = {Representing Control: A Study of the CPS Transformation},
+  journal   = {Mathematical Structures in Computer Science},
+  volume    = {2},
+  number    = {4},
+  year      = {1992},
+  pages     = {361-391},
+  ee        = {http://dx.doi.org/10.1017/S0960129500001535},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@article{finally-tagless,
+ author = {Carette, Jacques and Kiselyov, Oleg and Shan, Chung-chieh},
+ title = {Finally tagless, partially evaluated: Tagless staged interpreters for simpler typed languages},
+ journal = {J. Funct. Program.},
+ volume = {19},
+ issue = {5},
+ month = {September},
+ year = {2009},
+ issn = {0956-7968},
+ pages = {509--543},
+ numpages = {35},
+ url = {http://dl.acm.org/citation.cfm?id=1630623.1630626},
+ doi = {10.1017/S0956796809007205},
+ acmid = {1630626},
+ publisher = {Cambridge University Press},
+ address = {New York, NY, USA},
+}
+
+@inproceedings{polymorphic-embedding,
+ author = {Hofer, Christian and Ostermann, Klaus and Rendel, Tillmann and Moors, Adriaan},
+ title = {Polymorphic embedding of dsls},
+ booktitle = {Proceedings of the 7th international conference on Generative programming and component engineering},
+ series = {GPCE '08},
+ year = {2008},
+ isbn = {978-1-60558-267-2},
+ location = {Nashville, TN, USA},
+ pages = {137--148},
+ numpages = {12},
+ url = {http://doi.acm.org/10.1145/1449913.1449935},
+ doi = {http://doi.acm.org/10.1145/1449913.1449935},
+ acmid = {1449935},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {algebraic semantics, compositionality, domain-specific languages, extensibility, pure embedding, scala},
+} 
+
+@article{metaml,
+ author = {Taha, Walid and Sheard, Tim},
+ title = {MetaML and multi-stage programming with explicit annotations},
+ journal = {Theor. Comput. Sci.},
+ volume = {248},
+ issue = {1-2},
+ month = {October},
+ year = {2000},
+ issn = {0304-3975},
+ pages = {211--242},
+ numpages = {32},
+ url = {http://dx.doi.org/10.1016/S0304-3975(00)00053-0},
+ doi = {http://dx.doi.org/10.1016/S0304-3975(00)00053-0},
+ acmid = {357500},
+ publisher = {Elsevier Science Publishers Ltd.},
+ address = {Essex, UK},
+ keywords = {{\$\lambda\$}-calculus, functional programming, high-level program generation, multi-level languages, multi-stage languages, programming language semantics, type-safety, type-systems},
+} 
+
+@misc{coffeescript,
+  key = {coffeescript},
+  howpublished = "\url{http://jashkenas.github.com/coffee-script/}"
+}
+
+@misc{dart,
+  key = {dart},
+  howpublished = "\url{http://http://www.dartlang.org/}"
+}
+
+@misc{gwt,
+  key = {gwt},
+  howpublished = "\url{http://code.google.com/webtoolkit/}"
+}
+
+@misc{scala-gwt,
+  key = {scala-gwt},
+  howpublished = "\url{http://scalagwt.github.com/}"
+}
+
+@misc{clojurescript,
+  key = {clojurescript},
+  howpublished = "\url{https://github.com/clojure/clojurescript/wiki}"
+}
+
+@Article{higher-kind,
+   abstract    = {With Java 5 and C-\# 2.0, first-order parametric
+                 polymorphism was introduced in mainstream object-oriented
+                 programming languages under the name of generics.
+                 Although the first- order variant of generics is very
+                 useful, it also imposes some restrictions: it is possible
+                 to abstract over a type, but the resulting type
+                 constructor cannot be abstracted over. This can lead to
+                 code duplication. We removed this restriction in Scala,
+                 by allowing type constructors as type parameters and
+                 abstract type members. This paper presents the design and
+                 implementation of the resulting type constructor
+                 polymorphism. Furthermore, we study how this feature
+                 interacts with existing object-oriented constructs, and
+                 show how it makes the language more expressive.},
+   affiliation = {EPFL},
+   author      = {Moors, Adriaan and Piessens, Frank and Odersky, Martin},
+   details     = {http://infoscience.epfl.ch/record/160348},
+   doi         = {10.1145/1449955.1449798},
+   extra-id    = {000262035900025},
+   journal     = {Acm {S}igplan {N}otices},
+   keywords    = {Design; Experimentation; Languages; type constructor
+                 polymorphism; higher-kinded types; higher-order
+                 genericity; Scala; Primitive Objects; Dependent Types;
+                 Languages; Calculus; Systems; Java},
+   oai-id      = {oai:infoscience.epfl.ch:160348},
+   oai-set     = {article},
+   pages       = {423--438},
+   review      = {REVIEWED},
+   status      = {PUBLISHED},
+   submitter   = {WOS-2010-11-30; 166927},
+   title       = {Generics of a {H}igher {K}ind},
+   unit        = {LAMP},
+   volume      = {43},
+   year        = 2008
+}
+
+@inproceedings{blame-for-all,
+ author = {Ahmed, Amal and Findler, Robert Bruce and Matthews, Jacob and Wadler, Philip},
+ title = {Blame for all},
+ booktitle = {Proceedings for the 1st workshop on Script to Program Evolution},
+ series = {STOP '09},
+ year = {2009},
+ isbn = {978-1-60558-543-7},
+ location = {Genova, Italy},
+ pages = {1--13},
+ numpages = {13},
+ url = {http://doi.acm.org/10.1145/1570506.1570507},
+ doi = {http://doi.acm.org/10.1145/1570506.1570507},
+ acmid = {1570507},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+}
+
+@inproceedings{wadler-blame,
+ author = {Wadler, Philip and Findler, Robert Bruce},
+ title = {Well-Typed Programs Can't Be Blamed},
+ booktitle = {Proceedings of the 18th European Symposium on Programming Languages and Systems: Held as Part of the Joint European Conferences on Theory and Practice of Software, ETAPS 2009},
+ series = {ESOP '09},
+ year = {2009},
+ isbn = {978-3-642-00589-3},
+ location = {York, UK},
+ pages = {1--16},
+ numpages = {16},
+ url = {http://dx.doi.org/10.1007/978-3-642-00590-9_1},
+ doi = {http://dx.doi.org/10.1007/978-3-642-00590-9_1},
+ acmid = {1532976},
+ publisher = {Springer-Verlag},
+ address = {Berlin, Heidelberg},
+} 
+
+@mastersthesis{siq,
+  author = {Vogt, J. C.},
+  title = {{Type Safe Integration of Query Languages into Scala}},
+  type = {Diplomarbeit},
+  school = {RWTH Aachen},
+  address = {Germany},
+  year = {2011}
+}
+
+@article{abadi91,
+ author = {Abadi, Mart\'{\i}n and Cardelli, Luca and Pierce, Benjamin and Plotkin, Gordon},
+ title = {Dynamic typing in a statically typed language},
+ journal = {ACM Trans. Program. Lang. Syst.},
+ volume = {13},
+ issue = {2},
+ month = {April},
+ year = {1991},
+ issn = {0164-0925},
+ pages = {237--268},
+ numpages = {32},
+ url = {http://doi.acm.org/10.1145/103135.103138},
+ doi = {http://doi.acm.org/10.1145/103135.103138},
+ acmid = {103138},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {theory},
+}
+
+@inproceedings{siek07,
+  Author = {Jeremy G. Siek and Walid Taha},
+  Booktitle = {ECOOP'07: 21st European Conference on Object-Oriented Programming},
+  Title = {Gradual Typing for Objects},
+  Year = {2007}}
+
+@InProceedings{siek06,
+author = {Jeremy G. Siek and Walid Taha},
+title = {Gradual typing for functional languages},
+booktitle = {Scheme and Functional Programming Workshop},
+year = 2006,
+month = {September} 
+}

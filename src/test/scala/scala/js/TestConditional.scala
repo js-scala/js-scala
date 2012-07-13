@@ -5,6 +5,39 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 
+trait Print extends Base {
+  implicit def unit(s: String): Rep[String]
+  def print(s: Rep[Any]): Rep[Unit]
+}
+
+trait PrintExp extends Print with EffectExp {
+  implicit def unit(s: String): Rep[String] = Const(s)
+  case class Print(s: Rep[Any]) extends Def[Unit]
+  def print(s: Rep[Any]) = reflectEffect(Print(s))
+}
+
+trait ScalaGenPrint extends ScalaGenEffect {
+  val IR: PrintExp
+  import IR._
+  
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
+    case Print(s) =>  emitValDef(sym, "println(" + quote(s) + ")")
+    case _ => super.emitNode(sym, rhs)
+  }
+}
+
+trait JSGenPrint extends JSGenEffect {
+  val IR: PrintExp
+  import IR._
+  
+  // TODO: should have a function for this
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
+    case Print(s) =>  emitValDef(sym, "document.body.appendChild(document.createElement(\"div\"))"+
+        ".appendChild(document.createTextNode("+quote(s)+"))")
+    case _ => super.emitNode(sym, rhs)
+  }
+}
+
 trait ConditionalProg { this: LiftNumeric with NumericOps with Equal with Print with IfThenElse =>
   
   def test(x: Rep[Double]): Rep[Double] = {

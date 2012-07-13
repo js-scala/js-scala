@@ -41,7 +41,7 @@ trait GenAjax extends JSGenBase {
   val IR: AjaxExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case AjaxGet(req, succ) => 
       stream.println(quote(req) + ".success = " + quote(succ)) 
       emitValDef(sym, "$.ajax(" + quote(req) + ")")

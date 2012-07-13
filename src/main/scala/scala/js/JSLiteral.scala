@@ -3,9 +3,11 @@ package scala.js
 import scala.virtualization.lms.common._
 
 import java.io.PrintWriter
+
+import scala.reflect.NameTransformer
   
 trait JSLiteral extends Base with EmbeddedControls {
-  trait JSLiteral extends Row[Rep]
+  trait JSLiteral extends Struct[Rep]
   def __new[T](args: (String, Boolean, Rep[T] => Rep[_])*): Rep[T] =
     newJSLiteral(args.map(x => (x._1, x._3).asInstanceOf[(String, Rep[JSLiteral] => Rep[_])]): _*).asInstanceOf[Rep[T]]
   def newJSLiteral(args: (String, Rep[JSLiteral] => Rep[_])*): Rep[JSLiteral]
@@ -15,18 +17,9 @@ trait JSLiteral extends Base with EmbeddedControls {
     def applyDynamic[T](field: String) = selectDynamic[T](field)
   }
   implicit def jsLiteralOps(receiver: Rep[JSLiteral]): JSLiteralOps
-
-  // -- workaround --
-  // Since JSLiteral is abstract, it doesn't have a manifest, but one
-  // is required by the LMS core framework. For instance, this will be
-  // needed when returning a JSLiteral from a function abstraction.
-  // implicit def jsLiteralManifest: Manifest[JSLiteral] =
-  //   implicitly[Manifest[AnyRef]].asInstanceOf[Manifest[JSLiteral]]
 }
 
 trait JSLiteralExp extends JSLiteral with BaseExp {
-  // trait JSLiteral extends Row[Rep]
-
   case class JSLiteralDef(members: List[(String, Exp[Any])]) extends Def[JSLiteral]
   case class MemberSelect(receiver: Exp[Any], field: String) extends Def[Any]
   private class Self(members: Map[String, Exp[JSLiteral] => Exp[Any]]) extends Exp[JSLiteral] with Serializable {
@@ -65,11 +58,13 @@ trait JSGenLiteral extends JSGenBase {
   val IR: JSLiteralExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case JSLiteralDef(members) => emitValDef(sym,
-      members.map({case (name, value) => "'" + name + "' : " + quote(value)}).mkString("{", ",", "}"))
+      members.map({case (name, value) => "'" + NameTransformer.decode(name) + "' : " + quote(value)}).mkString("{", ",", "}"))
     case MemberSelect(receiver, field) =>
-      emitValDef(sym, quote(receiver) + "." + field)
+      val decodedField = NameTransformer.decode(field)
+      if (decodedField == field) emitValDef(sym, quote(receiver) + "." + field)
+      else emitValDef(sym, quote(receiver) + "['" + decodedField + "']")
     case _ => super.emitNode(sym, rhs)
   }
 }
