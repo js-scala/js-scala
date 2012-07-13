@@ -1,18 +1,22 @@
-# JavaScript as an embedded DSL in Scala #
+# js.scala: JavaScript as an embedded DSL in Scala #
 
-### Presentations / Papers
+### Documentation
 
-* _draft_ ECOOP 2012 paper ([PDF](http://dl.dropbox.com/u/12870350/article.pdf))
-* [_upcoming_ Scala Days 2012 talk](http://days2012.scala-lang.org/node/383)
+* ECOOP 2012 paper ([PDF](http://infoscience.epfl.ch/record/179888/files/js-scala-ecoop.pdf)) and slides ([PDF](http://pldi12.cs.purdue.edu/sites/default/files/slides_ecoop_gkossakowski.pdf))
+* [Scala Days 2012 talk](http://skillsmatter.com/podcast/scala/javascript-embedded-dsl-scala)
 
 ### Setup
 
-1. Setup [virtualization-lms-core](http://github.com/gkossakowski/virtualization-lms-core), including Scala-Virtualized.
+1. Setup [virtualization-lms-core](http://github.com/js-scala/virtualization-lms-core), including [Scala-Virtualized](http://github.com/js-scala/scala/tree/js). If you deploy locally, ensure the `SCALA_VIRTUALIZED_VERSION` environment variable is set consistently.
 
-2. Copy the file `local.properties` from virtualization-lms-core to this root project directory.
+2. Run `sbt`. `test` to ensure everything works. Then `publish-local`.
 
-3. Run `sbt`. `test` to ensure everything works. Then `publish-local`. You can also run the dummy `Main` program with `run`.
+### Use it in Play 2!
+
+* [build-play20](http://github.com/js-scala/build-play20) builds Play 2! and all its transitive Scala dependencies with Scala-Virtualized, for compatibility with this DSL. Deployment on [dotcloud](http://github.com/js-scala/play2-on-dotcloud) is an option.
 
 ### Further projects
 
-[play-js-validation](http://github.com/namin/play-js-validation) uses this DSL to enable form validation code in Play 2.0 to be written once and checked on both client and server sides.
+* [play-js-validation](http://github.com/js-scala/play-js-validation) uses this DSL to enable form validation code in Play 2.0 to be written once and checked on both client and server sides.
+
+* [forest](http://github.com/js-scala/forest) uses this DSL to enable HTML templates to be written once and shared between client and server sides, both for initial rendering and automatic updating.

@@ -72,7 +72,7 @@ trait JSGenMiceApi extends JSGenProxy with JSGenLiteral {
     case _ => super.quote(x)
   }
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case InitWebSocket => emitValDef(sym,
       "new WebSocket(document.location.toString().replace('http://','ws://').replace('https://','wss://'))")
     case CurrentTime => emitValDef(sym,
@@ -123,7 +123,8 @@ object Mice {
       }
 
       jQuery(document).mousemove {
-        ratelimit(40) { (e: Rep[JQueryEvent]) =>
+        val r = ratelimit(40)
+        r { (e: Rep[JQueryEvent]) =>
           if (penDown) {
             socket.send(json.stringify(new JSLiteral {
               val action = "move"

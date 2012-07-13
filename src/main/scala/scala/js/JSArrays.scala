@@ -46,15 +46,15 @@ trait ArraysExp extends Arrays with EffectExp {
   case class ArrayApply[T:Manifest](a: Exp[Array[T]], i: Exp[Int]) extends Def[T]
   case class ArrayLength[T:Manifest](a: Exp[Array[T]]) extends Def[Int]
   case class ArrayUpdate[T:Manifest](a: Exp[Array[T]], i: Exp[Int], x: Exp[T]) extends Def[Unit]
-  case class ArrayForeach[T:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[Unit]) extends Def[Unit]
-  case class ArrayMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[U]) extends Def[Array[U]]
-  case class ArrayFlatMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[Array[U]]) extends Def[Array[U]]
-  case class ArrayFilter[T:Manifest](a: Exp[Array[T]], x: Sym[T], block: Exp[Boolean]) extends Def[Array[T]]
+  case class ArrayForeach[T:Manifest](a: Exp[Array[T]], x: Sym[T], block: Block[Unit]) extends Def[Unit]
+  case class ArrayMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Block[U]) extends Def[Array[U]]
+  case class ArrayFlatMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Block[Array[U]]) extends Def[Array[U]]
+  case class ArrayFilter[T:Manifest](a: Exp[Array[T]], x: Sym[T], block: Block[Boolean]) extends Def[Array[T]]
   case class ArrayJoin[T:Manifest](a: Exp[Array[T]], s: Exp[String]) extends Def[String]
-  case class RangeForeach(r: Range, i: Sym[Int], block: Exp[Unit]) extends Def[Unit]
-  case class RangeMap[U:Manifest](r: Range, i: Sym[Int], block: Exp[U]) extends Def[Array[U]]
-  case class RangeFlatMap[U:Manifest](r: Range, i: Sym[Int], block: Exp[Array[U]]) extends Def[Array[U]]
-  case class RangeFilter(r: Range, i: Sym[Int], block: Exp[Boolean]) extends Def[Array[Int]]
+  case class RangeForeach(r: Range, i: Sym[Int], block: Block[Unit]) extends Def[Unit]
+  case class RangeMap[U:Manifest](r: Range, i: Sym[Int], block: Block[U]) extends Def[Array[U]]
+  case class RangeFlatMap[U:Manifest](r: Range, i: Sym[Int], block: Block[Array[U]]) extends Def[Array[U]]
+  case class RangeFilter(r: Range, i: Sym[Int], block: Block[Boolean]) extends Def[Array[Int]]
 
   def array[T:Manifest](xs: Exp[T]*) = reflectEffect(ArrayLiteral(xs.toList), Alloc())
   def array_apply[T:Manifest](a: Exp[Array[T]], i: Exp[Int]) = ArrayApply(a, i)
@@ -145,7 +145,7 @@ trait JSGenArrays extends JSGenEffect {
   val IR: ArraysExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case ArrayLiteral(xs) => emitValDef(sym, xs.map(quote).mkString("[", ", ", "]"))
     case ArrayApply(a, i) => emitValDef(sym, quote(a) + "[" + quote(i) + "]")
     case ArrayLength(a) => emitValDef(sym, quote(a) + ".length")

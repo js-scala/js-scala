@@ -34,7 +34,7 @@ class TestLiteral extends FileDiffSuite {
   def testLiteral = {
     withOutFile(prefix+"literal") {
       new LiteralProg with JSLiteralExp with LiftNumeric with NumericOpsExpOpt { self =>
-        val codegen = new JSGenLiteral with JSGenNumericOps { val IR: self.type = self }
+        val codegen = new JSNestedCodegen with JSGenLiteral with JSGenNumericOps { val IR: self.type = self }
         codegen.emitSource(test _, "test", new PrintWriter(System.out))
       }
     }

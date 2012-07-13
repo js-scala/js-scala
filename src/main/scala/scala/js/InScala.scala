@@ -1,6 +1,7 @@
 package scala.js
 
 import scala.virtualization.lms.common._
+import scala.reflect.SourceContext
 
 trait InScala extends Base {
   type Rep[+T] = T
@@ -11,31 +12,33 @@ trait InScala extends Base {
 trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala with WhileInScala with BooleanOpsInScala with StringOpsInScala with DynamicInScala with ArraysInScala with JSFunctionsInScala with JSLiteralInScala with JSRegExpsInScala with TupleOpsInScala
 
 trait VariablesInScala extends Variables with ReadVarImplicit with InScala with ImplicitOpsInScala {
-  implicit def readVar[T:Manifest](v: Var[T]) : T = ???
-  def var_new[T:Manifest](init: T): Var[T] = ???
-  def var_assign[T:Manifest](lhs: Var[T], rhs: T): Unit = ???
-  def var_plusequals[T:Manifest](lhs: Var[T], rhs: T): Unit = ???
-  def var_minusequals[T:Manifest](lhs: Var[T], rhs: T): Unit = ???
+  override implicit def readVar[T:Manifest](v: Var[T])(implicit pos: SourceContext) : T = ???
+  override def var_new[T:Manifest](init: T)(implicit pos: SourceContext): Var[T] = ???
+  override def var_assign[T:Manifest](lhs: Var[T], rhs: T)(implicit pos: SourceContext): Unit = ???
+  override def var_plusequals[T:Manifest](lhs: Var[T], rhs: T)(implicit pos: SourceContext): Unit = ???
+  override def var_minusequals[T:Manifest](lhs: Var[T], rhs: T)(implicit pos: SourceContext): Unit = ???
+  override def var_timesequals[T:Manifest](lhs: Var[T], rhs: T)(implicit pos: SourceContext): Unit = ???
+  override def var_divideequals[T:Manifest](lhs: Var[T], rhs: T)(implicit pos: SourceContext): Unit = ???
 }
 
 trait ImplicitOpsInScala extends ImplicitOps with InScala {
-  def implicit_convert[X,Y](x: X)(implicit c: X => Y, mX: Manifest[X], mY: Manifest[Y]) : Y = c(x)
+  override def implicit_convert[X,Y](x: X)(implicit c: X => Y, mX: Manifest[X], mY: Manifest[Y], pos: SourceContext) : Y = c(x)
 }
 
 trait NumericOpsInScala extends NumericOps with VariablesInScala {
-  def numeric_plus[T:Numeric:Manifest](lhs: T, rhs: T) : T = {
+  override def numeric_plus[T:Numeric:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext) : T = {
     val t = implicitly[Numeric[T]]
     t.plus(lhs, rhs)
   }
-  def numeric_minus[T:Numeric:Manifest](lhs: T, rhs: T) : T = {
+  override def numeric_minus[T:Numeric:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext) : T = {
     val t = implicitly[Numeric[T]]
     t.minus(lhs, rhs)
   }
-  def numeric_times[T:Numeric:Manifest](lhs: T, rhs: T) : T = {
+  override def numeric_times[T:Numeric:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext) : T = {
     val t = implicitly[Numeric[T]]
     t.times(lhs, rhs)
   }
-  def numeric_divide[T:Numeric:Manifest](lhs: T, rhs: T) : T = {
+  override def numeric_divide[T:Numeric:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext) : T = {
     val t = implicitly[Numeric[T]]
     (t.toDouble(lhs) / t.toDouble(rhs)).asInstanceOf[T]
   }
@@ -43,39 +46,39 @@ trait NumericOpsInScala extends NumericOps with VariablesInScala {
 }
 
 trait OrderingOpsInScala extends OrderingOps with VariablesInScala {
-  def ordering_lt[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+  override def ordering_lt[T:Ordering:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext): Boolean = {
     val t = implicitly[Ordering[T]]
     t.lt(lhs, rhs)
   }
-  def ordering_lteq[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+  override def ordering_lteq[T:Ordering:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext): Boolean = {
     val t = implicitly[Ordering[T]]
     t.lteq(lhs, rhs)
   }
-  def ordering_gt[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+  override def ordering_gt[T:Ordering:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext): Boolean = {
     val t = implicitly[Ordering[T]]
     t.gt(lhs, rhs)
   }
-  def ordering_gteq[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+  override def ordering_gteq[T:Ordering:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext): Boolean = {
     val t = implicitly[Ordering[T]]
     t.gteq(lhs, rhs)
   }
-  def ordering_equiv[T:Ordering:Manifest](lhs: T, rhs: T): Boolean = {
+  override def ordering_equiv[T:Ordering:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext): Boolean = {
     val t = implicitly[Ordering[T]]
     t.equiv(lhs, rhs)
   }
-  def ordering_max[T:Ordering:Manifest](lhs: T, rhs: T): T = {
+  override def ordering_max[T:Ordering:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext): T = {
     val t = implicitly[Ordering[T]]
     t.max(lhs, rhs)
   }
-  def ordering_min[T:Ordering:Manifest](lhs: T, rhs: T): T = {
+  override def ordering_min[T:Ordering:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext): T = {
     val t = implicitly[Ordering[T]]
     t.min(lhs, rhs)
   }
 }
 
 trait EqualInScala extends Equal with InScala {
-  def equals[A:Manifest,B:Manifest](a: A, b: B) : Boolean = a.equals(b)
-  def notequals[A:Manifest,B:Manifest](a: A, b: B) : Boolean = !a.equals(b)
+  override def equals[A:Manifest,B:Manifest](a: A, b: B)(implicit pos: SourceContext) : Boolean = a.equals(b)
+  override def notequals[A:Manifest,B:Manifest](a: A, b: B)(implicit pos: SourceContext) : Boolean = !a.equals(b)
 }
 
 object OriginalOps {
@@ -92,6 +95,10 @@ object OriginalOps {
   def string_trim(s: String) : String = s.trim()
   def string_split(s: String, separators: String) : Array[String] = s.split(separators)
   def string_valueof(a: Any) = String.valueOf(a)
+  def string_startswith(s1: String, s2: String) = s1.startsWith(s2)
+  def string_todouble(s: String) = s.toDouble
+  def string_tofloat(s: String) = s.toFloat
+  def string_toint(s: String) = s.toInt
 
   def array[T:Manifest](xs: T*): Array[T] = Array(xs: _*)
   def array_apply[T:Manifest](a: Array[T], i: Int): T = a(i)
@@ -106,25 +113,29 @@ object OriginalOps {
 }
 
 trait IfThenElseInScala extends IfThenElse with InScala {
-  def __ifThenElse[T:Manifest](cond: Boolean, thenp: => T, elsep: => T): T =
+  override def __ifThenElse[T:Manifest](cond: Boolean, thenp: => T, elsep: => T)(implicit pos: SourceContext): T =
     OriginalOps.ifThenElse[T](cond, thenp, elsep)
 }
 
 trait WhileInScala extends While with InScala {
-  def __whileDo(cond: => Boolean, body: => Unit) = OriginalOps.whileDo(cond, body)
+  override def __whileDo(cond: => Boolean, body: => Unit)(implicit pos: SourceContext) = OriginalOps.whileDo(cond, body)
 }
 
 trait BooleanOpsInScala extends BooleanOps with InScala {
-  def boolean_negate(lhs: Boolean) : Boolean = OriginalOps.boolean_negate(lhs)
-  def boolean_and(lhs: Boolean, rhs: Boolean) : Boolean = OriginalOps.boolean_and(lhs, rhs)
-  def boolean_or(lhs: Boolean, rhs: Boolean) : Boolean = OriginalOps.boolean_or(lhs, rhs)
+  override def boolean_negate(lhs: Boolean)(implicit pos: SourceContext) : Boolean = OriginalOps.boolean_negate(lhs)
+  override def boolean_and(lhs: Boolean, rhs: Boolean)(implicit pos: SourceContext) : Boolean = OriginalOps.boolean_and(lhs, rhs)
+  override def boolean_or(lhs: Boolean, rhs: Boolean)(implicit pos: SourceContext) : Boolean = OriginalOps.boolean_or(lhs, rhs)
 }
 
 trait StringOpsInScala extends StringOps with InScala {
-  def string_plus(s: Any, o: Any): String = OriginalOps.string_plus(s, o)
-  def string_trim(s: String) : String = OriginalOps.string_trim(s)
-  def string_split(s: String, separators: String) : Array[String] = OriginalOps.string_split(s, separators)
-  def string_valueof(a: Any) = OriginalOps.string_valueof(a)
+  override def string_plus(s: Any, o: Any)(implicit pos: SourceContext): String = OriginalOps.string_plus(s, o)
+  override def string_trim(s: String)(implicit pos: SourceContext) : String = OriginalOps.string_trim(s)
+  override def string_split(s: String, separators: String)(implicit pos: SourceContext) : Array[String] = OriginalOps.string_split(s, separators)
+  override def string_valueof(a: Any)(implicit pos: SourceContext) = OriginalOps.string_valueof(a)
+  override def string_startswith(s1: String, s2: String)(implicit pos: SourceContext): Boolean = OriginalOps.string_startswith(s1, s2)
+  override def string_todouble(s: String)(implicit pos: SourceContext): Double = OriginalOps.string_todouble(s)
+  override def string_tofloat(s: String)(implicit pos: SourceContext): Float = OriginalOps.string_tofloat(s)
+  override def string_toint(s: String)(implicit pos: SourceContext): Int = OriginalOps.string_toint(s)
 }
 
 trait DynamicInScala extends DynamicBase with InScala {
@@ -150,8 +161,8 @@ trait ArraysInScala extends Arrays with InScala {
 }
 
 trait JSFunctionsInScala extends JSFunctions with InScala {
-  implicit def doLambda[A:Manifest,B:Manifest](fun: A => B): A => B = fun
-  def doApply[A:Manifest,B:Manifest](fun: A => B, arg: A): B = fun(arg)
+  override implicit def doLambda[A:Manifest,B:Manifest](fun: A => B)(implicit pos: SourceContext): A => B = fun
+  override def doApply[A:Manifest,B:Manifest](fun: A => B, arg: A)(implicit pos: SourceContext): B = fun(arg)
 }
 
 trait JSLiteralInScala extends JSLiteral with InScala {
@@ -171,28 +182,28 @@ trait JSRegExpsInScala extends JSRegExps with InScala {
 }
 
 trait TupleOpsInScala extends TupleOps with InScala {
-  implicit def make_tuple2[A:Manifest,B:Manifest](t: (A, B)) : (A,B) = t
-  implicit def make_tuple3[A:Manifest,B:Manifest,C:Manifest](t: (A, B, C)) : (A,B,C) = t
-  implicit def make_tuple4[A:Manifest,B:Manifest,C:Manifest,D:Manifest](t: (A, B, C, D)) : (A,B,C,D) = t
-  implicit def make_tuple5[A:Manifest,B:Manifest,C:Manifest,D:Manifest,E:Manifest](t: (A, B, C, D, E)) : (A,B,C,D,E) = t
+  override implicit def make_tuple2[A:Manifest,B:Manifest](t: (A, B))(implicit pos: SourceContext) : (A,B) = t
+  override implicit def make_tuple3[A:Manifest,B:Manifest,C:Manifest](t: (A, B, C))(implicit pos: SourceContext) : (A,B,C) = t
+  override implicit def make_tuple4[A:Manifest,B:Manifest,C:Manifest,D:Manifest](t: (A, B, C, D))(implicit pos: SourceContext) : (A,B,C,D) = t
+  override implicit def make_tuple5[A:Manifest,B:Manifest,C:Manifest,D:Manifest,E:Manifest](t: (A, B, C, D, E))(implicit pos: SourceContext) : (A,B,C,D,E) = t
 
-  def tuple2_get1[A:Manifest](t: (A,_)) : A = t._1
-  def tuple2_get2[B:Manifest](t: (_,B)) : B = t._2
+  override def tuple2_get1[A:Manifest](t: (A,_))(implicit pos: SourceContext) : A = t._1
+  override def tuple2_get2[B:Manifest](t: (_,B))(implicit pos: SourceContext) : B = t._2
 
-  def tuple3_get1[A:Manifest](t: (A,_,_)) : A = t._1
-  def tuple3_get2[B:Manifest](t: (_,B,_)) : B = t._2
-  def tuple3_get3[C:Manifest](t: (_,_,C)) : C = t._3
+  override def tuple3_get1[A:Manifest](t: (A,_,_))(implicit pos: SourceContext) : A = t._1
+  override def tuple3_get2[B:Manifest](t: (_,B,_))(implicit pos: SourceContext) : B = t._2
+  override def tuple3_get3[C:Manifest](t: (_,_,C))(implicit pos: SourceContext) : C = t._3
 
-  def tuple4_get1[A:Manifest](t: (A,_,_,_)) : A = t._1
-  def tuple4_get2[B:Manifest](t: (_,B,_,_)) : B = t._2
-  def tuple4_get3[C:Manifest](t: (_,_,C,_)) : C = t._3
-  def tuple4_get4[D:Manifest](t: (_,_,_,D)) : D = t._4
+  override def tuple4_get1[A:Manifest](t: (A,_,_,_))(implicit pos: SourceContext) : A = t._1
+  override def tuple4_get2[B:Manifest](t: (_,B,_,_))(implicit pos: SourceContext) : B = t._2
+  override def tuple4_get3[C:Manifest](t: (_,_,C,_))(implicit pos: SourceContext) : C = t._3
+  override def tuple4_get4[D:Manifest](t: (_,_,_,D))(implicit pos: SourceContext) : D = t._4
 
-  def tuple5_get1[A:Manifest](t: (A,_,_,_,_)) : A = t._1
-  def tuple5_get2[B:Manifest](t: (_,B,_,_,_)) : B = t._2
-  def tuple5_get3[C:Manifest](t: (_,_,C,_,_)) : C = t._3
-  def tuple5_get4[D:Manifest](t: (_,_,_,D,_)) : D = t._4
-  def tuple5_get5[E:Manifest](t: (_,_,_,_,E)) : E = t._5
+  override def tuple5_get1[A:Manifest](t: (A,_,_,_,_))(implicit pos: SourceContext) : A = t._1
+  override def tuple5_get2[B:Manifest](t: (_,B,_,_,_))(implicit pos: SourceContext) : B = t._2
+  override def tuple5_get3[C:Manifest](t: (_,_,C,_,_))(implicit pos: SourceContext) : C = t._3
+  override def tuple5_get4[D:Manifest](t: (_,_,_,D,_))(implicit pos: SourceContext) : D = t._4
+  override def tuple5_get5[E:Manifest](t: (_,_,_,_,E))(implicit pos: SourceContext) : E = t._5
 }
 
 trait JSProxyInScala extends JSProxyBase with InScala {

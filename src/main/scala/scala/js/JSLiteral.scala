@@ -67,7 +67,7 @@ trait JSGenLiteral extends JSGenBase {
   val IR: JSLiteralExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case JSLiteralDef(members) => emitValDef(sym,
       members.map({case (name, value) => "'" + NameTransformer.decode(name) + "' : " + quote(value)}).mkString("{", ",", "}"))
     case MemberSelect(receiver, field) =>
