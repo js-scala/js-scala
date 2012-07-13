@@ -8,8 +8,8 @@ import java.io.PrintWriter
 trait Codegen extends GenericCodegen {
   import IR._
 
-  def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)]
-  def emitValDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit
+  def emitSourceAnyArity(args: List[Exp[Any]], body: Block[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)]
+  def emitValDef(sym: Sym[Any], rhs: String): Unit
 }
 
 trait JSCodegen extends Codegen {
@@ -26,59 +26,52 @@ trait JSCodegen extends Codegen {
   }
 
   def emitSource0[B](f: () => Exp[B], methName: String, stream: PrintWriter)(implicit mB: Manifest[B]): List[(Sym[Any], Any)] = {
-    val y = f()
+    val y = reifyBlock(f())
     emitSourceAnyArity(Nil, y, methName, stream)
   }
 
   def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)(implicit mA: Manifest[A], mB: Manifest[B]): List[(Sym[Any], Any)] = {
     val x = fresh[A]
-    val y = f(x)
+    val y = reifyBlock(f(x))
 
     emitSourceAnyArity(List(x), y, methName, stream)
   }
 
-  override def emitSourceAnyArity(args: List[Exp[Any]], body: Exp[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
+  override def emitSourceAnyArity(args: List[Exp[Any]], body: Block[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
     val argsStr = args.map(quote).mkString(", ")
     stream.println("function"+(if (methName.isEmpty) "" else (" "+methName))+"("+argsStr+") {")
 
-    emitBlock(body)(stream)
-    stream.println("return "+quote(getBlockResult(body)))
+    withStream(stream) {
+      emitBlock(body)
+      stream.println("return "+quote(getBlockResult(body)))
 
-    stream.println("}")
-    stream.flush
+      stream.println("}")
+      stream.flush
+    }
     getFreeDataBlock(body)
   }
 
-  override def emitValDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit = {
+  override def emitValDef(sym: Sym[Any], rhs: String): Unit = {
     stream.println("var " + quote(sym) + " = " + rhs)
   }
 
-  def emitVarDef(sym: Sym[Any], rhs: String)(implicit stream: PrintWriter): Unit = {
+  def emitVarDef(sym: Sym[Any], rhs: String): Unit = {
     emitValDef(sym, rhs)
   }
 
-  def emitAssignment(lhs: String, rhs: String)(implicit stream: PrintWriter): Unit = {
+  def emitAssignment(lhs: String, rhs: String): Unit = {
     stream.println(lhs + " = " + rhs)
   }
 
   override def quote(x: Exp[Any]) : String = x match {
     case Const(()) => "undefined"
+    case null => "null" // why?
     case _ => super.quote(x)
   }
 }
 
 trait JSNestedCodegen extends GenericNestedCodegen with JSCodegen {
   import IR._
-
-  override def emitSource0[B](f: () => Exp[B], methName: String, stream: PrintWriter)(implicit mB: Manifest[B]): List[(Sym[Any], Any)] = {
-    super.emitSource0(() => reifyEffects(f()), methName, stream)
-  }
-
-  // TODO: we shouldn't need the manifests here (aks)
-  override def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)
-      (implicit mA: Manifest[A], mB: Manifest[B]): List[(Sym[Any], Any)] = {
-    super.emitSource[A,B](x => reifyEffects(f(x)), methName, stream)
-  }
 
   override def quote(x: Exp[Any]) = x match { // TODO: quirk!
     case Sym(-1) => sys.error("Sym(-1) not supported")
@@ -109,7 +102,7 @@ trait JSTupledCodegen extends JSCodegen {
       val x = fresh[A]
       (List(x), x)
     }
-    val y = f(x)
+    val y = reifyBlock(f(x))
     emitSourceAnyArity(args, y, methName, stream)
   }
 
@@ -126,7 +119,7 @@ trait JSTupledCodegen extends JSCodegen {
     super.emitSource(f1, methName, stream)
   }
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case Tuple2Access1(UnboxedTuple(vars)) => emitValDef(sym, quote(vars(0)))
     case Tuple2Access2(UnboxedTuple(vars)) => emitValDef(sym, quote(vars(1)))
     case _ => super.emitNode(sym, rhs)
@@ -138,7 +131,7 @@ trait JSGenIfThenElse extends BaseGenIfThenElse with JSGenEffect { // it's more 
   val IR: IfThenElseExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case IfThenElse(c,a,b) =>  
       stream.println("var " + quote(sym))
       stream.println("if (" + quote(c) + ") {")
@@ -156,7 +149,7 @@ trait JSGenNumericOps extends JSGenBase {
   val IR: NumericOpsExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case NumericPlus(a,b) => emitValDef(sym, quote(a) + " + " + quote(b))
     case NumericMinus(a,b) => emitValDef(sym, quote(a) + " - " + quote(b))
     case NumericTimes(a,b) => emitValDef(sym, quote(a) + " * " + quote(b))
@@ -169,7 +162,7 @@ trait JSGenOrderingOps extends JSGenBase {
   val IR: OrderingOpsExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case OrderingLT(a,b) => emitValDef(sym, quote(a) + " < " + quote(b))
     case OrderingLTEQ(a,b) => emitValDef(sym, quote(a) + " <= " + quote(b))
     case OrderingGT(a,b) => emitValDef(sym, quote(a) + " > " + quote(b))
@@ -184,7 +177,7 @@ trait JSGenOrderingOps extends JSGenBase {
 trait JSGenWhile extends JSGenEffect with BaseGenWhile {
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case While(c,b) =>
       emitValDef(sym, "undefined")
       val cond_fun = "cond_" + quote(sym)
@@ -203,7 +196,7 @@ trait JSGenBooleanOps extends JSGenBase {
   val IR: BooleanOpsExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case BooleanNegate(b) => emitValDef(sym, "!" + quote(b))
     case BooleanAnd(lhs,rhs) => emitValDef(sym, quote(lhs) + " && " + quote(rhs))
     case BooleanOr(lhs,rhs) => emitValDef(sym, quote(lhs) + " || " + quote(rhs))
@@ -215,7 +208,7 @@ trait JSGenStringOps extends JSGenBase {
   val IR: StringOpsExp
   import IR._
   
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case StringPlus(s1,s2) => emitValDef(sym, "%s+%s".format(quote(s1), quote(s2)))
     case StringTrim(s) => emitValDef(sym, "%s.trim()".format(quote(s)))
     case StringSplit(s, sep) => emitValDef(sym, "%s.split(%s)".format(quote(s), quote(sep)))

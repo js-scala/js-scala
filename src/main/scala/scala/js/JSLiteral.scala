@@ -3,6 +3,8 @@ package scala.js
 import scala.virtualization.lms.common._
 
 import java.io.PrintWriter
+
+import scala.reflect.NameTransformer
   
 trait JSLiteral extends Base with EmbeddedControls {
   type JSLiteral <: Struct[Rep]
@@ -65,11 +67,13 @@ trait JSGenLiteral extends JSGenBase {
   val IR: JSLiteralExp
   import IR._
 
-  override def emitNode(sym: Sym[Any], rhs: Def[Any])(implicit stream: PrintWriter) = rhs match {
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case JSLiteralDef(members) => emitValDef(sym,
-      members.map({case (name, value) => "'" + name + "' : " + quote(value)}).mkString("{", ",", "}"))
+      members.map({case (name, value) => "'" + NameTransformer.decode(name) + "' : " + quote(value)}).mkString("{", ",", "}"))
     case MemberSelect(receiver, field) =>
-      emitValDef(sym, quote(receiver) + "." + field)
+      val decodedField = NameTransformer.decode(field)
+      if (decodedField == field) emitValDef(sym, quote(receiver) + "." + field)
+      else emitValDef(sym, quote(receiver) + "['" + decodedField + "']")
     case _ => super.emitNode(sym, rhs)
   }
 }
