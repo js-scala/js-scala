@@ -17,7 +17,7 @@ trait NestedCodegenOpt extends GenericNestedCodegen with Codegen {
     defUseMap.clear()
     
     refSyms(getBlockResult(body)).foreach(addDefUse)
-    for (TP(_, rhs) <- buildScheduleForResult(body)) {
+    for (TP(_, rhs) <- buildScheduleForResult(body, false /*unsorted*/)) {
       for (sym <- refSyms(rhs)) {
 	addDefUse(sym)
       }
