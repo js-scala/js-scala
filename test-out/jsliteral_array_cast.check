@@ -1,5 +1,5 @@
 function main(x0) {
-var x1 = x0
+var x1 = x0;
 if (!(x1 instanceof Array)) throw "Not an Array: " + x1;
 for (var i=0; i < x1.length; i++) {
 if (!("data" in x1[i])) throw "data is not defined in " + x1[i];

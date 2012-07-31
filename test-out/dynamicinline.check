@@ -1,6 +1,6 @@
 function main(x0) {
-var x1 = this
-var x2 = foo.bar
-var x3 = x2.call(x1)
+var x1 = this;
+var x2 = foo.bar;
+var x3 = x2.call(x1);
 return x3
 }

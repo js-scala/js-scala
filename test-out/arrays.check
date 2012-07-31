@@ -1,40 +1,40 @@
 function test1(x0) {
-var x1 = [1, 2, 3]
-var x2 = x1[1] = 4
-var x3 = x1.length
-var x4 = x1[1]
-var x5 = x3 + x4
-var x6 = x5 + x0
+var x1 = [1, 2, 3];
+var x2 = x1[1] = 4;
+var x3 = x1.length;
+var x4 = x1[1];
+var x5 = x3 + x4;
+var x6 = x5 + x0;
 return x6
 }
 function test2(x8) {
-var x9 = [1, 2, 3]
-var x10 = [4, 5, 6]
+var x9 = [1, 2, 3];
+var x10 = [4, 5, 6];
 var x14=x9.forEach(
 function(x11,i_,a_){
-var x12 = x10[0] = x11
+var x12 = x10[0] = x11;
 return x12
 })
-var x15 = x10[0]
+var x15 = x10[0];
 return x15
 }
 function test3(x17) {
-var x18 = [1, 2, 3]
+var x18 = [1, 2, 3];
 var x21=x18.map(
 function(x19){
-var x20 = x19 + x17
+var x20 = x19 + x17;
 return x20
 })
 return x21
 }
 function test4(x23) {
-var x24 = [1, 2, 3]
+var x24 = [1, 2, 3];
 var x30 = []
 for(var x32 = 0; x32< x24.length; x32++){
 x30.splice.apply(x30, [x30.length, 0].concat((function(x25){
 var x28=x24.map(
 function(x26){
-var x27 = x25 + x26
+var x27 = x25 + x26;
 return x27
 })
 return x28
@@ -43,10 +43,10 @@ return x28
 return x30
 }
 function test5(x33) {
-var x34 = [1, 2, 3]
+var x34 = [1, 2, 3];
 var x37=x34.filter(
 function(x35,i_,a_){
-var x36 = x35==x33
+var x36 = x35==x33;
 return x36
 })
 var x39=x37.map(
@@ -56,10 +56,10 @@ return x38
 return x39
 }
 function test6(x41) {
-var x42 = []
-var x46 = undefined
+var x42 = [];
+var x46 = undefined;
 for(var x43=0;x43<x41;x43++){
-var x44 = x42[x43] = x43
+var x44 = x42[x43] = x43;
 }
 return x42
 }
@@ -75,7 +75,7 @@ var x58 = []
 for(var x53=0;x53<x52;x53++){
 var x56 = []
 for(var x54=0;x54<x52;x54++){
-var x55 = x53 * x54
+var x55 = x53 * x54;
 x56[x54]=x55
 }
 x58.splice.apply(x58, [x58.length,0].concat(x56))
@@ -85,19 +85,19 @@ return x58
 function test9(x60) {
 var x63 = []
 for(var x61=0;x61<x60;x61++){
-var x62 = x61==1
+var x62 = x61==1;
 if (x62) {
 x63[x63.length]=x62
 }}
 var x66=x63.map(
 function(x64){
-var x65 = x64 * x64
+var x65 = x64 * x64;
 return x65
 })
 return x66
 }
 function test10(x68) {
-var x69 = [1, 2, 3]
+var x69 = [1, 2, 3];
 var x79 = []
 for(var x81 = 0; x81< x69.length; x81++){
 x79.splice.apply(x79, [x79.length, 0].concat((function(x70){
@@ -105,8 +105,8 @@ var x77 = []
 for(var x71=0;x71<x68;x71++){
 var x75=x69.map(
 function(x72){
-var x73 = x70 + x72
-var x74 = x73 * x71
+var x73 = x70 + x72;
+var x74 = x73 * x71;
 return x74
 })
 x77.splice.apply(x77, [x77.length,0].concat(x75))

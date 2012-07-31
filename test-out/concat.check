@@ -1,5 +1,5 @@
 function Concat(x0) {
-var x1 = [1,2,3]
-var x2 = x0.concat(x1)
+var x1 = [1,2,3];
+var x2 = x0.concat(x1);
 return x2
 }

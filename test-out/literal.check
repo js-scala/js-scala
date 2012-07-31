@@ -1,7 +1,7 @@
 function test(x0) {
-var x1 = x0 + 2.0
-var x2 = x0 + x1
-var x3 = {'a' : x0,'b' : x1,'c' : 1.0,'d' : x2,'e' : 3.0}
-var x4 = x3.a
+var x1 = x0 + 2.0;
+var x2 = x0 + x1;
+var x3 = {'a' : x0,'b' : x1,'c' : 1.0,'d' : x2,'e' : 3.0};
+var x4 = x3.a;
 return x4
 }

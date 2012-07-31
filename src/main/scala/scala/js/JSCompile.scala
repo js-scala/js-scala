@@ -52,7 +52,7 @@ trait JSCodegen extends Codegen {
   }
 
   override def emitValDef(sym: Sym[Any], rhs: String): Unit = {
-    stream.println("var " + quote(sym) + " = " + rhs)
+    stream.println("var " + quote(sym) + " = " + rhs + ";")
   }
 
   def emitVarDef(sym: Sym[Any], rhs: String): Unit = {

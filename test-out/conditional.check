@@ -34,22 +34,22 @@ yyy
 yoyo
 22.0
 function main(x0) {
-var x1 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yoyo"))
-var x2 = x0==x0
-var x6 = x0 + 4.0
+var x1 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yoyo"));
+var x2 = x0==x0;
+var x6 = x0 + 4.0;
 var x9
 if (x2) {
-var x3 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yoyo"))
-var x4 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("xxx"))
-var x5 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yoyo"))
+var x3 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yoyo"));
+var x4 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("xxx"));
+var x5 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yoyo"));
 x9=x6
 } else {
-var x8 = x0 + 6.0
+var x8 = x0 + 6.0;
 x9=x8
 }
-var x10 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yyy"))
-var x11 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yoyo"))
-var x12 = x9 + x6
+var x10 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yyy"));
+var x11 = document.body.appendChild(document.createElement("div")).appendChild(document.createTextNode("yoyo"));
+var x12 = x9 + x6;
 return x12
 }
 -- end

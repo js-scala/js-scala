@@ -1,14 +1,14 @@
 function main(x0) {
-var x1 = 0
-var x7 = undefined
+var x1 = 0;
+var x7 = undefined;
 function cond_x7() {
-var x2 = x1
-var x3 = x2 < x0
+var x2 = x1;
+var x3 = x2 < x0;
 return x3
 }
 while (cond_x7()) {
-var x5 = x1 += 1
+var x5 = x1 += 1;
 }
-var x8 = x1
+var x8 = x1;
 return x8
 }

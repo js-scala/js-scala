@@ -1,5 +1,5 @@
 function main(x0) {
-var x1 = x0
+var x1 = x0;
 if (!("foo" in x1)) throw "foo is not defined in " + x1;
 if (!("lit" in x1)) throw "lit is not defined in " + x1;
 if (!("a" in x1.lit)) throw "a is not defined in " + x1.lit;
