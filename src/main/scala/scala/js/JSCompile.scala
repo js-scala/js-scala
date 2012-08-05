@@ -2,6 +2,7 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import scala.virtualization.lms.internal._
+import scala.reflect.NameTransformer
 
 import java.io.PrintWriter
 
@@ -68,6 +69,17 @@ trait JSCodegen extends Codegen {
     case null => "null" // why?
     case _ => super.quote(x)
   }
+
+  def literalObjectDef(fields: Seq[(String, Exp[_])]): String = {
+    fields.map({case (name, value) => "'" + NameTransformer.decode(name) + "' : " + quote(value)}).mkString("{", ",", "}")
+  }
+
+  def literalObjectSelect(receiver: Exp[_], field: String): String = {
+    val decodedField = NameTransformer.decode(field)
+    if (decodedField == field) quote(receiver) + "." + field
+    else quote(receiver) + "['" + decodedField + "']"
+  }
+
 }
 
 trait JSNestedCodegen extends GenericNestedCodegen with JSCodegen {

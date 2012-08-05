@@ -2,16 +2,16 @@ package scala.js
 
 import scala.virtualization.lms.common._
 
-trait JSGenStruct extends JSGenBase { this: JSGenLiteral with JSGenStruct =>
+trait JSGenStruct extends JSGenBase {
 
-  val IR: StructExp with JSLiteralExp
+  val IR: StructExp
   import IR._
   
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case Struct(_, elems) =>
-      emitNode(sym, JSLiteralDef(elems.toList))
+      emitValDef(sym, literalObjectDef(elems.toSeq))
     case Field(struct, index, _) =>
-      emitNode(sym, MemberSelect(struct, index))
+      emitValDef(sym, literalObjectSelect(struct, index))
     case _ => super.emitNode(sym, rhs)
   }
 
