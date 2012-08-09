@@ -19,6 +19,10 @@ trait SplitJoinProg { this: JS =>
   }
 }
 
+trait ObjectProg { this: JS =>
+  def test(o: Rep[Any]): Rep[String] = o.toString()
+}
+
 class TestCompile extends FileDiffSuite {
   val prefix = "test-out/"
   
@@ -40,6 +44,16 @@ class TestCompile extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"splitjoin")
+  }
+
+  def testObject = {
+    withOutFile(prefix+"object") {
+      new ObjectProg with JSExp { self =>
+        val codegen = new JSGen { val IR: self.type = self }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"object")
   }
 
 }

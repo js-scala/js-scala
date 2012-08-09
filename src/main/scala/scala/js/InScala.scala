@@ -9,7 +9,7 @@ trait InScala extends Base {
   protected def unit[T:Manifest](x: T) = x
 }
 
-trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala with WhileInScala with BooleanOpsInScala with StringOpsInScala with DynamicInScala with ArraysInScala with JSFunctionsInScala with JSLiteralInScala with JSRegExpsInScala with TupleOpsInScala
+trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala with WhileInScala with BooleanOpsInScala with StringOpsInScala with ObjectOpsInScala with DynamicInScala with ArraysInScala with JSFunctionsInScala with JSLiteralInScala with JSRegExpsInScala with TupleOpsInScala
 
 trait VariablesInScala extends Variables with ReadVarImplicit with InScala with ImplicitOpsInScala {
   override implicit def readVar[T:Manifest](v: Var[T])(implicit pos: SourceContext) : T = ???
@@ -136,6 +136,12 @@ trait StringOpsInScala extends StringOps with InScala {
   override def string_todouble(s: String)(implicit pos: SourceContext): Double = OriginalOps.string_todouble(s)
   override def string_tofloat(s: String)(implicit pos: SourceContext): Float = OriginalOps.string_tofloat(s)
   override def string_toint(s: String)(implicit pos: SourceContext): Int = OriginalOps.string_toint(s)
+}
+
+trait ObjectOpsInScala extends ObjectOps with InScala {
+  override def object_tostring(o: Any)(implicit pos: SourceContext) = o.toString
+  override def object_unsafe_immutable[A:Manifest](lhs: A)(implicit pos: SourceContext) = lhs
+  override def object_unsafe_mutable[A:Manifest](lhs: A)(implicit pos: SourceContext) = lhs
 }
 
 trait DynamicInScala extends DynamicBase with InScala {

@@ -229,3 +229,14 @@ trait JSGenStringOps extends JSGenBase {
   }
 }
 
+trait JSGenObjectOps extends JSGenBase {
+  val IR: ObjectOpsExp
+  import IR._
+
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
+    case ObjectToString(o) => emitValDef(sym, quote(o) + ".toString()")
+    case ObjectUnsafeImmutable(o) => emitValDef(sym, quote(o))
+    case ObjectUnsafeMutable(o) => emitValDef(sym, quote(o))
+    case _ => super.emitNode(sym, rhs)
+  }
+}
