@@ -1,4 +1,6 @@
 function main(x0) {
-var x1 = x0.toString();
-return x1
+var x1 = (x0).toString();
+var x2 = (42).toString();
+var x3 = x1+x2;
+return x3
 }

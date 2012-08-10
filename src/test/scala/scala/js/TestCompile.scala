@@ -20,7 +20,7 @@ trait SplitJoinProg { this: JS =>
 }
 
 trait ObjectProg { this: JS =>
-  def test(o: Rep[Any]): Rep[String] = o.toString()
+  def test(o: Rep[Any]): Rep[String] = o.toString() + unit(42).toString()
 }
 
 class TestCompile extends FileDiffSuite {
