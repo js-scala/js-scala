@@ -160,6 +160,7 @@ trait ArraysInScala extends Arrays with InScala {
   def array_flatMap[T:Manifest,U:Manifest](a: Array[T], block: T => Array[U]): Array[U] = OriginalOps.array_flatMap(a, block)
   def array_filter[T:Manifest](a: Array[T], block: T => Boolean): Array[T] = OriginalOps.array_filter(a, block)
   def array_join[T:Manifest](a: Array[T], s: String): String = a.mkString(s)
+  def array_tolist[T : Manifest](a: Array[T]): List[T] = (a: collection.mutable.ArrayOps[T]).toList
   def range_foreach(r: Range, block: Int => Unit): Unit = (r.a to r.b).foreach(block)
   def range_map[U:Manifest](r: Range, block: Int => U): Array[U] = (r.a to r.b).map(block).toArray
   def range_flatMap[U:Manifest](r: Range, block: Int => Array[U]): Array[U] = (r.a to r.b).flatMap(block andThen (x => x : scala.collection.GenTraversableOnce[U])).toArray

@@ -16,6 +16,7 @@ trait Arrays extends Base {
     def flatMap[U:Manifest](block: Rep[T] => Rep[Array[U]]) = array_flatMap(a, block)
     def filter(block: Rep[T] => Rep[Boolean]) = array_filter(a, block)
     def join(s: Rep[String]) = array_join(a, s)
+    def toList: Rep[List[T]] = array_tolist(a)
   }
 
   def array[T:Manifest](xs: Rep[T]*): Rep[Array[T]]
@@ -27,6 +28,7 @@ trait Arrays extends Base {
   def array_flatMap[T:Manifest,U:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[Array[U]]): Rep[Array[U]]
   def array_filter[T:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[Boolean]): Rep[Array[T]]
   def array_join[T:Manifest](a: Rep[Array[T]], s: Rep[String]): Rep[String]
+  def array_tolist[T : Manifest](a: Rep[Array[T]]): Rep[List[T]]
 
   case class Range(a: Rep[Int], b: Rep[Int]) {
     def foreach(block: Rep[Int] => Rep[Unit]) = range_foreach(this, block)
@@ -51,6 +53,7 @@ trait ArraysExp extends Arrays with EffectExp {
   case class ArrayFlatMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Block[Array[U]]) extends Def[Array[U]]
   case class ArrayFilter[T:Manifest](a: Exp[Array[T]], x: Sym[T], block: Block[Boolean]) extends Def[Array[T]]
   case class ArrayJoin[T:Manifest](a: Exp[Array[T]], s: Exp[String]) extends Def[String]
+  case class ArrayToList[T](a: Exp[Array[T]]) extends Def[List[T]]
   case class RangeForeach(r: Range, i: Sym[Int], block: Block[Unit]) extends Def[Unit]
   case class RangeMap[U:Manifest](r: Range, i: Sym[Int], block: Block[U]) extends Def[Array[U]]
   case class RangeFlatMap[U:Manifest](r: Range, i: Sym[Int], block: Block[Array[U]]) extends Def[Array[U]]
@@ -81,6 +84,7 @@ trait ArraysExp extends Arrays with EffectExp {
     reflectEffect(ArrayFilter(a, x, b), Alloc() andAlso summarizeEffects(b).star)
   }
   def array_join[T:Manifest](a: Exp[Array[T]], s: Exp[String]) = ArrayJoin(a, s)
+  override def array_tolist[T : Manifest](a: Exp[Array[T]]) = ArrayToList(a)
   def range_foreach(r: Range, block: Exp[Int] => Exp[Unit]) = {
     val i = fresh[Int]
     val b = reifyEffects(block(i))
@@ -178,6 +182,7 @@ trait JSGenArrays extends JSGenEffect {
       stream.println("return " + quote(getBlockResult(block)))
       stream.println("})")
     case ArrayJoin(a, s) => emitValDef(sym, quote(a) + ".join(" + quote(s) + ")")
+    case ArrayToList(a) => emitValDef(sym, quote(a) + ".splice(0)")
     case RangeForeach(Range(a, b), i, block) =>
       emitValDef(sym, "undefined")
       stream.println("for(var " + quote(i) + "=" + quote(a) + ";" + quote(i) + "<" + quote(b) + ";" + quote(i) + "++){")
