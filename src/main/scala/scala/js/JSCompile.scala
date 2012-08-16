@@ -6,14 +6,7 @@ import scala.reflect.NameTransformer
 
 import java.io.PrintWriter
 
-trait Codegen extends GenericCodegen {
-  import IR._
-
-  def emitSourceAnyArity(args: List[Exp[Any]], body: Block[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)]
-  def emitValDef(sym: Sym[Any], rhs: String): Unit
-}
-
-trait JSCodegen extends Codegen {
+trait JSCodegen extends GenericCodegen {
   import IR._
 
   def emitHTMLPage[B](f: () => Exp[B], stream: PrintWriter)(implicit mB: Manifest[B]): Unit = {
@@ -28,21 +21,14 @@ trait JSCodegen extends Codegen {
 
   def emitSource0[B](f: () => Exp[B], methName: String, stream: PrintWriter)(implicit mB: Manifest[B]): List[(Sym[Any], Any)] = {
     val y = reifyBlock(f())
-    emitSourceAnyArity(Nil, y, methName, stream)
+    emitSource(Nil, y, methName, stream)
   }
 
-  def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)(implicit mA: Manifest[A], mB: Manifest[B]): List[(Sym[Any], Any)] = {
-    val x = fresh[A]
-    val y = reifyBlock(f(x))
-
-    emitSourceAnyArity(List(x), y, methName, stream)
-  }
-
-  override def emitSourceAnyArity(args: List[Exp[Any]], body: Block[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
+  def emitSource[A : Manifest](args: List[Sym[_]], body: Block[A], name: String, out: PrintWriter) = {
     val argsStr = args.map(quote).mkString(", ")
-    stream.println("function"+(if (methName.isEmpty) "" else (" "+methName))+"("+argsStr+") {")
 
-    withStream(stream) {
+    withStream(out) {
+      stream.println("function"+(if (name.isEmpty) "" else (" "+name))+"("+argsStr+") {")
       emitBlock(body)
       stream.println("return "+quote(getBlockResult(body)))
 
@@ -97,45 +83,6 @@ trait JSGenBase extends JSCodegen {
 
 trait JSGenEffect extends JSNestedCodegen with JSGenBase {
   val IR: EffectExp
-}
-
-trait JSTupledCodegen extends JSCodegen {
-  val IR: TupleOpsExp
-  import IR._
-
-  case class UnboxedTuple[T: Manifest](val vars: List[Exp[Any]]) extends Exp[T]
-
-  override def emitSource[A,B](f: Exp[A] => Exp[B], methName: String, stream: PrintWriter)(implicit mA: Manifest[A], mB: Manifest[B]): List[(Sym[Any], Any)] = {
-    def tupledManifest[T](m: Manifest[T]): Boolean = m.erasure.getName startsWith "scala.Tuple"
-      val (args, x) = if (tupledManifest(mA)) {
-      val args = mA.typeArguments.map(fresh(_))
-      (args, UnboxedTuple[A](args))
-    } else {
-      val x = fresh[A]
-      (List(x), x)
-    }
-    val y = reifyBlock(f(x))
-    emitSourceAnyArity(args, y, methName, stream)
-  }
-
-  def emitSource[A1,A2,B](f: (Exp[A1], Exp[A2]) => Exp[B], methName: String, stream: PrintWriter)(
-    implicit mA1: Manifest[A1], mA2: Manifest[A2], mB: Manifest[B]): Unit = {
-    val f1 = (t: Exp[(A1,A2)]) => f(tuple2_get1(t), tuple2_get2(t))
-    emitSource(f1, methName, stream)
-  }
-
-  def emitSource[A1,A2,A3,A4,A5,B](f: (Exp[A1], Exp[A2], Exp[A3], Exp[A4], Exp[A5]) => Exp[B], methName: String, stream: PrintWriter)(
-    implicit mA1: Manifest[A1], mA2: Manifest[A2], mA3: Manifest[A3], mA4: Manifest[A4], mA5: Manifest[A5], mB: Manifest[B]): Unit = {
-    val f1 = (t: Exp[(A1,A2,A3,A4,A5)]) => f(tuple5_get1(t), tuple5_get2(t), tuple5_get3(t), tuple5_get4(t), tuple5_get5(t))
-
-    super.emitSource(f1, methName, stream)
-  }
-
-  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
-    case Tuple2Access1(UnboxedTuple(vars)) => emitValDef(sym, quote(vars(0)))
-    case Tuple2Access2(UnboxedTuple(vars)) => emitValDef(sym, quote(vars(1)))
-    case _ => super.emitNode(sym, rhs)
-  }
 }
 
 

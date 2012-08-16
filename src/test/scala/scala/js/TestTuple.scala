@@ -39,8 +39,8 @@ class TestTuple extends FileDiffSuite {
   def testTwoArgs = {
     withOutFile(prefix+"tuple") {
       new TwoArgsProg with TupleOpsExp with NumericOpsExpOpt { self =>
-        val codegen = new JSNestedCodegen with JSTupledCodegen with JSGenNumericOps { val IR: self.type = self }
-        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+        val codegen = new JSNestedCodegen with JSGenTupleOps with JSGenNumericOps { val IR: self.type = self }
+        codegen.emitSource2(test, "main", new PrintWriter(System.out))
       }
     }
     assertFileEqualsCheck(prefix+"tuple")

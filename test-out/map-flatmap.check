@@ -1,14 +1,14 @@
 function MapAndFlatMap(x0) {
 var x2 = [1,2,3];
 var x6 = [];
-for(var x8 = 0 ; x8 < x0.length ; x8++){
+for(var x7 = 0 ; x7 < x0.length ; x7++){
 x6.splice.apply(x6, [x6.length, 0].concat((function(x1){
 var x5=x2.map(function(x3){
 var x4 = x1 * x3;
 return x4
 });
 return x5
-})(x0[x8])));
+})(x0[x7])));
 }
 return x6
 }

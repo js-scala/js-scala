@@ -6,7 +6,7 @@ import scala.virtualization.lms.internal._
 import java.io.PrintWriter
 import scala.reflect.SourceContext
 
-trait NestedCodegenOpt extends GenericNestedCodegen with Codegen {
+trait NestedCodegenOpt extends GenericNestedCodegen {
   import IR._
 
   val defUseMap : scala.collection.mutable.Map[Sym[_], Int] = new scala.collection.mutable.HashMap
@@ -29,9 +29,9 @@ trait NestedCodegenOpt extends GenericNestedCodegen with Codegen {
     case _ => readSyms(e)
   }
 
-  abstract override def emitSourceAnyArity(args: List[Exp[Any]], body: Block[Any], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
+  abstract override def emitSource[A : Manifest](args: List[Sym[_]], body: Block[A], methName: String, stream: PrintWriter): List[(Sym[Any], Any)] = {
     buildDefUse(body)
-    super.emitSourceAnyArity(args, body, methName, stream)
+    super.emitSource(args, body, methName, stream)
   }
 
   abstract override def emitValDef(sym: Sym[Any], rhs: String): Unit = {
