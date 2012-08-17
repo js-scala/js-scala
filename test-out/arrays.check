@@ -116,3 +116,49 @@ return x77
 }
 return x79
 }
+function test2Legacy(x82) {
+var x83 = [1, 2, 3];
+var x84 = [4, 5, 6];
+var x93 = function ( x85) {
+var x86 = x84[0] = x85;
+};
+for (var x91 = 0, x92 = x83.length ; x91 < x92 ; x91++) {
+x93(x83[x91]);
+}
+var x88;
+var x89 = x84[0];
+return x89
+}
+function test3Legacy(x94) {
+var x95 = [1, 2, 3];
+var x98 = [];
+var x102 = function (x96) {
+var x97 = x96 + x94;
+return x97
+};
+for (var x100 = 0, x101 = x95.length ; x100 < x101 ; x100++) {
+x98[x100] = x102(x95[x100]);
+}
+return x98
+}
+function test5Legacy(x103) {
+var x104 = [1, 2, 3];
+var x107 = [];
+var x113 = function (x105) {
+var x106 = x105==x103;
+return x106
+};
+for (var x111 = 0, x112 = x104.length ; x111 < x112 ; x111++) {
+if (x113(x104[x111])) {
+x107.push(x104[x111]);
+}
+}
+var x109 = [];
+var x116 = function (x108) {
+return x108
+};
+for (var x114 = 0, x115 = x107.length ; x114 < x115 ; x114++) {
+x109[x114] = x116(x107[x114]);
+}
+return x109
+}

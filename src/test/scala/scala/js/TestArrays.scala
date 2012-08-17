@@ -84,6 +84,10 @@ class TestArrays extends FileDiffSuite {
         codegen.emitSource(test8 _, "test8", new PrintWriter(System.out))
         codegen.emitSource(test9 _, "test9", new PrintWriter(System.out))
         codegen.emitSource(test10 _, "test10", new PrintWriter(System.out))
+        val genLegacy = new JSGenNumericOps with JSGenEqual with JSGenArraysLegacy { val IR: self.type = self }
+        genLegacy.emitSource(test2 _, "test2Legacy", new PrintWriter(System.out))
+        genLegacy.emitSource(test3 _, "test3Legacy", new PrintWriter(System.out))
+        genLegacy.emitSource(test5 _, "test5Legacy", new PrintWriter(System.out))
       }
 
     }

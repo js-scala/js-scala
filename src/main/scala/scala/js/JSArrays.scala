@@ -210,3 +210,47 @@ trait JSGenArrays extends JSGenEffect {
     case _ => super.emitNode(sym, rhs)
   }
 }
+
+trait JSGenArraysLegacy extends JSGenArrays {
+  import IR._
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
+    case ArrayForeach(a, x, block) =>
+      val i = fresh[Int]
+      val l = fresh[Int]
+      val f = fresh[Unit]
+      stream.println("var " + quote(f) + " = function ( " + quote(x) + ") {")
+      emitBlock(block)
+      stream.println("};")
+      stream.println("for (var " + quote(i) + " = 0, " + quote(l) + " = " + quote(a) + ".length ; " + quote(i) + " < " + quote(l) + " ; " + quote(i) + "++) {")
+      stream.println(quote(f) + "(" + quote(a) + "[" + quote(i) + "]);")
+      stream.println("}")
+      stream.println("var " + quote(sym) + ";")
+    case ArrayMap(a, x, block) =>
+      val i = fresh[Int]
+      val l = fresh[Int]
+      val f = fresh[Unit]
+      emitValDef(sym, "[]")
+      stream.println("var " + quote(f) + " = function (" + quote(x) + ") {")
+      emitBlock(block)
+      stream.println("return " + quote(getBlockResult(block)))
+      stream.println("};")
+      stream.println("for (var " + quote(i) + " = 0, " + quote(l) + " = " + quote(a) + ".length ; " + quote(i) + " < " + quote(l) + " ; " + quote(i) + "++) {")
+      stream.println(quote(sym) + "[" + quote(i) + "] = " + quote(f) + "(" + quote(a) + "[" + quote(i) + "]);")
+      stream.println("}")
+    case ArrayFilter(a, x, block) =>
+      val i = fresh[Int]
+      val l = fresh[Int]
+      val p = fresh[Unit]
+      emitValDef(sym, "[]")
+      stream.println("var " + quote(p) + " = function (" + quote(x) + ") {")
+      emitBlock(block)
+      stream.println("return " + quote(getBlockResult(block)))
+      stream.println("};")
+      stream.println("for (var " + quote(i) + " = 0, " + quote(l) + " = " + quote(a) + ".length ; " + quote(i) + " < " + quote(l) + " ; " + quote(i) + "++) {")
+      stream.println("if (" + quote(p) + "(" + quote(a) + "[" + quote(i) + "])) {")
+      stream.println(quote(sym) + ".push(" + quote(a) + "[" + quote(i) + "]);")
+      stream.println("}")
+      stream.println("}")
+    case _ => super.emitNode(sym, rhs)
+  }
+}
