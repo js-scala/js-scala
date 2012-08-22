@@ -4,23 +4,24 @@ organization := "EPFL"
 
 version := "0.2-SNAPSHOT"
 
-scalaVersion := Option(System.getenv("SCALA_VIRTUALIZED_VERSION")).getOrElse("2.10.0-M1-virtualized")
+scalaOrganization := "org.scala-lang.virtualized"
+
+scalaVersion := Option(System.getenv("SCALA_VIRTUALIZED_VERSION")).getOrElse("2.10.0-M7")
 
 //--- Dependencies
 
 resolvers ++= Seq(
     ScalaToolsSnapshots, 
-    //needed for custom build of scala test
-    "Dropbox" at "http://dl.dropbox.com/u/12870350/scala-virtualized"
+    "Sonatype Public" at "https://oss.sonatype.org/content/groups/public"
     )
 
 libraryDependencies ++= Seq(
-    "org.scalatest" % "scalatest_2.10.0-virtualized-SNAPSHOT" % "1.6.1-SNAPSHOT" % "test",
+    "org.scalatest" % "scalatest_2.10.0-M7" % "1.9-2.10.0-M7-B1" % "test",
     "EPFL" %% "lms" % "0.2")
     
 //--- End of Dependencies
 
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics")
 
 //Our tests are not threadsafe so disabling parallel execution for now
 parallelExecution in Test := false
