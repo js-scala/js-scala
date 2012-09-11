@@ -214,6 +214,12 @@ trait JSGenListOps extends JSGenEffect {
       stream.println("return " + quote(getBlockResult(b)))
       stream.println("});")
     }
+    case ListFilter(l, x, b) =>
+      stream.print("var " + quote(sym) + "=" + quote(l) + ".filter(")
+      stream.println("function(" + quote(x) + "){")
+      emitBlock(b)
+      stream.println("return " + quote(getBlockResult(b)))
+      stream.println("});")
     case ListPrepend(l, e) => emitValDef(sym, "[" + quote(e) + "].concat(" + quote(l) + ")")
     case ListConcat(l1, l2) => emitValDef(sym, quote(l1) + ".concat(" + quote(l2) + ")")
     case ListMkString(l) => emitValDef(sym, quote(l) + ".join('')")
