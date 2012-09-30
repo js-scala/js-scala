@@ -5,15 +5,15 @@ import java.io.PrintWriter
 
 trait JSDebug extends Base {
 
-  def log(s: Rep[String]): Rep[Unit]
+  def log[A](s: Rep[A]): Rep[Unit]
 
 }
 
 trait JSDebugExp extends JSDebug with EffectExp {
 
-  case class Log(s: Rep[String]) extends Def[Unit]
+  case class Log[A](s: Rep[A]) extends Def[Unit]
 
-  def log(s: Rep[String]): Rep[Unit] = reflectEffect(Log(s))
+  def log[A](s: Rep[A]): Rep[Unit] = reflectEffect(Log(s))
 
 }
 

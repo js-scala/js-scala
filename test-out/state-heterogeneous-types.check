@@ -1,0 +1,18 @@
+/*****************************************
+  Emitting Generated Code                  
+*******************************************/
+class main extends ((java.lang.String)=>(Int)) {
+def apply(x0:java.lang.String): Int = {
+var x1: java.lang.String = x0
+val x2 = x1
+val x3 = x2+"0"
+x1 = x3
+val x5 = x2.toInt
+val x6 = x5
+val x7 = x6
+x7
+}
+}
+/*****************************************
+  End of Generated Code                  
+*******************************************/
