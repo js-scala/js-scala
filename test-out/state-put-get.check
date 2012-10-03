@@ -1,4 +1,5 @@
 // TODO Still too much aliases
+// TODO The assignment should be discarded
 function test(x0) {
 var x1 = x0;
 var x2 = x1;

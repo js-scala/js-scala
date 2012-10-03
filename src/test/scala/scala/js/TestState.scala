@@ -60,6 +60,7 @@ class TestState extends FileDiffSuite {
       val out = new PrintWriter(System.out)
 
       println("// TODO Still too much aliases")
+      println("// TODO The assignment should be discarded")
       codegen.emitSource(prog.main, "test", out)
 
       println("// TODO Only the last put should remain")
