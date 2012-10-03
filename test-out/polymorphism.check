@@ -1,0 +1,8 @@
+function main(x0, x1) {
+var x2 = (x0).toString();
+var x3 = console.log(x2);
+var x4 = "\""+x1;
+var x5 = x4+"\"";
+var x6 = console.log(x5);
+return x6
+}
