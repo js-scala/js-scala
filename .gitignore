@@ -6,3 +6,7 @@ local.properties
 .\#*
 *~
 .target/
+.classpath
+.project
+.history
+.settings/
