@@ -1,0 +1,33 @@
+// TODO Still too much aliases
+function noState_eval(x0) {
+var x1 = x0;
+var x2 = 42 + 0;
+var x3 = x2;
+var x4 = x3;
+return x4
+}
+function noState_exec(x6) {
+var x7 = x6;
+var x8 = x7;
+return x8
+}
+function applyEffect_eval(x10) {
+var x11 = x10;
+x11 = 42;
+var x13 = 0;
+return x13
+}
+function applyEffect_exec(x15) {
+var x16 = x15;
+x16 = 42;
+var x18 = x16;
+return x18
+}
+function applyEffect_run(x20) {
+var x21 = x20;
+x21 = 42;
+var x23 = x21;
+var x13 = 0;
+var x24 = {_1:x23,_2:x13};
+return x24
+}

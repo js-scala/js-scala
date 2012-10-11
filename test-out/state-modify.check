@@ -1,0 +1,13 @@
+function test(x0) {
+var x1 = x0;
+var x2 = x1;
+var x3 = x2 + 10;
+var x5 = x3;
+x1 = x5;
+var x7 = x1;
+var x8 = x7 + 20;
+var x10 = x8;
+x1 = x10;
+var x14 = x1;
+return x14
+}

@@ -1,0 +1,19 @@
+// TODO Still too much aliases
+// TODO The assignment should be discarded
+function test(x0) {
+var x1 = x0;
+var x2 = x1;
+var x3 = x2 + 1;
+x1 = x3;
+var x5 = x2;
+var x6 = x5;
+return x6
+}
+// TODO Only the last put should remain
+function putPut(x8) {
+var x9 = x8;
+x9 = 42;
+x9 = 0;
+var x14 = x9;
+return x14
+}
