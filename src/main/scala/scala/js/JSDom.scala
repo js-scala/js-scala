@@ -1,15 +1,13 @@
-package javascripts
+package scala.js
 
 import virtualization.lms.common._
-import js._
 
 trait JSDom { this: Base =>
 
   trait EventTarget
-  class EventTargetOps(t: Rep[EventTarget]) {
+  implicit class EventTargetOps(t: Rep[EventTarget]) {
     def on[A](event: EventDef[A], capture: Rep[Boolean] = unit(false))(handler: Rep[A] => Rep[Unit])(implicit m: Manifest[A]) = eventtarget_on(t, event, capture, handler)
   }
-  implicit def repToEventTargetOps(t: Rep[EventTarget]): EventTargetOps = new EventTargetOps(t)
   def eventtarget_on[A](t: Rep[EventTarget], event: EventDef[A], capture: Rep[Boolean], handler: Rep[A] => Rep[Unit])(implicit m: Manifest[A]): Rep[Unit]
 
   trait Event
@@ -55,10 +53,9 @@ trait JSDom { this: Base =>
   def infix_tagName(e: Rep[Element]): Rep[String]
 
   trait History
-  class HistoryOps(h: Rep[History]) {
+  implicit class HistoryOps(h: Rep[History]) {
     def replaceState(state: Rep[_], title: Rep[String], url: Rep[String]) = history_replaceState(h, state, title, url)
   }
-  implicit def repToHistoryOps(h: Rep[History]): HistoryOps = new HistoryOps(h)
   def history_replaceState(h: Rep[History], state: Rep[_], title: Rep[String], url: Rep[String]): Rep[Unit]
 
 }
