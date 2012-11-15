@@ -6,19 +6,25 @@ trait JSDom { this: Base =>
 
   trait EventTarget
   implicit class EventTargetOps(t: Rep[EventTarget]) {
-    def on[A](event: EventDef[A], capture: Rep[Boolean] = unit(false))(handler: Rep[A] => Rep[Unit])(implicit m: Manifest[A]) = eventtarget_on(t, event, capture, handler)
+    def on(event: EventDef, capture: Rep[Boolean] = unit(false))(handler: Rep[event.Type] => Rep[Unit])(implicit m: Manifest[event.Type]) = eventtarget_on(t, event, capture)(handler)
   }
-  def eventtarget_on[A](t: Rep[EventTarget], event: EventDef[A], capture: Rep[Boolean], handler: Rep[A] => Rep[Unit])(implicit m: Manifest[A]): Rep[Unit]
+  def eventtarget_on(t: Rep[EventTarget], event: EventDef, capture: Rep[Boolean])(handler: Rep[event.Type] => Rep[Unit])(implicit m: Manifest[event.Type]): Rep[Unit]
 
   trait Event
   def infix_target(e: Rep[Event]): Rep[EventTarget]
 
-  class EventDef[A](val name: String)
+  class EventDef(val name: String) {
+    type Type
+  }
+
+  class EventName[A](name: String) extends EventDef(name) {
+    type Type = A
+  }
 
   trait PopStateEvent[A] extends Event
   def infix_state[A : Manifest](e: Rep[PopStateEvent[A]]): Rep[Option[A]]
 
-  class PopState[A] extends EventDef[PopStateEvent[A]]("popstate")
+  class PopState[A] extends EventName[PopStateEvent[A]]("popstate")
   object PopState {
     def apply[A] = new PopState[A]
   }
@@ -30,10 +36,10 @@ trait JSDom { this: Base =>
   trait MouseWheelEvent extends MouseEvent
   def infix_wheelDeltaY(e: Rep[MouseWheelEvent]): Rep[Double]
 
-  object MouseWheel extends EventDef[MouseWheelEvent]("mousewheel")
-  object MouseDown extends EventDef[MouseEvent]("mousedown")
-  object MouseMove extends EventDef[MouseEvent]("mousemove")
-  object MouseUp extends EventDef[MouseEvent]("mouseup")
+  object MouseWheel extends EventName[MouseWheelEvent]("mousewheel")
+  object MouseDown extends EventName[MouseEvent]("mousedown")
+  object MouseMove extends EventName[MouseEvent]("mousemove")
+  object MouseUp extends EventName[MouseEvent]("mouseup")
 
   trait Window extends EventTarget
 
@@ -61,8 +67,8 @@ trait JSDom { this: Base =>
 }
 
 trait JSDomExp extends JSDom with EffectExp {
-  def eventtarget_on[A](t: Exp[EventTarget], event: EventDef[A], capture: Exp[Boolean], handler: Exp[A] => Exp[Unit])(implicit m: Manifest[A]) = {
-    val e = fresh[A]
+  def eventtarget_on(t: Exp[EventTarget], event: EventDef, capture: Exp[Boolean])(handler: Exp[event.Type] => Exp[Unit])(implicit m: Manifest[event.Type]) = {
+    val e = fresh[event.Type]
     val block = reifyEffects(handler(e))
     reflectEffect(EventTargetOn(t, event, capture, e, block))
   }
@@ -79,7 +85,8 @@ trait JSDomExp extends JSDom with EffectExp {
   def history_replaceState(h: Exp[History], state: Exp[_], title: Exp[String], url: Exp[String]) = reflectEffect(HistoryReplaceState(h, state, title, url))
   object window extends Exp[Window]
 
-  case class EventTargetOn[A](t: Exp[EventTarget], event: EventDef[A], capture: Exp[Boolean], e: Sym[A], handler: Block[Unit]) extends Def[Unit]
+  // FIXME We can’t yet use dependent types on constructors parameters, see https://issues.scala-lang.org/browse/SI-5712 so at this point we lost the information that event.Type =:= A
+  case class EventTargetOn[A](t: Exp[EventTarget], event: EventDef, capture: Exp[Boolean], e: Sym[A], handler: Block[Unit]) extends Def[Unit]
   case class EventGetTarget(e: Exp[Event]) extends Def[EventTarget]
   case class PopStateEventState[A : Manifest](e: Exp[PopStateEvent[A]]) extends Def[Option[A]]
   case class MouseEventOffsetX(e: Exp[MouseEvent]) extends Def[Double]
