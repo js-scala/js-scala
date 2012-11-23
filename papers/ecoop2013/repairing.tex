@@ -190,7 +190,7 @@ Calling \code{hello("Obama")} produces a DOM fragment equivalent to the followin
 </div>
 \end{lstlisting}
 
-Actually, very few developers use the native API for creating DOM, another way to build DOM is to build a String containing the desired markup and then to ask the browser to parse it as HTML:
+Another way to build DOM is to build a String containing the desired markup and then to ask the browser to parse it as HTML:
 
 \begin{lstlisting}[language=JavaScript]
 var hello = function (name) {
@@ -200,7 +200,7 @@ var hello = function (name) {
 };
 \end{lstlisting}
 
-This implementation may be more readable, however the code is wrong: if we call \code{hello("<me>")} the brackets won’t be escaped and will produce a \code{ME} tag, which is not the expected behavior. So, although this way reads better it’s not really less error prone.
+This implementation may be more readable, however the code is wrong: if we call \code{hello("<me>")} the brackets won’t be escaped and will produce a \code{ME} tag, which is not the expected behavior. So, although this way reads better it’s not less error prone.
 
 HTML template engines like Mustache\footnote{\href{http://mustache.github.com/}{http://mustache.github.com/}} or Closure Templates\footnote{\href{https://developers.google.com/closure/templates/}{https://developers.google.com/closure/templates/}} aim to solve these problems by providing a convenient syntax to describe the HTML structure and allowing the insertion of dynamic expressions in safe way. However, template engines require templates to be compiled, so they add an extra step in the build chain. Some template engines can be used on both client-side and server-side but they have severe limitations (\eg{} Closure Template has no expression language) and are not statically typed. We’ll show in section \ref{lms-benefits} how we solved this problem.
 
@@ -225,7 +225,7 @@ def hello(name: Rep[String]) =
   }
 \end{lstlisting}
 
-The readability has been highly improved: nesting tags is just like nesting code blocks, HTML entities are automatically escaped in text nodes and developers have the full computational power of Scala to inject dynamic data, DOM fragments definitions are written using functions so they compose just as functions compose.
+The readability has been highly improved: nesting tags is just like nesting code blocks, HTML entities are automatically escaped in text nodes, developers have the full computational power of Scala to inject dynamic data and DOM fragments definitions are written using functions so they compose just as functions compose.
 
 \section{High-level abstractions without performance penalty}
 
@@ -243,7 +243,7 @@ loginButton.addEventListener("click", function (e) { ... });
 
 The native \code{querySelector} method returns \code{null} if no node matched the given selector in the document. If we run the above code in a page where the widget is not present, it will throw an error and stop further JavaScript execution. We can write defensive code to handle \code{null} cases, but it leads to very cumbersome code:
 
-\begin{lstlisting}[language=JavaScript,label=efficient-null,caption=Defensive programming to handle null references]
+\begin{lstlisting}[language=JavaScript,label=null-defensive,caption=Defensive programming to handle null references]
 var loginWidget = document.querySelector("div.login");
 if (loginWidget !== null) {
   var loginButton = loginWidget.querySelector("button.submit");
@@ -261,9 +261,9 @@ var loginButton = loginWidget.find("button.submit");
 loginButton.on("click", function (e) { ... });
 \end{lstlisting}
 
-We can see that it has as few noise as in the listing \ref{null-unsafe} but it has the safety of the listing \ref{efficient-null}. However, the checking involves a slight performance penalty since each result is wrapped and then unwrapped for the subsequent method invocation.
+We can see that it has as few noise as in the listing \ref{null-unsafe} but it has the safety of the listing \ref{null-defensive}. However, the checking involves a slight performance penalty since each result is wrapped and then unwrapped for the subsequent method invocation.
 
-Our solution has both the safety and performance of the listing \ref{efficient-null} and the expressiveness of the listing \ref{null-unsafe}. We encode the potential emptiness of a value of type \code{Rep[A]} using the \code{Rep[Option[A]]} type at the stage level but we don’t generate code wrapping values in a container, instead we just check if a value is \code{null} or not. Here is a listing using our DSL:
+Our solution has both the safety and performance of the listing \ref{null-defensive} and the expressiveness of the listing \ref{null-unsafe}. We encode the potential emptiness of a value of type \code{Rep[A]} using the \code{Rep[Option[A]]} type at the stage level but we don’t generate code wrapping values in a container, instead we just check if a value is \code{null} or not. Here is a listing that uses our DSL and compiles to code equivalent to the listing \ref{null-defensive}:
 
 \begin{lstlisting}
 for {
@@ -291,7 +291,7 @@ alert(y);
 \end{lstlisting}
 This code suffers from two problems: the variable \code{x} is global and if the user calls the \code{inc} function without initializing first the \code{x} variable the behavior will be unexpected.
 
-To workaround these issues, developers can wrap the variable declaration and the \code{inc} function code in a factory function (cf listing~\ref{state-encapsulated}). Thus the state would be hidden and developers could not forget the initialization.
+To workaround these issues, developers can wrap the variable declaration and the \code{inc} function code in a factory function. Thus the state is hidden and developers may not forget the initialization:
 
 \begin{lstlisting}[language=JavaScript,label=state-encapsulated,caption=State encapsulation within a function]
 var incFactory = function (init) {
@@ -310,7 +310,7 @@ var x = inc();
 alert(x);
 \end{lstlisting}
 
-The code is now safer, but it is also bigger, and it still uses a mutable state. It’s known that mutable objects in the code make this one harder to reason about~\cite{Grogono94_Immutability}. Getting rid of mutable objects is simple: instead of modifying a state, a function takes its initial value as a parameter and returns its new value in its result. However, explicitly threading the state in all functions parameters is not desired because of the syntactic and performance cost of adding an extra parameter to each function and of returning two results instead of one:
+The code is now safer, but it is also bigger, and it still uses a mutable state. It’s known that mutable objects in the code make this one harder to reason about~\cite{Grogono94_Immutability,Kjolstad11_Immutability}. Getting rid of mutable objects is simple: instead of modifying a state, a function takes its initial value as a parameter and returns its new value in its result:
 
 \begin{lstlisting}[language=JavaScript,label=state-explicit,caption=Explicit state threading]
 var inc = function (state) {
@@ -326,7 +326,9 @@ var x2 = inc(x1.state);
 alert(x2.value);
 \end{lstlisting}
 
-The State monad~\cite{Wadler92_StateM} is a functional programming pattern that avoids to explicitly thread the state in functions using it or modifying it. In Scala, the \code{for} notation provides an elegant way to sequence monadic computations, and thus to implicitly thread a state across functions, as shown in the following listing:
+However, explicitly threading the state in all functions parameters is not desired because of the syntactic and performance cost of adding an extra parameter to each function and of returning two results instead of one. Furthermore, manually passing the result of each previous call to the next one is error prone.
+
+The State monad~\cite{Wadler92_StateM} is a functional programming pattern that avoids to explicitly thread the state in functions using it or modifying it. In Scala, the \code{for} notation provides an elegant way to sequence monadic computations, and thus to implicitly thread a state across computations, as shown in the following listing:
 
 \begin{lstlisting}[label=state-monad,caption=Implicitly threaded state using the State Monad]
 val inc = for {
@@ -344,9 +346,9 @@ usage.init(42)
 
 The \code{get} and \code{put} primitives are part of the State monad DSL, they allow to retrieve the current state and to change it. The \code{usage} value is a reusable piece of program that calls two times the \code{inc} function and prints the result of the second call. The last line of the listing runs the \code{usage} program on an initial state.
 
-The State monad programming model has the advantages of both listings \ref{state-encapsulated} and \ref{state-explicit} because there is no global variable and everything is immutable, but it is less verbose than these listings.
+The State monad programming model has the advantages but not the shortcomings of both listings \ref{state-encapsulated} and \ref{state-explicit} because there is no global variable (the state is implicitly threaded thanks to the State monad but state modifications explicitly use the \code{get} and \code{put} primitives) and everything is immutable.
 
-Our DSL implementation produces an intermediate representation semantically equivalent to the monadic sequences but using regular variables, so that there is no abstraction penalty: the listing \ref{state-monad} compiles to code equivalent to the listing \ref{state-fragile}.
+Furthermore, our DSL implementation produces an intermediate representation semantically equivalent to the monadic sequences but using regular variables, so that there is no abstraction penalty: the listing \ref{state-monad} compiles to code equivalent to the listing \ref{state-fragile}.
 
 \subsection{Future monad}
 
@@ -359,7 +361,8 @@ println(", World!")
 \end{lstlisting}
 
 The code looks synchronous however the \code{sleep} calls are asynchronous: they translate to the following JavaScript:
-\begin{lstlisting}[language=JavaScript]
+
+\begin{lstlisting}[language=JavaScript,label=async-js,caption=Generated code for listing \ref{async-continuation}]
 window.setTimeout(function () {
   console.log("Hello");
   window.setTimeout(function () {
@@ -405,7 +408,7 @@ If \code{foo} already contains a call to \code{reset}, the above code will print
 
 Because asynchronous computations may not be reflected explicitly in the types and because developers have to look backward to the enclosing \code{reset} and then forward to see what part of their code block will be captured by the continuation, we think this programming model may be confusing.
 
-Instead, we propose a monadic DSL that does not attempt to hide its asynchronous nature but provides a way to lift asynchronous values as first-class citizen and, thanks to the \code{for} notation, a convenient syntax to avoid the callback-hell.
+In this paper we propose a DSL that explicitly reflects the asynchronous nature of computations in their type and provides methods turning them into first-class citizen. Our DSL is monadic so we can solve the callback-hell problem thanks to the Scala \code{for} notation.
 
 An asynchronous value of type \code{Rep[A]} is modelled by a value of type \code{Rep[Future[A]]}. This type has the following methods:
 \begin{itemize}
@@ -416,7 +419,7 @@ An asynchronous value of type \code{Rep[A]} is modelled by a value of type \code
 
 The \code{map} and \code{flatMap} methods allow asynchronous values to be transformed and passed around, thus turning them into first-class citizen.
 
-Because callbacks are explicitly passed to the \code{foreach}, \code{map} and \code{flatMap} methods, there is no risk of ambiguity such as the one of listing \ref{async-ambiguous}. The Scala \code{for} notation handles the callback-hell problem.
+Because callbacks are explicitly passed to the \code{foreach}, \code{map} and \code{flatMap} methods, there is no risk of ambiguity such as the one of listing \ref{async-ambiguous}.
 
 The listing \ref{async-v2} can be re-written as follows with our DSL:
 
@@ -443,7 +446,36 @@ for {
 } println(foo + bar)
 \end{lstlisting}
 
-% TODO mentionner le traitement de cas d’erreurs ?
+The above listing produces the following code (we renamed some identifiers for the sake of readability):
+
+\begin{lstlisting}[language=JavaScript]
+var x1 = new Promise();
+AjaxGet("/foo", x1);
+var x2 = new Promise();
+AjaxGet("/bar", x2);
+x1.foreach(function (foo) {
+  x2.foreach(function (bar) {
+    var x3 = foo + bar;
+    console.log(x3);
+  });
+});
+\end{lstlisting}
+
+The \code{Promise} constructor code has been omitted, it creates an object holding a list of callbacks to call when the asynchronous value is completed. The \code{AjaxGet} function code has also been omitted, it creates a \code{XMLHttpRequest} object that sends an HTTP request and completes its promise parameter with the response, when received.
+
+\begin{lstlisting}
+def f(aF: Rep[Future[String]]) =
+  for (a <- aF) yield a.toUpperCase
+def g(aF: Rep[Future[String]]) =
+  for (a <- aF) yield a.toLowerCase
+
+def fAndG(aF: Rep[Future[String]]) = for {
+  u <- f(aF)
+  l <- g(aF)
+} yield u + l
+\end{lstlisting}
+
+(TODO Explain the value of the above listing...)
 
 \section{Type-level abstractions}
 \label{type-level}
@@ -502,6 +534,20 @@ class ~>[A <: Args, B : Numeric](
 )
 \end{lstlisting}
 
+The following listing demonstrates the homogeneous syntax to perform an addition on different data types and the operand coercion between heterogeneous types:
+
+\begin{lstlisting}
+def main(i: Rep[Int], j: Rep[Int],
+         x: Rep[Double], y: Rep[Double]) = {
+  println(i + j)
+  println(x + y)
+  // i is promoted to Rep[Double], n has type Rep[Double]
+  val n = i + y
+  // j is promoted to Rep[Double], m has type Rep[Double]
+  val m = x + j
+  println(n + m)
+}
+\end{lstlisting}
 
 \subsection{\emph{Adhoc} polymorphism}
 
@@ -539,9 +585,9 @@ var main = function (user, point) {
 
 We define the \code{show} method on the prototypes of the target data types \code{User} and \code{Point}, so when the main program calls the \code{show} method on an object it is automatically dispatched to the right implementation. However, modifying object prototypes is considered to be a bad practice~\cite{Zakas12_MaintainableJs}. Another way could consist in manually code the dispatch logic, by registering supported data types at the beginning of the program execution, as described in section 2.4.3 of~\cite{Abelson83_SICP}, but this solution is painful for developers and incurs a performance overhead.
 
-Kossakowski \etal{} showed how to use Scala classes to have \emph{adhoc} polymorphism without having to play directly with JavaScript prototypes. However their solution suffers from some limitations: it doesn’t support open extension, it looses information on the side-effects performed by a method call (so it prevents some optimizations to be applied), it is limited to single inheritance (and even single interface inheritance) and does not support constructor parameters.
+Kossakowski \etal{} showed how to use Scala traits to have \emph{adhoc} polymorphism without having to play directly with JavaScript prototypes. However their solution suffers from some limitations: it doesn’t support retroactive extension, it does not track the side-effects potentially performed by a method call (so it prevents some optimizations to be applied by LMS), it is limited to single inheritance (and even single interface inheritance) and does not support constructor parameters.
 
-We propose another way to achieve \emph{adhoc} polymorphism that is entirely type-directed (the dispatch happens at compile-time rather than at runtime), with no impact on the generated code and supporting open extension, using typeclasses~\cite{Wadler89_AdhocPolymorphism,Odersky06_Typeclasses,Oliveira10_Typeclasses}.
+We propose another way to achieve \emph{adhoc} polymorphism that is entirely type-directed (the dispatch happens at compile-time rather than at runtime), with no impact on the generated code and supporting retroactive extension, using typeclasses~\cite{Wadler89_AdhocPolymorphism,Odersky06_Typeclasses,Oliveira10_Typeclasses}.
 
 \begin{lstlisting}
 // Interface
@@ -590,7 +636,8 @@ var showPoint = function (point) {
   return x8
 };
 \end{lstlisting}
-Because the dispatch is performed at compile-time, the JavaScript code calls the right function according to its parameters, even though there is no way, in JavaScript, to get back the type of these parameters.
+
+(TODO Conclusion)
 
 \section{Modular code generation and aspects composition}
 \label{lms-benefits}
@@ -663,7 +710,7 @@ val jsGen = new JSGen with IESupport {
 \section{Discussion}
 \label{discussion}
 
-What did we do?
+We exposed native JavaScript APIs as statically typed APIs while decreasing their verbosity.
 
 \bibliographystyle{ieeetr}
 \bibliography{biblio}
