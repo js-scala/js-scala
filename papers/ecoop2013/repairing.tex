@@ -40,10 +40,10 @@
 
 
 \begin{abstract}
-Writing large applications on the Web is challenging for at least two reasons : (1) their distributed nature may lead to code duplication between server and client sides and add distance between code parts, and (2) the JavaScript language, typically used on client-side, has several inadequacies making it hardly suitable to maintain large code base. Several initiatives attempt to solve these problems by providing a way to use a single language for both client and server sides. One of these approaches is to define JavaScript as a compiled embedded DSL in Scala. We followed this path to improve the safety of native APIs for DOM manipulation, event handling and asynchronous programming. We used advanced type constructs of the host language to make the embedded DSL more expressive and used staging to generate efficient code.
+Rich Internet Applications involve more code on the client-side, dealing with DOM manipulation, event handling and asynchronous calls to the server. Writing and maintaining large JavaScript code base is challenging because this language has several inadequacies (no static typing, no module system, no \emph{adhoc} polymorphism support, verbose syntax, \etc{}). We investigate further the definition of JavaScript as a Scala compiled embedded DSL using Lightweight Modular Staging. We define safe and expressive abstractions for DOM manipulation, event handling and asynchronous programming that translate to efficient JavaScript code using native APIs. We use both type-level information and staging to introduce high-level abstractions with a few or no overhead on the generated JavaScript code.
 \end{abstract}
 
-{\bf Keywords:} Web, programming languages, embedded DSL, type-level programming, Scala
+{\bf Keywords:} Web, programming languages, embedded DSL, type-level programming, staging, Scala
 
 \section{Introduction}
 
