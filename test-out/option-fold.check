@@ -1,0 +1,11 @@
+function test(x0) {
+var x3 = undefined;
+var x1 = x0;
+if (x1 !== null) {
+var x2 = x1 + 1;
+x3 = x2;
+} else {
+x3 = 0;
+}
+return x3
+}
