@@ -7,11 +7,13 @@ trait OptionOps { this: Base =>
     def foreach(f: Rep[A] => Rep[Unit]) = option_foreach(o, f)
     def map[B : Manifest](f: Rep[A] => Rep[B]) = option_map(o, f)
     def flatMap[B : Manifest](f: Rep[A] => Rep[Option[B]]) = option_flatMap(o, f)
+    def isEmpty = option_isEmpty(o)
   }
   implicit def repToOptionOpsCls[A : Manifest](o: Rep[Option[A]]): OptionOpsCls[A] = new OptionOpsCls(o)
   def option_foreach[A : Manifest](o: Rep[Option[A]], f: Rep[A] => Rep[Unit]): Rep[Unit]
   def option_map[A : Manifest, B : Manifest](o: Rep[Option[A]], f: Rep[A] => Rep[B]): Rep[Option[B]]
   def option_flatMap[A : Manifest, B : Manifest](o: Rep[Option[A]], f: Rep[A] => Rep[Option[B]]): Rep[Option[B]]
+  def option_isEmpty[A : Manifest](o: Rep[Option[A]]): Rep[Boolean]
 }
 
 trait OptionOpsExp extends OptionOps with EffectExp {
@@ -30,10 +32,12 @@ trait OptionOpsExp extends OptionOps with EffectExp {
     val block = reifyEffects(f(a))
     reflectEffect(OptionFlatMap(o, a, block), summarizeEffects(block).star)
   }
+  def option_isEmpty[A : Manifest](o: Exp[Option[A]]) = OptionIsEmpty(o)
 
-  case class OptionForeach[A : Manifest](o: Exp[Option[A]], a: Sym[A], block: Block[Unit]) extends Def[Unit]
+  case class OptionForeach[A](o: Exp[Option[A]], a: Sym[A], block: Block[Unit]) extends Def[Unit]
   case class OptionMap[A, B](o: Exp[Option[A]], a: Sym[A], block: Block[B]) extends Def[Option[B]]
-  case class OptionFlatMap[A : Manifest, B](o: Exp[Option[A]], a: Sym[A], block: Block[Option[B]]) extends Def[Option[B]]
+  case class OptionFlatMap[A, B](o: Exp[Option[A]], a: Sym[A], block: Block[Option[B]]) extends Def[Option[B]]
+  case class OptionIsEmpty[A](o: Exp[Option[A]]) extends Def[Boolean]
 
   override def syms(e: Any) = e match {
     case OptionForeach(o, _, block) => List(o, block).flatMap(syms)
@@ -83,6 +87,8 @@ trait JSGenOptionOps extends JSGenEffect {
       stream.println(quote(a) + " = " + quote(getBlockResult(block)) + ";")
       stream.println("}")
       emitValDef(sym, quote(a))
+    case OptionIsEmpty(o) =>
+      emitValDef(sym, quote(o) + " === null")
     case _ => super.emitNode(sym, rhs)
   }
 }
