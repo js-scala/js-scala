@@ -3,42 +3,43 @@ package scala.js
 import virtualization.lms.common._
 
 trait OptionOps { this: Base =>
-  implicit class OptionOpsCls[+A : Manifest](o: Rep[Option[A]]) {
-    def foreach(f: Rep[A] => Rep[Unit]) = option_foreach(o, f)
-    def map[B : Manifest](f: Rep[A] => Rep[B]) = option_map(o, f)
-    def flatMap[B : Manifest](f: Rep[A] => Rep[Option[B]]) = option_flatMap(o, f)
-    def isEmpty = option_isEmpty(o)
-    def fold[B : Manifest](none: => Rep[B], some: Rep[A] => Rep[B]) = option_fold(o, none, some)
+
+  implicit def OptionOpsCls[A : Manifest](o: Rep[Option[A]]): OptionOpsCls[A]
+  type OptionOpsCls[+A] <: OptionOpsBase[A]
+
+  trait OptionOpsBase[+A] {
+    def foreach(f: Rep[A] => Rep[Unit]): Rep[Unit]
+    def map[B : Manifest](f: Rep[A] => Rep[B]): Rep[Option[B]]
+    def flatMap[B : Manifest](f: Rep[A] => Rep[Option[B]]): Rep[Option[B]]
+    def isEmpty: Rep[Boolean]
+    def fold[B : Manifest](none: => Rep[B], some: Rep[A] => Rep[B]): Rep[B]
   }
-  def option_foreach[A : Manifest](o: Rep[Option[A]], f: Rep[A] => Rep[Unit]): Rep[Unit]
-  def option_map[A : Manifest, B : Manifest](o: Rep[Option[A]], f: Rep[A] => Rep[B]): Rep[Option[B]]
-  def option_flatMap[A : Manifest, B : Manifest](o: Rep[Option[A]], f: Rep[A] => Rep[Option[B]]): Rep[Option[B]]
-  def option_isEmpty[A : Manifest](o: Rep[Option[A]]): Rep[Boolean]
-  def option_fold[A : Manifest, B : Manifest](o: Rep[Option[A]], none: => Rep[B], some: Rep[A] => Rep[B]): Rep[B]
 }
 
 trait OptionOpsExp extends OptionOps with EffectExp {
-  def option_foreach[A : Manifest](o: Exp[Option[A]], f: Exp[A] => Exp[Unit]) = {
-    val a = fresh[A]
-    val block = reifyEffects(f(a))
-    reflectEffect(OptionForeach(o, a, block), summarizeEffects(block).star)
-  }
-  def option_map[A : Manifest, B : Manifest](o: Exp[Option[A]], f: Exp[A] => Exp[B]) = {
-    val a = fresh[A]
-    val block = reifyEffects(f(a))
-    reflectEffect(OptionMap(o, a, block), summarizeEffects(block).star)
-  }
-  def option_flatMap[A : Manifest, B : Manifest](o: Exp[Option[A]], f: Exp[A] => Exp[Option[B]]) = {
-    val a = fresh[A]
-    val block = reifyEffects(f(a))
-    reflectEffect(OptionFlatMap(o, a, block), summarizeEffects(block).star)
-  }
-  def option_isEmpty[A : Manifest](o: Exp[Option[A]]) = OptionIsEmpty(o)
-  def option_fold[A : Manifest, B : Manifest](o: Exp[Option[A]], none: => Rep[B], some: Rep[A] => Rep[B]) = {
-    val a = fresh[A]
-    val noneBlock = reifyEffectsHere(none)
-    val someBlock = reifyEffects(some(a))
-    reflectEffect(OptionFold(o, a, noneBlock, someBlock), summarizeEffects(noneBlock) orElse summarizeEffects(someBlock))
+  implicit class OptionOpsCls[+A : Manifest](o: Rep[Option[A]]) extends OptionOpsBase[A] {
+    def foreach(f: Exp[A] => Exp[Unit]) = {
+      val a = fresh[A]
+      val block = reifyEffects(f(a))
+      reflectEffect(OptionForeach(o, a, block), summarizeEffects(block).star)
+    }
+    def map[B : Manifest](f: Exp[A] => Exp[B]) = {
+      val a = fresh[A]
+      val block = reifyEffects(f(a))
+      reflectEffect(OptionMap(o, a, block), summarizeEffects(block).star)
+    }
+    def flatMap[B : Manifest](f: Exp[A] => Exp[Option[B]]) = {
+      val a = fresh[A]
+      val block = reifyEffects(f(a))
+      reflectEffect(OptionFlatMap(o, a, block), summarizeEffects(block).star)
+    }
+    def isEmpty = OptionIsEmpty(o)
+    def fold[B : Manifest](none: => Rep[B], some: Rep[A] => Rep[B]) = {
+      val a = fresh[A]
+      val noneBlock = reifyEffectsHere(none)
+      val someBlock = reifyEffects(some(a))
+      reflectEffect(OptionFold(o, a, noneBlock, someBlock), summarizeEffects(noneBlock) orElse summarizeEffects(someBlock))
+    }
   }
 
   case class OptionForeach[A](o: Exp[Option[A]], a: Sym[A], block: Block[Unit]) extends Def[Unit]
