@@ -60,7 +60,7 @@ In this paper we investigate further a path already introduced by Kossakowski \e
 
 The previous work showed how to write client-side code in Scala using the JavaScript embedded DSL and how to share code between server-side and client-side. The authors also showed that the code was safer and more convenient to write thanks to Scala's static typing and class system. Finally, they showed how to \emph{un-invert} the control of callback-based asynchronous APIs by using continuations but they did not address other concerns of RIAs development such as user interface events handling, DOM creation and manipulation, and application’s state management.
 
-This paper continues their work and presents safe and expressive DSL constructs for RIAs development.
+This paper continues their work and presents safe and expressive DSL constructs for RIAs development. We increase the expressivity of JavaScript native APIs with no runtime overhead and expose them through statically typed APIs. We make asynchronous programming simpler by raising asynchronous computations to first-class citizen. We leverage the Scala’s type system to bring type-directed language features such as \emph{adhoc} polymorphism and type coercion to the client-side.
 
 % This paper continues their work and presents and discusses the implementation of the following contributions:
 % 
@@ -87,7 +87,7 @@ The next section introduces a simple application example showing challenges of R
 \section{Background and motivating example}
 \label{problem}
 
-To illustrate the challenges of writing a RIA, we introduce a simple “mind mapping” application and show how the client-side code would be typically written in pure JavaScript.
+To illustrate the challenges of writing a RIA and the need for a DSL for writing them, we introduce a simple “mind mapping” application and show how the client-side code would be typically written in pure JavaScript.
 
 \subsection{Example description}
 
@@ -158,7 +158,7 @@ Ajax.get(fooUrl(), function (foo) {
 });
 \end{lstlisting}
 
-Notice that the code is getting deeper toward the right, this problem is often referred to as the “callback-hell”. This code is also hard to reason about: when will the second \code{console.log} statement be executed? Before or after \code{baz} has been fetched?
+Notice that the code is getting deeper toward the right, this problem is often referred to as the “callback-hell”~\cite{McKenna_Roy}. This code is also hard to reason about: when will the second \code{console.log} statement be executed? Before or after \code{baz} has been fetched?
 
 \subsubsection{DOM manipulation}
 \label{forest}
@@ -238,24 +238,22 @@ Callback-driven APIs are very common in JavaScript but their inverted control ma
 
 \subsubsection{Sharing type safe code between clients and servers is hard to achieve}
 
-The lack of static checks is even harder to tackle in the case of code shared between client and server sides. If we write the expression \code{xs.size == 0} in a template, how should it be translated in JavaScript and in Scala? Several solutions are valid, depending on the meaning of the expression: in JavaScript we could translate it as \code{xs.size === 0} or \code{xs.length === 0} if \code{xs} refers to a collection (in JavaScript the property to get the size of a collection is named \code{length}). We need to define a proper expression language and to define how it should be translated into JavaScript and Scala, but such a task requires a high effort and is hard to achieve in an extensible way (so users can still use their own data types in expressions instead of being restricted to a set of supported types).
+The lack of static checks is even harder to tackle in the case of code shared between client and server sides. If we write the expression \code{xs.size == 0} in a template, how should it be translated in JavaScript and in Scala? Several solutions are valid, depending on the meaning of the expression: in JavaScript we could translate it as \code{xs.size === 0} or \code{xs.length === 0} if \code{xs} refers to a collection (in JavaScript the property to get the size of a collection is named \code{length}). We need to define a proper expression language and to define how it should be translated for the client-side environment (JavaScript) and the server-side environment (\eg{} the Java Virtual Machine), but such a task requires a high effort and is hard to achieve in an extensible way (so users can still use their own data types in expressions instead of being restricted to a set of supported types).
 
 \section{DSL design and implementation}
 \label{solution}
 
-This section presents both the design and the implementation of a compiled embedded DSL addressing the problems presented in the previous section.
+JavaScript libraries could address some of the challenges presented above, but addressing type safety and asynchronous programming issues require language modifications (\eg{} to bring a type system and a sequencing notation). Defining a language requires a high effort, especially to build development tools for the language so we chose to define our language as a compiled embedded DSL is Scala\footnote{The code is available at \href{http://github.com/js-scala}{http://github.com/js-scala}}.
 
 \subsection{Introduction to Lightweight Modular Staging}
 \label{intro-lms}
 
-We chose to implement our DSL as a compiled embedded DSL in Scala using Lightweight Modular Staging. The embedding lets us reuse the host language infrastructure (compiler, development tools) and type system, and staging gives the opportunity to generate efficient code from expressive code by applying domain specific optimizations.
-
-Lightweight Modular Staging (LMS) is a Scala framework for defining compiled embedded DSLs. The main idea is that a program written using a DSL is evaluated in two stages (or steps): the first stage builds an intermediate representation of the program and the second stage transforms this intermediate representation into executable code (figure \ref{lms-diagram}).
+We use the Lightweight Modular Staging framework (LMS) to define our compiled embedded DSL. The main idea is that a program written using a DSL is evaluated in two stages (or steps): the first stage builds an intermediate representation of the program and the second stage transforms this intermediate representation into executable code (figure \ref{lms-diagram}). The embedding lets us reuse the host language infrastructure (compiler, development tools) and type system, and staging gives the opportunity to generate efficient code from expressive code by applying domain specific optimizations.
 
 \begin{figure}
   \centering
   \includegraphics[width=7cm]{lms.pdf}
-  \caption{Compilation of a program using LMS}
+  \caption{Compilation of a program using LMS. An initial Scala program using embedded DSLs (on the left) evaluates to an intermediate representation from which the final program’s code is generated (on the right).}
   \label{lms-diagram}
 \end{figure}
 
@@ -327,20 +325,9 @@ window.on(MouseWheel) { e =>
 
 \subsection{Asynchronous programming}
 
-We propose a DSL that explicitly reflects the asynchronous nature of computations in their type and provides methods turning them into first-class citizen. The DSL is monadic so we can solve the callback-hell problem thanks to the Scala \code{for} notation.
-
-An asynchronous value of type \code{Rep[A]} is modelled by a value of type \code{Rep[Future[A]]}. This type has the following methods:
-\begin{itemize}
-\item \code{foreach(f: Rep[A] => Rep[Unit]): Rep[Unit]}, registering a callback to eventually do something with the value when available~;
-\item \code{map(f: Rep[A] => Rep[B]): Rep[Future[B]]}, to eventually transform the value when available~;
-\item \code{flatMap(f: Rep[A] => Rep[Future[B]]): Rep[Future[B]]} to eventually transform the value when available~;
-\end{itemize}
-
-Asynchronous values can be transformed using the \code{map} and \code{flatMap} methods, turning them into first-class citizen: functions can take as parameters and return asynchronous values.
-
-The listing \ref{async-js} can be re-written as follows with our DSL:
-
-\begin{lstlisting}
+\begin{figure}
+\centering
+\begin{lstlisting}[numbers=left,caption=Asynchronous values are first class citizen,label=async-first-class]
 def createVertex(text: Rep[String]): Rep[Future[Vertex]] =
   Ajax.post[Vertex]("/create", new Record { val content = text })
 
@@ -350,12 +337,13 @@ for (vertex <- vertexAsync) {
   addVertex(vertex)
 }
 \end{lstlisting}
+\end{figure}
 
-The \code{createVertex} now returns an asynchronous value instead of taking a callback as parameter.
+We propose a DSL that explicitly reflects the asynchronous nature of computations in their type and provides methods turning them into first-class citizen. The DSL is monadic so we can solve the callback-hell problem thanks to the Scala \code{for} notation. For instance, listing \ref{async-first-class} shows how the listing \ref{async-js} can be re-written with our DSL. The \code{createVertex} now returns an asynchronous value instead of taking a callback as parameter. At the usage site, the retrieval of the vertex (line 5) is separated from its insertion in the user interface (lines 6-8).
 
-The “callback-hell” example (listing \ref{async-callback-hell}) can be re-written as follows:
-
-\begin{lstlisting}
+\begin{figure}
+\centering
+\begin{lstlisting}[caption=No callback hell,label=async-no-callback]
 for {
   foo <- Ajax.get(fooUrl())
   bar <- Ajax.get(barUrl(foo))
@@ -363,13 +351,22 @@ for {
   baz <- Ajax.get(bazUrl(bar))
 } println(foo + bar + baz)
 \end{lstlisting}
+\end{figure}
 
-The \code{for} notation can intuitively be thought of as a sequencing notation: whenever the response of the first Ajax request is available, the next statement will be executed, and so on. There is no nested callbacks and the order of execution is directly reflected by the order of statements.
+The listing \ref{async-no-callback} translates the “callback-hell” example (listing \ref{async-callback-hell}) using our DSL. The \code{for} notation can intuitively be thought of as a sequencing notation: whenever the response of the first Ajax request is available, the next statement will be executed, and so on. There is no nested callbacks and the order of execution is directly reflected by the order of statements.
 
-The following listing shows the generated JavaScript code for an example where two asynchronous computations run in parallel (we renamed some identifiers for the sake of readability):
+An asynchronous value of type \code{Rep[A]} is modelled by a value of type \code{Rep[Future[A]]}. Because Scala’s \code{for} notation is just a syntactic sugar for methods named \code{foreach}, \code{map} and \code{flatMap}, we only need to define these methods on \code{Rep[Future[A]]} values, with the following semantic:
+\begin{itemize}
+\item \code{foreach(f: Rep[A] => Rep[Unit]): Rep[Unit]}, eventually does something with the value when available~;
+\item \code{map(f: Rep[A] => Rep[B]): Rep[Future[B]]}, eventually transforms the value when available~;
+\item \code{flatMap(f: Rep[A] => Rep[Future[B]]): Rep[Future[B]]} eventually transforms the value when available~;
+\end{itemize}
 
+Asynchronous values can be transformed using the \code{map} and \code{flatMap} methods, turning them into first-class citizen: functions can take as parameters and return asynchronous values.
+
+\begin{figure}
 \begin{multicols}{2}
-\begin{lstlisting}[caption=Parallel computations in Scala]
+\begin{lstlisting}[caption=Parallel computations in Scala,label=async-parallel-1]
 val fooAsync = Ajax.get("/foo")
 val barAsync = Ajax.get("/bar")
 for {
@@ -379,7 +376,7 @@ for {
 \end{lstlisting}
 \vfill
 \columnbreak
-\begin{lstlisting}[language=JavaScript,caption=Generated JavaScript code]
+\begin{lstlisting}[language=JavaScript,caption=Generated JavaScript code,label=async-parallel-2]
 var x1 = new Promise();
 AjaxGet("/foo", x1);
 var x2 = new Promise();
@@ -392,8 +389,9 @@ x1.onComplete(function (foo) {
 });
 \end{lstlisting}
 \end{multicols}
+\end{figure}
 
-The generated \code{Promise} constructor code has been omitted, it creates an object holding a list of callbacks to call when the asynchronous value is completed. The \code{AjaxGet} function code has also been omitted, it creates a \code{XMLHttpRequest} object that sends an HTTP request and completes its promise parameter with the response, when received.
+Listing \ref{async-parallel-1} and \ref{async-parallel-2} define two asynchronous computations running in parallel and the generated JavaScript code (we renamed some identifiers for the sake of readability). The generated \code{Promise} constructor code has been omitted, it creates an object holding a list of callbacks to call when the asynchronous value is completed. The \code{AjaxGet} function code has also been omitted, it creates a \code{XMLHttpRequest} object that sends an HTTP request and completes its promise parameter with the response, when received.
 
 % \begin{lstlisting}[caption=Concrete syntax of the asynchronous programming DSL]
 % trait FutureOps { this: Base =>
@@ -621,9 +619,7 @@ The \code{get} and \code{put} primitives are part of the State monad DSL, they a
 
 The State monad programming model has the advantages but not the shortcomings of both listings \ref{state-encapsulated} and \ref{state-explicit} because there is no global variable (the state is implicitly threaded thanks to the State monad but state modifications explicitly use the \code{get} and \code{put} primitives) and everything is immutable.
 
-Furthermore, our DSL implementation produces an intermediate representation semantically equivalent to the monadic sequences but using regular variables, so that there is no abstraction penalty: the listing \ref{state-monad} compiles to code equivalent to the listing \ref{state-fragile}.
-
-(TODO More details about this optimization)
+Furthermore, our implementation produces efficient imperative code using variables instead of functions passing the state through. To achieve that, we transform the intermediate representation of the stack of state modifications produced by the \code{for} sequences into an equivalent intermediate representation using regular variables. Finally, the listing \ref{state-monad} compiles to code equivalent to the listing \ref{state-fragile} so that there is no abstraction penalty.
 
 \subsubsection{\emph{Adhoc} polymorphism}
 
@@ -813,7 +809,7 @@ The most popular JavaScript library, jQuery~\cite{Bibeault08_jQuery}, used by mo
 
 jQuery handles the \code{null} references problem by wrapping each query result in a container so before each further method call it tests the emptiness of the container and applies effectively the operation only if the container is not empty. It provides an expressive API but the emptiness checking involves a slight performance penalty since each result is wrapped and then unwrapped for the subsequent method invocation.
 
-\subsection{GWT, Roy, Kotlin}
+\subsection{Languages usable on both server-side and client-side}
 
 GWT also has a type safe API to handle events.
 
@@ -823,19 +819,19 @@ Roy solves the callback-hell problem.
 
 Templates written using our HTML templating DSL are about two times shorter than templates written using the native JavaScript API. Compared to usual template engines our solution has no runtime overhead, does not require a separated compilation step and provides a flexible type safe expression language.
 
-Furthermore, templates can be shared between client and server sides. The only system, which we are aware of, that allows developers to share their HTML templates on both server and client sides in a statically typed way and with a convenient expression language is Opa. In Opa they made this possible because HTML templating is part of the Opa language itself. If they wanted to support the sharing of another concept such as form field validation rules they would need to introduce this concept as a part of their Opa language.
+Furthermore, templates can be shared between client and server sides. Opa is also a language making it possible to share statically typed templates with a convenient expression language between client and server sides. In Opa they made this possible because HTML templating is part of the language itself. However, creating a brand new language for each problem requires a high effort, especially since the effort to define common language constructs is duplicated. To reduce the effort, the solution consists in implementing abstractions specific to a given problem as libraries on top of a general purpose language. For instance, Kotlin provides an embedded DSL similar to ours to define HTML fragments. Because the Kotlin language can be compiled to JavaScript and to JVM bytecode, HTML templates can be shared between client and server sides. However, their DSL does not produce code building DOM fragments on client-side. Actually, on both server-side and client-side the output is the same: an abstract tree containing the HTML fragment. So, users need to transform this AST into a proper DOM fragment using a function specific to the client-side. Kotlin and similar approaches (Fay, ClojureScript, GWT) can’t generate specialized code for a given abstraction because their translation scheme is based on the initial program source code: if an abstraction is defined as a library, they will generate code reimplementing the library on each backend (client-side and server-side). There is no way to specialize the generated code for a given library.
 
-On the other hand, in our case introducing the support of form field validation as a DSL usable on both server and client sides would be as simple as defining an API and its translation into both Scala and JavaScript. We wouldn’t need to change the Scala language itself.
+On one hand defining a new language (or modifying an existing language) to integrate a concept specific to a problem is not desired either because it requires a high-effort to define a full-featured language or because several small languages are hard to integrate seamlessly together. On the other hand, defining a concept specific to a problem as a library allows developers to concentrate their effort on the concept itself and to reuse the host language infrastructure, but they have no way to specialize, for each backend, the code generated by the compiler for their concept.
 
-(TODO Make this result more prominent)
+Compiled embedded DSLs provide the best of both worlds because DSLs are defined as libraries and, because they are compiled, developers can specialize the generated code, for each backend, for their DSL concepts. This opportunity made it possible to define, as a library, the HTML templating DSL generating code building DOM fragments on client-side and code building XML trees on server-side.
 
-% \subsection{Lack of a data type definition DSL}
-% 
-% Defining a language as an embedded DSL gives benefits but on the other side of the coin some features are more difficult to achieve. For instance there is no simple way to implement a DSL construct for defining data types. This feature comes almost for free with approaches like GWT, Fay or Kotlin because they derive the client-side program and the server-side program from the initial program source. In our case, the client-side program and the server-side program are derived from the intermediate representation produced by the evaluation of the initial program. So, only concepts reified in an intermediate representation can be part of the final programs. For instance, it means defining a type \code{A} whose constructor yields a value of type \code{Rep[A]}. Scala-virtualized~\cite{Moors12_Virtualized} provides such a mechanism but is limited to product types and provides only projection functions.
-% 
-% In summary, the compiled embedded approach may require more work to support custom data types but gives control on the way this data type will be encoded for each target platform (\eg{} the JavaScript code generator uses native arrays to encode the lists of the list manipulation DSL).
-% 
-% However, the next release of Scala will have support for macros making it possible to generate reified data types from a concise syntax without relying on a compiler extension.
+\subsection{Lack of a data type definition DSL}
+
+On the other side of the coin, because that is not possible to define a library without defining how to translate it on both server-side and client-side, there is no simple way to define a library for defining libraries. This feature comes almost for free with approaches like GWT, Fay or Kotlin because they derive the client-side program and the server-side program from the initial program source (that contains data type definitions such as classes definitions). In our case, the client-side program and the server-side program are derived from the intermediate representation produced by the evaluation of the initial program. So, only concepts reified in an intermediate representation during this evaluation can be part of the final programs. However regular Scala’s classes definition are not reified in an intermediate representation (it would mean that the constructor of a type \code{A} would yield a value of type \code{Rep[A]}). Scala-virtualized~\cite{Moors12_Virtualized} provides such a mechanism but is limited to product types and provides only projection functions, so for more complex cases users have to write some repetitive and boilerplate code.
+
+In summary, the compiled embedded approach may require more work to support custom data types but gives control on the way this data type will be encoded for each target platform (\eg{} the JavaScript code generator uses native arrays to encode the lists of the list manipulation DSL).
+
+However, the next release of Scala will have support for macros making it possible to generate reified data types from a concise syntax without relying on a compiler extension.
 
 \section{Conclusion and perspectives}
 \label{discussion}
