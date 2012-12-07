@@ -1,3 +1,4 @@
+\def\thelstlisting{}
 \documentclass[american,english,runningheads]{llncs}
 
 \usepackage[T1]{fontenc}
@@ -26,14 +27,18 @@
 
 \input{macros}
 
+
 \begin{document}
 
+\setcounter{lstlisting}{0}
+\renewcommand{\thelstlisting}{\arabic{lstlisting}}
 
 \title{Statically typed Web programming}
 
-\author{Julien \noun{Richard-Foy} \and Olivier \noun{Barais} \and Jean-Marc \noun{Jézéquel}\\
-\texttt{\{first\}.\{last\}@irisa.fr}}
-\institute{INRIA}
+\author{Julien \noun{Richard-Foy}\textsuperscript{\textasteriskcentered} \and Olivier \noun{Barais}\textsuperscript{\textasteriskcentered} \and
+Tiark \noun{Rompf}\textsuperscript{\textdagger} \and Jean-Marc \noun{Jézéquel}\textsuperscript{\textasteriskcentered}}
+\institute{\textsuperscript{\textasteriskcentered}IRISA, Université de Rennes 1, France: \texttt{\{first\}.\{last\}@irisa.fr}\\
+\textsuperscript{\textdagger}EPFL, Lausanne, Switzerland: \texttt{\{first\}.\{last\}@epfl.ch}}
 
 \authorrunning{Julien \noun{Richard-Foy} \etal{}}
 
@@ -142,7 +147,7 @@ compares it to related work and section \ref{discussion} concludes.
 \label{problem}
 
 To illustrate the challenges of writing a RIA and the need for a DSL for writing them, we introduce a simple “mind
-mapping” application and show how the client-side code would be typically written in pure JavaScript.
+mapping” application and show how the client-side code would be typically written in JavaScript.
 
 \subsection{Example description}
 
@@ -175,7 +180,7 @@ mapElement.addEventListener("mousewheel", function (e) {
 \end{lstlisting}
 
 The event handler is simply a function taking the event data as a parameter. In the above example we use the
-\code{wheelDeltaY} property of the event to change the scale of the map.
+\code{wheelDeltaY} property of the event to update the scale of the map.
 
 We think this code is fragile for two reasons. (1) The name of the event is passed as a string, so it is easy to
 mispell it. (2) The callback passed as a second parameter takes a parameter \code{e} whose fields vary according to
@@ -200,8 +205,8 @@ var createVertex = function (text) {
 
 \code{Ajax.post} is a helper function that sends a HTTP request to the server and calls its last parameter
 (that is a \emph{callback}) when the response data is available. The inverted control makes modularization harder to
-achieve: in the above listing the function creating the vertex is also responsible to updating the user interface.
-If we want to relax this coupling the only option is to add a callback parameter to the \code{createVertex} function:
+achieve: in the above listing the function creating the vertex is also responsible of updating the user interface.
+To relax this coupling the only option is to add a callback parameter to the \code{createVertex} function:
 
 \begin{lstlisting}[language=JavaScript,label=async-js,caption=Callback-driven JavaScript APIs]
 var createVertex = function (text, callback) {
@@ -315,6 +320,7 @@ client-side and server-side, however none has a practical expression language (d
 as a map of key-value pairs and no operation can be done on values) or is statically typed.
 
 \subsection{Assessment}
+\label{assessment}
 
 In the previous section we showed the three main tasks performed by the JavaScript code in RIAs: events handling,
 asynchronous programming and DOM manipulation. We noticed the following issues:
@@ -333,13 +339,14 @@ bothers modularization. Furthermore, native APIs are too much verbose, making th
 \subsubsection{Sharing type safe code between clients and servers is hard to achieve}
 
 The lack of static checks is even harder to tackle in the case of code shared between client and server sides. If we
-write the expression \code{xs.size == 0} in a template, how should it be translated in JavaScript and in Scala?
-Several solutions are valid, depending on the meaning of the expression: in JavaScript we could translate it as
-\code{xs.size === 0} or \code{xs.length === 0} if \code{xs} refers to a collection (in JavaScript the property to get
-the size of a collection is named \code{length}). We need to define a proper expression language and to define how it
-should be translated for the client-side environment (JavaScript) and the server-side environment (\eg{} the Java
-Virtual Machine), but such a task requires a high effort and is hard to achieve in an extensible way (so users can
-still use their own data types in expressions instead of being restricted to a set of supported types).
+write the expression \code{xs.size == 0} in a template, how should it be translated to the client-side environment
+(JavaScript) and to the server-side environment (\eg{} the Java Virtual Machine)? Several solutions are valid,
+depending on the meaning of the expression: in JavaScript we could translate it as \code{xs.size === 0} or
+\code{xs.length === 0} if \code{xs} refers to a collection (in JavaScript the property to get the size of a
+collection is named \code{length}). We need to define a proper expression language and to define how it should be
+translated for the client-side environment and the server-side environment, but such a task requires a high effort
+and is hard to achieve in an extensible way (so users can still integrate their own data types in expressions instead
+of being restricted to a set of supported types).
 
 \section{DSL design and implementation}
 \label{solution}
@@ -347,7 +354,7 @@ still use their own data types in expressions instead of being restricted to a s
 JavaScript libraries could address some of the challenges presented above, but addressing type safety and
 asynchronous programming issues require language modifications (\eg{} to bring a type system and a sequencing
 notation). Defining a language requires a high effort, especially to build development tools for the language so we
-chose to define our language as a compiled embedded DSL is Scala\footnote{The code is available at
+chose to define our language as a compiled embedded DSL in Scala\footnote{The code is available at
 \href{http://github.com/js-scala}{http://github.com/js-scala}}.
 
 \subsection{Introduction to Lightweight Modular Staging}
@@ -374,11 +381,13 @@ of type \code{Int} in the second stage. If you consider the following code:
 val inc: Rep[Int] => Rep[Int] =
   x => x + 1
 \end{lstlisting}
-The \code{inc} function returns the intermediate representation of a computation yielding the number following the
-value of the parameter \code{x} (that itself is the intermediate representation of a number). The function looks like
+The function looks like
 a regular Scala function excepted that its parameter type and its return type are wrapped in the \code{Rep[T]} type
-constructor that denotes intermediate representations. You can get a \code{T} value from a \code{Rep[T]} value by
-generating code from the intermediate representation and compiling it:
+constructor that denotes intermediate representations. The \code{+} operator has been defined on \code{Rep[Int]}
+values and returns the intermediate representation of an addition. Finally, the \code{inc} function returns the
+intermediate representation of a computation yielding the number following the value of the parameter \code{x}. You
+can get a \code{T} value from a \code{Rep[T]} value by generating code from the intermediate representation and
+compiling it:
 \begin{lstlisting}
 val compiledInc: Int => Int =
   compile(inc)
@@ -387,11 +396,14 @@ The \code{compile} function takes a staged program of type \code{Rep[A] => Rep[B
 type \code{A => B}.
 
 The intermediate representation implementation is hidden for users but DSLs authors have to provide the corresponding
-intermediate representation of each construction of their language. For that purpose, LMS comes with an extensible
-intermediate representation implementation defining computations as a graph of statements. Then, the code generation
-process consists in sorting this graph according to expressions dependencies and to emit the code corresponding to
-each node. The listings \ref{codegen-js} and \ref{codegen-scala} show the JavaScript and Scala generated code for the
-\code{inc} function:
+intermediate representation of each construct of their language. For that purpose, LMS comes with an extensible
+intermediate representation implementation defining computations as a graph of statements. In the case of the
+\code{inc} function, this graph contains a \code{Plus} node applied on a \code{Sym} node (the \code{x} parameter) and
+a \code{Const} node (the literal value \code{1}).
+
+Then, the code generation process consists in sorting this graph according to expressions dependencies and to emit
+the code corresponding to each node. The listings \ref{codegen-js} and \ref{codegen-scala} show the JavaScript and
+Scala generated code for the \code{inc} function:
 \begin{multicols}{2}
 \lstinputlisting[language=JavaScript, caption=JavaScript code generation, label=codegen-js]{inc.js}
 \lstinputlisting[caption=Scala code generation, label=codegen-scala]{inc.scala}
@@ -405,15 +417,16 @@ Defining a DSL consists in three steps, each defining:
 \item A code generator for the intermediate representation: a \emph{pretty-printer} for each DSL statement node.
 \end{itemize}
 
+The remaining of this section describe the design and the implementation of DSLs for Web programming using LMS.
+
 \subsection{Events handling}
 
 We want to bring safety to the events handling API so that developers can’t mispell an event name and can’t attempt
 to read a property that is not defined on the type of the handled event. The difficulty comes from the fact that the
-type of the event passed to the handler varies with the event name. A value of type \code{KeyboardEvent} contains a
-\code{key} field returning the value of the key involved in the event, and a value of type \code{MouseWheelEvent}
-contains a \code{wheelDeltaY} field returning the value of the mouse button involved in the event. For instance in
-the listing \ref{event-js}, the handler processses \code{MouseWheelEvent} values because it listens to
-\code{mousewheel} events.
+type of the event passed to the handler varies with the event name. For instance in the listing \ref{event-js}, the
+handler processses \code{MouseWheelEvent} values because it listens to \code{mousewheel} events. Values of type
+\code{MouseWheelEvent} have a property \code{wheelDeltaY} but that’s not the case of an event data of type
+\code{KeyboardEvent}, for example.
 
 A possible solution could be to define a distinct method for each event instead of the single \code{addEventListener}
 method, so each method takes a handler with the according event type:
@@ -426,6 +439,10 @@ window.onMouseWheel { e: Rep[MouseWheelEvent] =>
   println(e.wheelDeltaY)
 }
 \end{lstlisting}
+
+In the above listing, the \code{onKeyUp} method attaches an event handler for the \code{keyup} event that uses values
+of type \code{KeyboardEvent}, and the \code{onMouseWheel} method does the same for \code{mousewheel} events that use
+values of type \code{MouseWheelEvent}.
 
 However, implementing this solution requires a high effort because we have to define as many methods as there are
 events. We want to provide a single polymorphic method similar to the native API. To achieve that we need to encode
@@ -441,7 +458,7 @@ def on(ev: EventDef)(handler: Rep[ev.Type] => Rep[Unit]): Rep[Unit]
 \end{lstlisting}
 
 (We renamed \code{addEventListener} to \code{on}, for the sake of brevity). An \code{EventDef} value represents an
-event that carries its corresponding event type in its \code{Type} type member. The \code{on} method takes a
+event that carries its corresponding event data type in its \code{Type} type member. The \code{on} method takes a
 parameter \code{ev} of type \code{EventDef} and a \code{handler} parameter whose type refers to the \code{Type}
 member of the \code{ev} parameter, so the type of the handler depends on the \code{ev} value. We can then define the
 \code{keyup} and \code{mousewheel} events as follows:
@@ -464,13 +481,11 @@ window.on(MouseWheel) { e =>
 
 \begin{figure}
 \centering
-\begin{lstlisting}[numbers=left,caption=Asynchronous values are first class citizen,label=async-first-class]
+\begin{lstlisting}[caption=Asynchronous values are first class citizen,label=async-first-class]
 def createVertex(text: Rep[String]): Rep[Future[Vertex]] =
   Ajax.post[Vertex]("/create", new Record { val content = text })
 
-// Usage
-val vertexAsync = createVertex("Hello, World!")
-for (vertex <- vertexAsync) {
+for (vertex <- createVertex("Hello, World!")) {
   addVertex(vertex)
 }
 \end{lstlisting}
@@ -478,10 +493,13 @@ for (vertex <- vertexAsync) {
 
 We propose a DSL that explicitly reflects the asynchronous nature of computations in their type and provides methods
 turning them into first-class citizen. The DSL is monadic so we can solve the callback-hell problem thanks to the
-Scala \code{for} notation. For instance, listing \ref{async-first-class} shows how the listing \ref{async-js} can be
+Scala \code{for} notation.
+
+For instance, listing \ref{async-first-class} shows how the listing \ref{async-js} can be
 re-written with our DSL. The \code{createVertex} now returns an asynchronous value instead of taking a callback as
-parameter. At the usage site, the retrieval of the vertex (line 5) is separated from its insertion in the user
-interface (lines 6-8).
+parameter. Then, the \code{for} expression allows us to use the vertex, when available, and to insert it on the user
+interface. By making the \code{createVertex} function returning an asynchronous value instead of taking a callback as
+a parameter, the code is easier to modularize into loosely coupled parts.
 
 \begin{figure}
 \centering
@@ -501,8 +519,8 @@ first Ajax request is available, the next statement will be executed, and so on.
 order of execution is directly reflected by the order of statements.
 
 An asynchronous value of type \code{Rep[A]} is modelled by a value of type \code{Rep[Future[A]]}. Because Scala’s
-\code{for} notation is just a syntactic sugar for methods named \code{foreach}, \code{map} and \code{flatMap}, we
-only need to define these methods on \code{Rep[Future[A]]} values, with the following semantic:
+\code{for} notation is just a syntactic sugar for methods \code{foreach}, \code{map} and \code{flatMap}, we are
+able to define our DSL by just defining these methods on \code{Rep[Future[A]]} values, with the following semantic:
 \begin{itemize}
 \item \code{foreach(f: Rep[A] => Rep[Unit]): Rep[Unit]}, eventually does something with the value when available~;
 \item \code{map(f: Rep[A] => Rep[B]): Rep[Future[B]]}, eventually transforms the value when available~;
@@ -647,16 +665,16 @@ def vertexDom(v: Rep[Vertex]) =
 
 The readability has been highly improved: nesting tags is just like nesting code blocks, HTML entities are
 automatically escaped in text nodes, developers have the full computational power of Scala to inject dynamic data and
-DOM fragments definitions are written using functions so they compose just as functions compose.
+DOM fragments definitions are written using functions so they compose just as functions compose. These benefits come
+with no performance loss because the DSL generates code building DOM fragments using the native JavaScript API.
 
-\subsubsection{Reuse the DOM definition DSL from server-side}
+\subsubsection{Reuse the DOM definition DSL on server-side}
 
 Our DSL is equivalent as a template engine with Scala as the expression language. Making it usable on both server and
-client sides is as simple as defining another code generator for the DSL, producing Scala code. The result is a
-lightweight statically typed template engine, seamlessly integrated with the other code parts (because it is defined
-as an embedded DSL) and with a convenient expression language. For instance, the template written in the listing
-\ref{forest-hello} produces the following Scala code usable on server-side (the generated code for client-side is
-roughly equivalent to the listing \ref{dom-api}):
+client sides is surprisingly as simple as defining another code generator for the DSL, producing Scala code.
+
+For instance, the template written in the listing \ref{forest-hello} produces the following Scala code usable on
+server-side (the generated code for client-side is roughly equivalent to the listing \ref{dom-api}):
 
 \begin{lstlisting}
 def vertexDom(v: Vertex) = {
@@ -672,6 +690,10 @@ def vertexDom(v: Vertex) = {
   x2
 }
 \end{lstlisting}
+
+We are able to tackle the code sharing issues described in section \ref{assessment} because of the embdedded nature
+of our DSLs: dynamic content of templates is written using embdedded DSLs too, so their translation into JavaScript
+and Scala is managed by their respective code generators.
 
 \subsection{More general purpose improvements of JavaScript}
 
@@ -705,9 +727,9 @@ if (loginWidget !== null) {
 
 Our solution has both the safety and performance of the listing \ref{null-defensive} and the expressiveness of the
 listing \ref{null-unsafe}. We encode the potential emptiness of a value of type \code{Rep[A]} using the
-\code{Rep[Option[A]]} type at the stage level but we don’t generate code wrapping values in a container, instead we
-just check if a value is \code{null} or not. Here is a listing that uses our DSL and compiles to code equivalent to
-the listing \ref{null-defensive}:
+\code{Rep[Option[A]]} type at the stage level but we don’t generate code wrapping values in a container, instead the
+generated code just checks if a value is \code{null} or not. Here is a listing that uses our DSL and compiles to code
+equivalent to the listing \ref{null-defensive}:
 
 \begin{lstlisting}
 for {
@@ -826,9 +848,10 @@ practice~\cite{Zakas12_MaintainableJs}. Another way could consist in manually co
 supported data types at the beginning of the program execution, as described in section 2.4.3
 of~\cite{Abelson83_SICP}, but this solution is painful for developers and incurs a performance overhead.
 
-We propose another way to achieve \emph{adhoc} polymorphism that is entirely type-directed (the dispatch happens at
-compile-time rather than at runtime), with no impact on the generated code and supporting retroactive extension,
-using typeclasses~\cite{Wadler89_AdhocPolymorphism,Odersky06_Typeclasses,Oliveira10_Typeclasses}.
+We propose to achieve \emph{adhoc} polymorphism using
+typeclasses~\cite{Wadler89_AdhocPolymorphism,Odersky06_Typeclasses,Oliveira10_Typeclasses} so that it supports
+retroactive extension without modifying objects prototypes because it is type-directed: the dispatch happens at
+compile-time rather than at runtime.
 
 \begin{figure}
 \begin{lstlisting}[label=polymorphism,caption=Adhoc polymorphism using typeclasses]
@@ -876,8 +899,6 @@ tree containing the representation of a list of items. The \code{Show[A]} typecl
 for a value of type \code{A}.
 
 \subsubsection{Type coercion}
-
-(TODO More general problem description)
 
 JavaScript comes with only one numeric type, \code{Number}, that represents double-precision 64-bit values. If
 developers want to use another numeric data type, \eg{} representing integer values or arbitrary length values, they
@@ -966,23 +987,81 @@ def main(i: Rep[Int], j: Rep[Int],
 
 \subsection{Implementation discussion}
 
-We implemented our language as a compiled embedded DSL in Scala. The embedding gave us the opportunity to reuse
-Scala’s infrastructure: we didn’t have to write a parser and, more importantly, we could reuse Scala’s type system.
-Furthermore, staging gave us the opportunity to generate efficient code.
+\subsubsection{Benefits of the compiled embedded approach}
 
-Code generation using LMS is usually described as a two step process: a program first evaluates to an intermediate
-representation and then the final program’s code is generated from the intermediate representation. We think we can
-consider a third step, occurring before the program evaluation: the compilation.
+We implemented our language as a compiled embedded DSL in Scala. The process of generating code from a DSL is usually
+described as a two steps process: a program first evaluates to an intermediate representation and then the final
+program’s code is generated from this intermediate representation, with the opportunity to generate efficient code
+by applying domain specific optimizations. We think it’s worth considering a third step, which occurs before the
+program evaluation: its compilation. This step affects DSLs design because their embedded nature let them reuse the
+host language features (\eg{} the type system or syntactic sugars) to implement their own features. The following
+paragraph gives an overview of the different mechanisms used to implement our DSLs.
 
-Indeed, the code generation process consists in three steps giving DSL authors as many opportunities to implement
-their language features. First, features like type coercion and \emph{adhoc} polymorphism only rely on the type
-system, so they operate during the compilation. Then, during the evaluation, the DSL constructs build an intermediate
-representation of the program, for instance the State monad DSL builds an imperative sequence of assignments on a
-variable. Last, the code generator produces the final program using the domain specific information available in the
-intermediate representation to generate efficient code, for example the Option monad code generator produces code
-checking against nullity before dereferencing a value.
+First, features like type coercion and \emph{adhoc} polymorphism only rely on the type system, so they operate during
+the compilation. Then, during the evaluation, the DSL constructs build an intermediate representation of the program,
+for instance the State monad DSL builds an imperative sequence of assignments on a variable. Last, the code generator
+produces the final program using the domain specific information available in the intermediate representation to
+generate efficient code, for example the Option monad code generator produces code checking against nullity before
+dereferencing a value.
 
-Each of these steps takes out some information on the program.
+An important consequence of the implementation as compiled embedded DSLs is the low effort required to be able to
+share code between server and client sides. The other ways to define DSLs compiling to multiple backends are either
+to define a brand new language so the compilation generates appropriate code for each target (\eg{} Opa), or to
+define a library within a host language that already compiles to several targets (\eg{} GWT, Kotlin). However, the
+first way requires a high effort or leads to defining several small languages that are hard to integrate seamlessly,
+and the second way does not give the opportunity to specialize the generated code according to the targets (so you
+can’t generate, from the same library, code building DOM fragments on the client-side and code building XML trees on
+the server-side).
+
+Compiled embedded DSLs are a good tradeoff because they are simply defined as libraries but they let developers
+specialize the generated code according to each target. This opportunity made it possible to define, as a library,
+the HTML templating DSL generating code building DOM fragments on client-side and code building XML trees on
+server-side.
+
+% Furthermore, templates can be shared between client and server sides. Opa is also a language making it possible to
+% share statically typed templates with a convenient expression language between client and server sides. In Opa they
+% made this possible because HTML templating is part of the language itself. However, creating a brand new language for
+% each problem requires a high effort, especially since the effort to define common language constructs is duplicated.
+% To reduce the effort, the solution consists in implementing abstractions specific to a given problem as libraries on
+% top of a general purpose language. For instance, Kotlin provides an embedded DSL similar to ours to define HTML
+% fragments. Because the Kotlin language can be compiled to JavaScript and to JVM bytecode, HTML templates can be
+% shared between client and server sides. However, their DSL does not produce code building DOM fragments on
+% client-side. Actually, on both server-side and client-side the output is the same: an abstract tree containing the
+% HTML fragment. So, users need to transform this AST into a proper DOM fragment using a function specific to the
+% client-side. Kotlin and similar approaches (Fay, ClojureScript, GWT) can’t generate specialized code for a given
+% abstraction because their translation scheme is based on the initial program source code: if an abstraction is
+% defined as a library, they will generate code reimplementing the library on each backend (client-side and
+% server-side). There is no way to specialize the generated code for a given library.
+% 
+% On one hand defining a new language (or modifying an existing language) to integrate a concept specific to a problem
+% is not desired either because it requires a high-effort to define a full-featured language or because several small
+% languages are hard to integrate seamlessly together. On the other hand, defining a concept specific to a problem as a
+% library allows developers to concentrate their effort on the concept itself and to reuse the host language
+% infrastructure, but they have no way to specialize, for each backend, the code generated by the compiler for their
+% concept.
+
+\subsection{Lack of a data type definition DSL}
+
+(TODO Example)
+
+On the other side of the coin, because that is not possible to define a library without defining how to translate it
+on both server and client sides, there is no simple way to let DSLs users define their own libraries. This feature
+comes almost for free with approaches like GWT, Fay or Kotlin because they derive the client-side program and the
+server-side program from the initial program source (that contains data type definitions such as classes
+definitions). In our case, the client-side program and the server-side program are derived from the intermediate
+representation produced by the evaluation of the initial program. So, only concepts reified in an intermediate
+representation during this evaluation can be part of the final programs. However regular Scala’s classes definition
+are not reified in an intermediate representation (it would mean that the constructor of a type \code{A} would yield
+a value of type \code{Rep[A]}). Scala-virtualized~\cite{Moors12_Virtualized} provides such a mechanism but is 
+limited to record types and provides only projection functions, so for more complex cases users have to write some
+repetitive and boilerplate code.
+
+In summary, the compiled embedded approach may require more work to support custom data types but gives control on
+the way this data type will be encoded for each target platform (\eg{} the JavaScript code generator uses native
+arrays to encode the lists of the list manipulation DSL).
+
+However, the next release of Scala will have support for macros making it possible to generate reified data types
+from a concise syntax without relying on a compiler extension.
 
 \subsubsection{Custom code generation to handle browsers incompatibilities}
 
@@ -1032,11 +1111,12 @@ some statement nodes in order to handle Internet Explorer incompatibilities.
 % }
 % \end{lstlisting}
 
-\section{Validation and comparison with other approaches}
+\section{Evaluation}
 \label{validation}
 
 Our DSL aims to give developers a safer and more expressive way to write the client-side code. We focused on the main
-tasks of RIAs development: handling events, asynchronous programming and DOM definition.
+tasks of RIAs development: handling events, asynchronous programming and DOM fragments definition, as well as on
+more general programming concerns: \code{null} references handling and type safety.
 
 \subsection{Observed benefits of the use of our DSL}
 
@@ -1048,83 +1128,79 @@ All these benefits came with no runtime overhead, excepted for the asynchronous 
 each asynchronous computation, a \code{Promise} value registering the callbacks to call when the value is be
 available.
 
-\subsection{JavaScript libraries}
+\subsection{Comparison with other approaches}
+
+Table \ref{comparison} gives a synthetic view of the comparison of our work with other approaches. Lines give
+features desired to write large Web applications and colums list famous tools for Web programming. Cells show the
+support level of each feature for each tool.
+
+\begin{table}
+\centering
+\begin{tabular}{| l | c | c | c | c | c | c | c | c |}
+\hline
+& jQuery & TypeScript & Roy & GWT & Kotlin & Opa & Dart & js-scala \\
+\hline
+Event handling & * & & & *** & & ? & & *** \\
+\hline
+DOM definition & * & & & *** & ** & *** & * & *** \\
+\hline
+Asynchronous programming & ** & & *** & & & *** & * & *** \\
+\hline
+Null references & ** & & *** & & * & ? & & *** \\
+\hline
+Type coercion & & & & * & * & ? & * & *** \\
+\hline
+General programming language features & * & ** & ** & * & *** & ? & * & *** \\
+\hline
+Static typing & & * & ** & ** & ** & ** & * & ** \\
+\hline
+Easiness for defining libraries & * & *** & *** & *** & *** & *** & *** & * \\
+\hline
+Client-server code sharing & & * & * & * & * & ** & * & *** \\
+\hline
+\end{tabular}
+\caption{Support level of Web programming features by famous tools. Zero star means that the feature is not supported
+at all, three stars mean a strong support.}
+\label{comparison}
+\end{table}
 
 The most popular JavaScript library, jQuery~\cite{Bibeault08_jQuery}, used by more than 40\% of the top million
-sites\footnote{\href{http://trends.builtwith.com/javascript}{http://trends.builtwith.com/javascript}}, and
-Q.js\footnote{\href{https://github.com/kriskowal/q}{https://github.com/kriskowal/q}} provide an API turning
-asynchronous computations into first-class citizen. However, the callback-hell problem can’t always be avoided due to
-the absence of a special syntactic sugar for continuation passing style.
+sites\footnote{\href{http://trends.builtwith.com/javascript}{http://trends.builtwith.com/javascript}} aims to
+simplify RIA development. Unsurprisingly, it supports, at least partially, the RIA specific features of the table but
+suffers from the JavaScript language limitations. jQuery handles the \code{null} references problem by wrapping each
+query result in a container so before each further method call it tests the emptiness of the container and applies
+effectively the operation only if the container is not empty. It provides an expressive API but the emptiness
+checking involves a slight performance penalty since each result is wrapped and then unwrapped for the subsequent
+method invocation.
 
-jQuery handles the \code{null} references problem by wrapping each query result in a container so before each further
-method call it tests the emptiness of the container and applies effectively the operation only if the container is
-not empty. It provides an expressive API but the emptiness checking involves a slight performance penalty since each
-result is wrapped and then unwrapped for the subsequent method invocation.
+TypeScript is a language compiling to JavaScript supporting classes, modules and soft typing. Because TypeScript is
+a superset of JavaScript, any valid JavaScript program is a valid TypeScript program. Developers can progressively
+leverage TypeScript’s features to turn their JavaScript sources into large, modular and more robust code bases.
+However, TypeScript does not address problems specific to RIAs development like DOM fragments definition or
+asynchronous programming.
 
-\subsection{Languages usable on both server-side and client-side}
+The Roy programming language is a statically typed functional programming language compiling to JavaScript. It
+features global type inference, algebraic data types, pattern matching and a sequencing notation similar to Scala’s
+\code{for} notation.
 
-GWT also has a type safe API to handle events.
+GWT exposes the browser’s APIs through type safe Java APIs and simplifies DOM fragments definition. However it still
+uses a callback-driven programming models for asynchronous computations.
 
-Roy solves the callback-hell problem.
+Kotlin is a recent language written by JetBrains, that target both the JVM and JavaScript. It has libraries
+addressing, at least partially, Web programming concerns and supports advanced programming language features such as
+mixins, type inference, variance annotations for type parameters and pattern matching.
 
-\subsection{Template engines}
+Opa is a language specifically designed for Web programming.
 
-Templates written using our HTML templating DSL are about two times shorter than templates written using the native
-JavaScript API. Compared to usual template engines our solution has no runtime overhead, does not require a separated
-compilation step and provides a flexible type safe expression language.
-
-Furthermore, templates can be shared between client and server sides. Opa is also a language making it possible to
-share statically typed templates with a convenient expression language between client and server sides. In Opa they
-made this possible because HTML templating is part of the language itself. However, creating a brand new language for
-each problem requires a high effort, especially since the effort to define common language constructs is duplicated.
-To reduce the effort, the solution consists in implementing abstractions specific to a given problem as libraries on
-top of a general purpose language. For instance, Kotlin provides an embedded DSL similar to ours to define HTML
-fragments. Because the Kotlin language can be compiled to JavaScript and to JVM bytecode, HTML templates can be
-shared between client and server sides. However, their DSL does not produce code building DOM fragments on
-client-side. Actually, on both server-side and client-side the output is the same: an abstract tree containing the
-HTML fragment. So, users need to transform this AST into a proper DOM fragment using a function specific to the
-client-side. Kotlin and similar approaches (Fay, ClojureScript, GWT) can’t generate specialized code for a given
-abstraction because their translation scheme is based on the initial program source code: if an abstraction is
-defined as a library, they will generate code reimplementing the library on each backend (client-side and
-server-side). There is no way to specialize the generated code for a given library.
-
-On one hand defining a new language (or modifying an existing language) to integrate a concept specific to a problem
-is not desired either because it requires a high-effort to define a full-featured language or because several small
-languages are hard to integrate seamlessly together. On the other hand, defining a concept specific to a problem as a
-library allows developers to concentrate their effort on the concept itself and to reuse the host language
-infrastructure, but they have no way to specialize, for each backend, the code generated by the compiler for their
-concept.
-
-Compiled embedded DSLs provide the best of both worlds because DSLs are defined as libraries and, because they are
-compiled, developers can specialize the generated code, for each backend, for their DSL concepts. This opportunity
-made it possible to define, as a library, the HTML templating DSL generating code building DOM fragments on
-client-side and code building XML trees on server-side.
-
-\subsection{Lack of a data type definition DSL}
-
-On the other side of the coin, because that is not possible to define a library without defining how to translate it
-on both server-side and client-side, there is no simple way to define a library for defining libraries. This feature
-comes almost for free with approaches like GWT, Fay or Kotlin because they derive the client-side program and the
-server-side program from the initial program source (that contains data type definitions such as classes
-definitions). In our case, the client-side program and the server-side program are derived from the intermediate
-representation produced by the evaluation of the initial program. So, only concepts reified in an intermediate
-representation during this evaluation can be part of the final programs. However regular Scala’s classes definition
-are not reified in an intermediate representation (it would mean that the constructor of a type \code{A} would yield
-a value of type \code{Rep[A]}). Scala-virtualized~\cite{Moors12_Virtualized} provides such a mechanism but is 
-limited to product types and provides only projection functions, so for more complex cases users have to write some
-repetitive and boilerplate code.
-
-In summary, the compiled embedded approach may require more work to support custom data types but gives control on
-the way this data type will be encoded for each target platform (\eg{} the JavaScript code generator uses native
-arrays to encode the lists of the list manipulation DSL).
-
-However, the next release of Scala will have support for macros making it possible to generate reified data types
-from a concise syntax without relying on a compiler extension.
+Dart is another language designed specifically for Web programming.
 
 \section{Conclusion and perspectives}
 \label{discussion}
 
-Writing RIAs requires large JavaScript code bases, however this language has several inadequacies for this purpose.
+Writing RIAs is challenging because the JavaScript language and the Web browser’s native APIs have several
+inadequacies for this purpose.
+
+We provide a way to write statically typed client-side code, we simplify asynchronous programming 
 
 We provide a safer and more expressive language than JavaScript and its native APIs to write RIAs.
 
