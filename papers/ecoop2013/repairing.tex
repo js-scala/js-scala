@@ -52,7 +52,7 @@ language has several inadequacies (no static typing, no module system, verbose s
 further the definition of JavaScript as a Scala compiled embedded DSL using Lightweight Modular Staging. We define
 safe and expressive abstractions for DOM manipulation, event handling and asynchronous programming that translate to
 efficient JavaScript code using native APIs. We use both type-level information and staging to introduce high-level
-abstractions with a few or no overhead on the generated JavaScript code.
+abstractions with few or no overhead on the generated JavaScript code.
 \end{abstract}
 
 {\bf Keywords:} Web, programming languages, embedded DSL, type-level programming, staging, Scala
@@ -70,7 +70,7 @@ with a new DOM fragment computed from the response data~\cite{Farrell07_RIA,Busc
 Writing large Web applications is known to be
 challenging~\cite{Mikkonen08_SpaghettiJs,Preciado05_RIAMethodologyNecessity}, mainly because of the heterogeneous
 nature of the client-side and server-side environments~\cite{Echeverria09_RIA,Kuuskeri09_PartitioningClientServer}:
-writing distributed code requires its parts to be consistent together and leads to duplication unless you use the
+writing distributed code requires its parts to be consistent together and leads to duplication unless one uses the
 same language in both sides, which, in the case of the Web, means using JavaScript to write the whole application.
 However this language has several inadequacies making it hardly suitable for large code base (\eg{} no static typing,
 no module system, verbose syntax, \etc). Some other in-browser execution environments give the opportunity to write
@@ -83,14 +83,14 @@ Apple smart phone), the page content can't naturally be referenced by search eng
 structured in URLs that users can bookmark or share.
 
 An increasing number of initiatives attempt to allow developers to write the client-side code in a language different
-of JavaScript but that can be compiled to JavaScript (\eg{} GWT~\cite{Chaganti07_GWT}, Dart~\cite{Griffith11_Dart},
+than JavaScript but that can be compiled to JavaScript (\eg{} GWT~\cite{Chaganti07_GWT}, Dart~\cite{Griffith11_Dart},
 TypeScript\footnote{\href{http://www.typescriptlang.org/}{http://www.typescriptlang.org/}}, Roy~\cite{McKenna_Roy}).
 Some of these languages can also be compiled to another runtime environment usable on server-side (\eg{} GWT, Dart,
 Kotlin\footnote{\href{http://kotlin.jetbrains.org/}{http://kotlin.jetbrains.org/}},
 ClojureScript~\cite{McGranaghan11_ClojureScript}, Fay\footnote{\href{http://fay-lang.org/}{http://fay-lang.org/}},
 Haxe~\cite{Cannasse08_HaXe} or Opa\footnote{\href{http://opalang.org/}{http://opalang.org/}}). These languages are
 usually more suitable to write large applications either because they provide more constructs to build abstractions
-(such as object orientation), or because they are statically typed, or because they add a bunch of useful concepts
+(such as object orientation), or because they are statically typed, or because they add some useful concepts
 that are missing in JavaScript (such as \emph{adhoc} polymorphism or namespaces). Moreover, their ability to compile
 for both server and client sides usually allows developers to share some parts of code between server and client
 sides for free. However this shared code is restricted to use exclusively language constructs: concepts provided by
@@ -167,7 +167,7 @@ consisting of three ideas linked together, using our application.
 
 \subsubsection{Events handling}
 
-RIAs distinguish from classic Web pages by a higher degree of interactivity. In our example we want to let users zoom
+RIAs distinguish themselves from classic Web pages by a higher degree of interactivity. In our example we want to let users zoom
 in and out a map using their mouse wheel. To implement this feature we need to attach an event handler for the
 \code{mousewheel} event on the DOM element containing the map. The following listing shows how to attach such an
 event handler using the native JavaScript API:
@@ -245,7 +245,7 @@ statement be executed? Before or after \code{baz} has been fetched?
 \label{forest}
 
 Updating the user interface usually means replacing a part of the DOM with another DOM fragment computed from data
-fetched by an AJAX request. This requires to write how to compute the new DOM fragment in JavaScript. For instance
+fetched by an AJAX request. This requires writing how to compute the new DOM fragment in JavaScript. For instance
 the following listing shows how to build a DOM tree representing a vertex in the mind map:
 
 \begin{lstlisting}[language=JavaScript,label=dom-api,caption=DOM fragment creation using the native API]
@@ -334,7 +334,7 @@ break the program behavior without getting a sensible error message.
 \subsubsection{Code hard to reason about and to modularize}
 
 Callback-driven APIs are very common in JavaScript but their inverted control makes the code flow hard to follow and
-bothers modularization. Furthermore, native APIs are too much verbose, making the code hard to read.
+bothers modularization. Furthermore, native APIs are too verbose, making the code hard to read.
 
 \subsubsection{Sharing type safe code between clients and servers is hard to achieve}
 
@@ -498,7 +498,7 @@ Scala \code{for} notation.
 For instance, listing \ref{async-first-class} shows how the listing \ref{async-js} can be
 re-written with our DSL. The \code{createVertex} now returns an asynchronous value instead of taking a callback as
 parameter. Then, the \code{for} expression allows us to use the vertex, when available, and to insert it on the user
-interface. By making the \code{createVertex} function returning an asynchronous value instead of taking a callback as
+interface. By making the \code{createVertex} function return an asynchronous value instead of taking a callback as
 a parameter, the code is easier to modularize into loosely coupled parts.
 
 \begin{figure}
@@ -519,7 +519,7 @@ first Ajax request is available, the next statement will be executed, and so on.
 order of execution is directly reflected by the order of statements.
 
 An asynchronous value of type \code{Rep[A]} is modelled by a value of type \code{Rep[Future[A]]}. Because Scala’s
-\code{for} notation is just a syntactic sugar for methods \code{foreach}, \code{map} and \code{flatMap}, we are
+\code{for} notation is just syntactic sugar for methods \code{foreach}, \code{map} and \code{flatMap}, we are
 able to define our DSL by just defining these methods on \code{Rep[Future[A]]} values, with the following semantic:
 \begin{itemize}
 \item \code{foreach(f: Rep[A] => Rep[Unit]): Rep[Unit]}, eventually does something with the value when available~;
@@ -634,7 +634,7 @@ received.
 
 \subsection{DOM definition}
 
-In this section we show how we can define, as an embedded DSL, with a small effort, a template engine that is
+In this section we show how we can define, as an embedded DSL, with minimal effort, a template engine that is
 statically typed, able to insert dynamic content in a safe way, that provides a powerful expression language,
 requires no extra compilation step and that can be used on both client-side and server-side.
 
@@ -666,11 +666,11 @@ def vertexDom(v: Rep[Vertex]) =
 The readability has been highly improved: nesting tags is just like nesting code blocks, HTML entities are
 automatically escaped in text nodes, developers have the full computational power of Scala to inject dynamic data and
 DOM fragments definitions are written using functions so they compose just as functions compose. These benefits come
-with no performance loss because the DSL generates code building DOM fragments using the native JavaScript API.
+with no performance loss because the DSL generates code building DOM fragments by using the native JavaScript API.
 
 \subsubsection{Reuse the DOM definition DSL on server-side}
 
-Our DSL is equivalent as a template engine with Scala as the expression language. Making it usable on both server and
+Our DSL is equivalent to a template engine with Scala as the expression language. Making it usable on both server and
 client sides is surprisingly as simple as defining another code generator for the DSL, producing Scala code.
 
 For instance, the template written in the listing \ref{forest-hello} produces the following Scala code usable on
@@ -757,7 +757,7 @@ var y = inc();
 alert(y);
 \end{lstlisting}
 This code suffers from two problems: the variable \code{x} is global and if the user calls the \code{inc} function
-without initializing first the \code{x} variable the behavior will be unexpected.
+without first initializing the \code{x} variable the behavior will be unexpected.
 
 To workaround these issues, developers can wrap the variable declaration and the \code{inc} function code in a
 factory function. Thus the state is hidden and developers may not forget the initialization:
@@ -802,7 +802,7 @@ However, explicitly threading the state in all functions parameters is not desir
 performance cost of adding an extra parameter to each function and of returning two results instead of one.
 Furthermore, manually passing the result of each previous call to the next one is error prone.
 
-The State monad~\cite{Wadler92_StateM} is a functional programming pattern that avoids to explicitly thread the state
+The State monad~\cite{Wadler92_StateM} is a functional programming pattern that avoids explicitly threading the state
 in functions using it or modifying it. In Scala, the \code{for} notation provides an elegant way to sequence monadic
 computations, and thus to implicitly thread a state across computations, as shown in the following listing:
 
@@ -843,8 +843,8 @@ specialized implementation according to the function’s parameters types. JavaS
 according to a method receiver prototype, \eg{} if one writes \code{foo.bar()} the JavaScript runtime will look into
 the prototype of the \code{foo} object for a property named \code{bar} and will call it. So, the only way to achieve
 \emph{adhoc} polymorphism on JavaScript objects consists in defining the polymorphic function on the prototypes of
-the objects. However, modifying existing object prototypes is considered to be a bad
-practice~\cite{Zakas12_MaintainableJs}. Another way could consist in manually code the dispatch logic, by registering
+the objects. However, modifying existing object prototypes is considered bad
+practice~\cite{Zakas12_MaintainableJs}. Another way could consist in manually coding the dispatch logic, by registering
 supported data types at the beginning of the program execution, as described in section 2.4.3
 of~\cite{Abelson83_SICP}, but this solution is painful for developers and incurs a performance overhead.
 
@@ -1186,7 +1186,7 @@ features global type inference, algebraic data types, pattern matching and a seq
 GWT exposes the browser’s APIs through type safe Java APIs and simplifies DOM fragments definition. However it still
 uses a callback-driven programming models for asynchronous computations.
 
-Kotlin is a recent language written by JetBrains, that target both the JVM and JavaScript. It has libraries
+Kotlin is a recent language written by JetBrains, that targets both the JVM and JavaScript. It has libraries
 addressing, at least partially, Web programming concerns and supports advanced programming language features such as
 mixins, type inference, variance annotations for type parameters and pattern matching.
 
