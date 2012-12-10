@@ -901,12 +901,25 @@ for a value of type \code{A}.
 \subsubsection{Type coercion}
 
 JavaScript comes with only one numeric type, \code{Number}, that represents double-precision 64-bit values. If
-developers want to use another numeric data type, \eg{} representing integer values or arbitrary length values, they
-can’t use the native arithmetic operators (\code{+}, \code{-}, \etc) on them, making the code less readable because
-the same concepts (\eg{} adding two numeric values) are described by different operators or methods. Furthermore, the
-code is also harder to write when it comes to mix different types of numeric values. Indeed, this requires to
-manually take care of their compatibility: before adding an arbitrary length value with a \code{Number} value,
-developers have to convert the latter in the former’s type.
+developers want to use another numeric data type, \eg{} representing rational numbers, they can’t use the native
+arithmetic operators (\code{+}, \code{-}, \etc) on them, making the code less readable because the same concepts
+(\eg{} adding two numeric values) are described by different operators or methods. Furthermore, the code is also
+harder to write when it comes to mix different types of numeric values. Indeed, this requires to manually take care
+of their compatibility: before adding a rational number with a \code{Number} value, developers have to convert the
+former in the latter’s type. Consider as an example the listing \ref{type-coercion} mixing rational numbers and
+native numbers.
+
+\begin{lstlisting}[language=JavaScript,label=type-coercion,caption=Mixing integer and floating-point arithmetic in
+JavaScript.]
+// i and j are rational numbers, x and y are native numbers
+var main = function (i, j, x, y) {
+  console.log(rat_plus(i, j));
+  var m = rat_toNumber(i) + y;
+  var n = x + rat_toNumber(j);
+  console.log(m + n);
+};
+\end{lstlisting}
+
 
 Our DSL solves these problems by defining numeric operations in a safe and extensible way: each operation is a
 polymorphic method and operand coercion is expressed using functional dependencies~\cite{Jones00_FunDeps}. It allows
@@ -970,11 +983,13 @@ class ~>[A <: Args, B : Numeric](
 )
 \end{lstlisting}
 
-The following listing demonstrates the homogeneous syntax to perform an addition on different data types and the
-operand coercion between heterogeneous types:
+The listing \ref{type-coercion} can be rewritten as shown in listing \ref{type-coercion-solution} with our DSL.
+The \code{+} operator can be safely used to add rational and floating-point numbers and type promotion is
+automatically handled by the type system. It is worth noting that the \code{Rational} data type can be written
+independently of the type coercion system.
 
-\begin{lstlisting}
-def main(i: Rep[Int], j: Rep[Int],
+\begin{lstlisting}[label=type-coercion-solution,caption=Type-coercion automatically handled by our DSL]
+def main(i: Rep[Rational], j: Rep[Rational],
          x: Rep[Double], y: Rep[Double]) = {
   println(i + j)
   // i is promoted to Rep[Double], m has type Rep[Double]
@@ -1042,8 +1057,6 @@ server-side.
 
 \subsection{Lack of a data type definition DSL}
 
-(TODO Example)
-
 On the other side of the coin, because that is not possible to define a library without defining how to translate it
 on both server and client sides, there is no simple way to let DSLs users define their own libraries. This feature
 comes almost for free with approaches like GWT, Fay or Kotlin because they derive the client-side program and the
@@ -1054,14 +1067,14 @@ representation during this evaluation can be part of the final programs. However
 are not reified in an intermediate representation (it would mean that the constructor of a type \code{A} would yield
 a value of type \code{Rep[A]}). Scala-virtualized~\cite{Moors12_Virtualized} provides such a mechanism but is 
 limited to record types and provides only projection functions, so for more complex cases users have to write some
-repetitive and boilerplate code.
+repetitive and boilerplate code. (FIXME Example?)
 
 In summary, the compiled embedded approach may require more work to support custom data types but gives control on
 the way this data type will be encoded for each target platform (\eg{} the JavaScript code generator uses native
 arrays to encode the lists of the list manipulation DSL).
 
 However, the next release of Scala will have support for macros making it possible to generate reified data types
-from a concise syntax without relying on a compiler extension.
+from a concise syntax without even relying on a compiler extension such as Scala-virtualized.
 
 \subsubsection{Custom code generation to handle browsers incompatibilities}
 
@@ -1114,15 +1127,18 @@ some statement nodes in order to handle Internet Explorer incompatibilities.
 \section{Evaluation}
 \label{validation}
 
-Our DSL aims to give developers a safer and more expressive way to write the client-side code. We focused on the main
-tasks of RIAs development: handling events, asynchronous programming and DOM fragments definition, as well as on
-more general programming concerns: \code{null} references handling and type safety.
+Our goal was to define, with a minimal effort, a language for RIAs development. The main challange was to provide
+language constructs both safer and more expressive without abstraction penalty. We focused on the main concerns of
+RIA development: handling events, asynchronous programming and DOM fragments definition, as well as on more general
+programming concerns: \code{null} references handling and type safety.
 
 \subsection{Observed benefits of the use of our DSL}
 
-Using our DSL, we were able to divide by two the length of some parts of code (DOM definition and \code{null}
-reference handling). The size of code parts dealing with events did not change but they gain type safety. Finally,
-code handling asynchronous computations were easier to modularize.
+Using our DSL, we were able to completely rewrite the client-side part of our application, and divided by two the
+length of some parts of code (DOM definition and \code{null} reference handling). The size of code parts dealing with
+events did not change but gained type safety. Finally, code handling asynchronous computations were easier to
+modularize. An interesting side-effect of the design of our DSL as a compiled embedded DSL is the ability to reuse
+some code between both client and server sides (DOM definition).
 
 All these benefits came with no runtime overhead, excepted for the asynchronous programming DSL that creates, for
 each asynchronous computation, a \code{Promise} value registering the callbacks to call when the value is be
@@ -1140,23 +1156,23 @@ support level of each feature for each tool.
 \hline
 & jQuery & TypeScript & Roy & GWT & Kotlin & Opa & Dart & js-scala \\
 \hline
-Event handling & * & & & *** & & ? & & *** \\
+Type safe event handling & & & & *** & & & & *** \\
 \hline
 DOM definition & * & & & *** & ** & *** & * & *** \\
 \hline
-Asynchronous programming & ** & & *** & & & *** & * & *** \\
+Asynchronous programming & ** & & *** & & & *** & ** & *** \\
 \hline
-Null references & ** & & *** & & * & ? & & *** \\
+Null references & ** & & *** & & * & ** & & *** \\
 \hline
-Type coercion & & & & * & * & ? & * & *** \\
+Type coercion & & & & * & * & * & * & *** \\
 \hline
-General programming language features & * & ** & ** & * & *** & ? & * & *** \\
-\hline
+%General programming language features & * & ** & ** & * & *** & ? & * & *** \\
+%\hline
 Static typing & & * & ** & ** & ** & ** & * & ** \\
 \hline
 Easiness for defining libraries & * & *** & *** & *** & *** & *** & *** & * \\
 \hline
-Client-server code sharing & & * & * & * & * & ** & * & *** \\
+Client-server code sharing & & * & * & * & * & *  & * & *** \\
 \hline
 \end{tabular}
 \caption{Support level of Web programming features by famous tools. Zero star means that the feature is not supported
@@ -1183,28 +1199,39 @@ The Roy programming language is a statically typed functional programming langua
 features global type inference, algebraic data types, pattern matching and a sequencing notation similar to Scala’s
 \code{for} notation.
 
-GWT exposes the browser’s APIs through type safe Java APIs and simplifies DOM fragments definition. However it still
-uses a callback-driven programming models for asynchronous computations.
+GWT compiles Java code to JavaScript. It exposes the browser’s APIs through type safe Java APIs and simplifies DOM
+fragments definition. However, it still uses a callback-driven programming models for asynchronous computations.
 
 Kotlin is a recent language written by JetBrains, that targets both the JVM and JavaScript. It has libraries
 addressing, at least partially, Web programming concerns and supports advanced programming language features such as
 mixins, type inference, variance annotations for type parameters and pattern matching.
 
-Opa is a language specifically designed for Web programming.
+Opa is a language and a full stack designed for Web programming. It features static typing with global
+type inference, modules and pattern matching. The language provides a syntactic sugar for writing HTML fragments in
+the code. The server and client parts of an application can be written in the Opa language, the system can decide
+whether a code fragment will run on server-side, client-side or both.
 
-Dart is another language designed specifically for Web programming.
+Dart is a language designed specifically for Web programming. It has been designed to have a familiar syntax for
+JavaScript developers and supports soft typing, classes and a module system. It also provides a high-level concurrent
+programming system similar to an actor system. Finally, Dart code can be executed on both client and server sides.
+
+Concerning the client-server code sharing feature, because our solution is the only one that gives full control on
+the generated code on both client and server for a given piece of shared code, we considered that our support was
+better than other approaches.
 
 \section{Conclusion and perspectives}
 \label{discussion}
 
 Writing RIAs is challenging because the JavaScript language and the Web browser’s native APIs have several
-inadequacies for this purpose.
+inadequacies, making the code fragile, hard to reason about and to maintain.
 
-We provide a way to write statically typed client-side code, we simplify asynchronous programming 
+We improved the js-scala DSL by adding first-class support for RIA development concerns such as events handling,
+DOM fragments definition and asynchronous programming. Our work provides a safer and more expressive language than
+JavaScript and its native APIs to write RIAs.
 
-We provide a safer and more expressive language than JavaScript and its native APIs to write RIAs.
-
-More code sharing.
+Our approach’s distinguishing support of code sharing between server and clients let us consider the exploration of
+this feature more deeply in our future work, in order to factor out an increasing part of code between client and
+servers in RIAs.
 
 \bibliographystyle{ieeetr}
 \bibliography{biblio}
