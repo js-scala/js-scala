@@ -36,10 +36,10 @@ trait JSDom { this: Base =>
   trait MouseWheelEvent extends MouseEvent
   def infix_wheelDeltaY(e: Rep[MouseWheelEvent]): Rep[Double]
 
-  object MouseWheel extends EventName[MouseWheelEvent]("mousewheel")
-  object MouseDown extends EventName[MouseEvent]("mousedown")
-  object MouseMove extends EventName[MouseEvent]("mousemove")
-  object MouseUp extends EventName[MouseEvent]("mouseup")
+  case object MouseWheel extends EventName[MouseWheelEvent]("mousewheel")
+  case object MouseDown extends EventName[MouseEvent]("mousedown")
+  case object MouseMove extends EventName[MouseEvent]("mousemove")
+  case object MouseUp extends EventName[MouseEvent]("mouseup")
 
   trait Window extends EventTarget
 
@@ -83,7 +83,7 @@ trait JSDomExp extends JSDom with EffectExp {
   def infix_setAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) = reflectEffect(ElementSetAttribute(e, name, value))
   def infix_tagName(e: Exp[Element]) = ElementTagName(e)
   def history_replaceState(h: Exp[History], state: Exp[_], title: Exp[String], url: Exp[String]) = reflectEffect(HistoryReplaceState(h, state, title, url))
-  object window extends Exp[Window]
+  case object window extends Exp[Window]
 
   // FIXME We can’t yet use dependent types on constructors parameters, see https://issues.scala-lang.org/browse/SI-5712 so at this point we lost the information that event.Type =:= A
   case class EventTargetOn[A](t: Exp[EventTarget], event: EventDef, capture: Exp[Boolean], e: Sym[A], handler: Block[Unit]) extends Def[Unit]
@@ -92,8 +92,8 @@ trait JSDomExp extends JSDom with EffectExp {
   case class MouseEventOffsetX(e: Exp[MouseEvent]) extends Def[Double]
   case class MouseEventOffsetY(e: Exp[MouseEvent]) extends Def[Double]
   case class MouseWheelEventDeltaY(e: Exp[MouseWheelEvent]) extends Def[Double]
-  object WindowDocument extends Exp[Document]
-  object WindowHistory extends Exp[History]
+  case object WindowDocument extends Exp[Document]
+  case object WindowHistory extends Exp[History]
   case class DocumentFind(d: Exp[Document], selector: Exp[String]) extends Def[Option[Element]]
   case class ElementSetAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) extends Def[Unit]
   case class ElementTagName(e: Exp[Element]) extends Def[String]
