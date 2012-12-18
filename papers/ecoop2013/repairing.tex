@@ -198,7 +198,7 @@ the browser to reload the whole page, the JavaScript code has to perform a reque
 available, to update a part of the user interface. The following listing shows how to send a request creating a
 vertex on the server and to insert it to the user interface:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=JavaScript]
 var createVertex = function (text) {
   Ajax.post("/create", { content: text }, function (vertex) {
     addVertex(vertex);
@@ -321,7 +321,7 @@ var vertexDom = function (v) {
 
 
 For instance the following call:
-\begin{lstlisting}
+\begin{lstlisting}[language=JavaScript]
 vertexDom({
   x: 10, y: 10,
   width: 100, height: 60,
@@ -392,10 +392,11 @@ hampers modularization. Furthermore, native APIs are too verbose, making the cod
 
 \subsubsection{Sharing type safe code between clients and servers is hard to achieve}
 
-The lack of static checks is even harder to tackle in the case of code shared between client and server sides. If we
-write the expression \code{xs.size == 0}, how should it be translated to the client-side environment
+The lack of static checks is even harder to tackle in the case of code shared between client and server sides. If one
+writes the expression \code{xs.size == 0}, how should it be translated to the client-side environment
 (JavaScript) and to the server-side environment (\eg{} the Java Virtual Machine)? Several solutions are valid,
-depending on the meaning of the expression: in JavaScript we could translate it as \code{xs.size === 0} or
+depending on the meaning of the expression: in JavaScript it could be translated as \code{xs.size === 0} if \code{xs}
+refers to an object, or as
 \code{xs.length === 0} if \code{xs} refers to a collection (in JavaScript the property to get the size of a
 collection is named \code{length}). So we need to define a proper expression language and to define how it should be
 translated for the client-side environment and the server-side environment, but such a task requires a high effort
@@ -438,8 +439,9 @@ The function looks like
 a regular Scala function excepted that its parameter type and its return type are wrapped in the \code{Rep[T]} type
 constructor that denotes intermediate representations. The \code{+} operator has been defined on \code{Rep[Int]}
 values and returns the intermediate representation of an addition. Finally, the \code{inc} function returns the
-intermediate representation of a computation yielding the number following the value of the parameter \code{x}. You
-can get a \code{T} value from a \code{Rep[T]} value by generating code from the intermediate representation and
+intermediate representation of a computation yielding the number following the value of the parameter \code{x}.
+
+You can get a \code{T} value from a \code{Rep[T]} value by generating code from the intermediate representation and
 compiling it:
 \begin{lstlisting}
 val compiledInc: Int => Int =
@@ -523,7 +525,7 @@ The remaining of this section describes the design and the implementation of DSL
 
 We want to bring safety to the event handling API so that developers cannot mispell an event name and cannot attempt
 to read a property that is not defined on the type of the handled event. The difficulty comes from the fact that the
-type of the event passed to the handler varies with the event name. For instance, in listing \ref{event-js} the
+type of data passed to the handler varies with the event name. For instance, in listing \ref{event-js} the
 handler processes \code{MouseWheelEvent} values because it listens to \code{mousewheel} events. Values of type
 \code{MouseWheelEvent} have a property \code{wheelDeltaY} but that’s not the case of an event data of type
 \code{KeyboardEvent}, for example.
@@ -546,7 +548,7 @@ values of type \code{MouseWheelEvent}.
 
 However, implementing this solution requires a high effort because we have to define as many methods as there are
 events. We want to provide a single polymorphic method similar to the native API. To achieve that, we need to encode
-the dependency relation between an event name and its corresponding event type at the type-level. This dependency can
+the dependency relation between an event name and its corresponding data at the type-level. This dependency can
 naturally and elegantly be encoded using dependent method types~\cite{Oliveira10_Typeclasses}:
 
 \begin{lstlisting}
@@ -568,7 +570,7 @@ object KeyUp extends EventDef { type Data = KeyboardEvent }
 object MouseWheel extends EventDef { type Data = MouseWheelEvent }
 \end{lstlisting}
 
-The following Scala listing is equivalent to the JavaScript listing \ref{event-js} and is completely type safe: if
+The following Scala listing generates code equivalent to listing \ref{event-js} and is completely type safe: if
 the user misspells the event name or tries to use an undefined property on an event his program won’t compile.
 
 \begin{lstlisting}
@@ -583,7 +585,7 @@ The previous work on js-scala \cite{Kossakowski12_JsDESL} showed how to make asy
 convenient by making asynchronous calls looking like synchronous calls (\ie{} returning a value instead of taking a
 callback as parameter). This work was based on the Scala continuations compiler plugin. We claim that, although this
 programming model removes the “callback hell”, it can make the code hard to reason about because there is no explicit
-distinction between synchronous and asynchronous parts.
+distinction between synchronous and asynchronous computations.
 
 We propose a DSL that explicitly reflects the asynchronous nature of computations in their types and provides methods
 turning them into first-class citizens. The DSL is monadic so we can solve the callback hell problem thanks to the
@@ -619,9 +621,9 @@ for {
 \end{lstlisting}
 \end{figure}
 
-The listing \ref{async-no-callback} translates the callback hell example (listing \ref{async-callback-hell}) using
+Listing \ref{async-no-callback} translates the callback hell example (listing \ref{async-callback-hell}) using
 our DSL. The \code{for} notation can intuitively be thought of as a sequencing notation: whenever the response of the
-first Ajax request is available, the next statement will be executed, and so on. There is no nested callbacks and the
+first Ajax request is available, the next statement is executed, and so on. There is no nested callbacks and the
 order of execution is directly reflected by the order of statements.
 
 An asynchronous value of type \code{Rep[A]} is modelled by a value of type \code{Rep[Future[A]]}. Because Scala’s
@@ -649,12 +651,12 @@ for {
 \vfill
 \columnbreak
 \begin{lstlisting}[language=JavaScript,caption=Generated JavaScript code,label=async-parallel-2]
-var x1 = new Promise();
+var x1 = { cs: [] };
 AjaxGet("/foo", x1);
-var x2 = new Promise();
+var x2 = { cs: [] };
 AjaxGet("/bar", x2);
-x1.onComplete(function (foo) {
- x2.onComplete(function (bar) {
+foreach(x1, function (foo) {
+ foreach(x2, function (bar) {
   var x3 = foo + bar;
   console.log(x3);
  });
@@ -665,10 +667,13 @@ x1.onComplete(function (foo) {
 
 Listing \ref{async-parallel-1} defines two asynchronous computations running in parallel and listing
 \ref{async-parallel-2} shows the generated JavaScript code (we renamed some identifiers for the sake of readability).
-The generated \code{Promise} constructor code has been omitted, it creates an object holding a list of callbacks to
-call when the asynchronous value is completed. The \code{AjaxGet} function code has also been omitted, it creates a
-\code{XMLHttpRequest} object that sends an HTTP request and completes its promise parameter with the response, when
-received.
+The \code{x1} and \code{x2} values encode the asynchronous results of the Ajax requests, they contain an array of
+callbacks (\code{cs}, initially empty) to call when the result is available. The \code{AjaxGet} function code has
+been omitted, it creates a \code{XMLHttpRequest} object that sends a HTTP request and completes the value of its
+last parameter with the response, when received. Completing an asynchronous value means defining a \code{v} field
+on it containing the actual value, and calling all pending callbacks that are in the \code{cs} field. The
+\code{foreach} code has also been omitted, it registers a callback on an asynchronous value or calls the callback
+directly with the value if this one is already available.
 
 \subsection{DOM Definition}
 
@@ -946,7 +951,8 @@ implicit class NumericOps[A : Numeric](lhs: Rep[A]) {
 }
 \end{lstlisting}
 
-However, the above code does not handle operands coercion yet. To do so, we want to express that an expression
+The above code allows to add two values of any numeric type (\code{Int}, \code{Rational}, \etc) using the \code{+}
+operator, but it does not handle operands coercion yet. To do so, we want to express that an expression
 \code{a + b} is valid either if \code{a} and \code{b} have the same numeric type, or if one of them has a numeric
 type and the other can be converted to this numeric type. The result type of such an expression depends on the types
 of the operands, \eg{} an integer and a double value produce a double value, two integer values produce another
@@ -976,11 +982,7 @@ The \code{sameType} value says that two values of type \code{A} give another val
 operands as long as there is a way to convert the value of type \code{A} to a value of type \code{B} (so the left
 hand side is promoted to the type \code{B}). The \code{promoteRhs} does the same for the right hand side.
 
-The listing \ref{type-coercion} can be rewritten as shown in listing \ref{type-coercion-solution} with our DSL.
-The \code{+} operator can be safely used to add rational and floating-point numbers and type promotion is
-automatically handled by the type system. It is worth noting that the \code{Rational} data type can be written
-independently of the type coercion system.
-
+\begin{figure}
 \begin{lstlisting}[label=type-coercion-solution,caption=Type-coercion automatically handled by our DSL]
 def main(i: Rep[Rational], j: Rep[Rational],
          x: Rep[Double], y: Rep[Double]) = {
@@ -992,6 +994,12 @@ def main(i: Rep[Rational], j: Rep[Rational],
   println(m + n)
 }
 \end{lstlisting}
+\end{figure}
+
+Listing \ref{type-coercion} can be rewritten as shown in listing \ref{type-coercion-solution} with our DSL.
+The \code{+} operator can be safely used to add rational and floating-point numbers and type promotion is
+automatically handled by the type system. It is worth noting that the \code{Rational} data type can be written
+independently of the type coercion system.
 
 \subsection{Discussion}
 
@@ -1000,7 +1008,7 @@ def main(i: Rep[Rational], j: Rep[Rational],
 We implemented our language as a compiled embedded DSL in Scala. The process of generating code from a DSL is usually
 described as a two steps process: a program first evaluates to an intermediate representation and then the final
 program’s code is generated from this intermediate representation, with the opportunity to generate efficient code
-by applying domain specific optimizations. We think it’s worth considering a third step, which occurs before the
+by applying domain specific optimizations. We think it’s worth considering a third step that occurs before the
 program evaluation: its compilation. This step affects DSLs design because their embedded nature let them reuse the
 host language features (\eg{} the type system or syntactic sugars) to implement their own features. The following
 paragraph gives an overview of the different mechanisms used to implement our DSLs.
@@ -1286,7 +1294,8 @@ processing speed or to perform the rendering on client-side, to preserve the ser
 targets desktop computers.
 
 All these benefits came with no runtime overhead, excepted for the asynchronous programming DSL that creates, for
-each asynchronous computation, a \code{Promise} value registering the callbacks to call when the value is available.
+each asynchronous computation, a reified asynchronous value registering the callbacks to call when the value is
+available.
 
 \section{Related Works}
 \label{related}
