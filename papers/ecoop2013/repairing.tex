@@ -49,13 +49,21 @@ Jean-Marc \noun{Jézéquel}\textsuperscript{\textasteriskcentered}}
 
 
 \begin{abstract}
-Rich Internet Applications involve even more code on the client-side, dealing with DOM manipulation, event handling
-and asynchronous calls to the server. Writing and maintaining large JavaScript code bases is challenging because this
-language has no static typing and no module system. We investigate further the definition of JavaScript as a Scala
-compiled embedded DSL using Lightweight Modular Staging. We define safe and expressive abstractions for DOM
-manipulation, event handling and asynchronous programming that translate to efficient JavaScript code using native
-APIs. We use both type-level information and staging to introduce high-level abstractions with few or no overhead on
-the generated JavaScript code.
+Rich Internet Applications rely on ever more code on the client-side, 
+typically written in JavaScript, dealing
+with DOM manipulation, event handling and asynchronous calls to the 
+server. Beyond well documented JavaScript programming intrinsic issues,
+the hard wired distribution of an application business logic across 
+clients and servers hampers its flexibility and maintainability. This 
+paper presents a Scala compiled
+embedded DSL for Web programming trying to address these shortcomings. 
+Close to JavaScript, it provides type-safe
+and expressive abstractions for DOM manipulation, event handling and
+asynchronous programming. Code written using the DSL can be compiled to both
+server and client sides. Built on top of the Lightweight Modular Staging
+framework, this DSL uses both type-level information and staging to  introduce
+high-level abstractions that translate to efficient JavaScript and Scala 
+code using native APIs.
 \end{abstract}
 
 {\bf Keywords:} Web, programming languages, embedded DSL, type-level programming, staging, Scala
@@ -116,11 +124,12 @@ convenient to write thanks to Scala's static typing and class system. Finally, t
 the control of callback-based asynchronous APIs by using continuations but they did not address other concerns of
 RIAs development such as user interface events handling and DOM creation and manipulation.
 
-This paper continues their work and presents several safe and expressive DSL constructs for RIAs development. We
-increase the expressivity of JavaScript native APIs with no runtime overhead and expose them through statically typed
-APIs. We make asynchronous programming simpler by raising asynchronous computations to first-class citizens. We
-leverage the Scala type system to bring type-directed language features such as \emph{ad hoc} polymorphism and type
-coercion to the client-side.
+Based on this work, this paper introduces several type-safe and expressive DSL constructs for RIAs development. This
+DSL increases the expressivity of JavaScript native APIs with no runtime overhead and exposes them through statically
+typed APIs. It makes asynchronous programming simpler by raising asynchronous computations to first-class citizens.
+It leverages the Scala type system to bring type-directed language features such as \emph{ad hoc} polymorphism and
+type coercion to the client-side. Finally, code written using the DSL can be compiled to both server and client
+sides.
 
 % This paper continues their work and presents and discusses the implementation of the following contributions:
 % 
@@ -382,15 +391,15 @@ asynchronous programming and DOM manipulation. We noticed the following issues:
 \subsubsection{Lack of static checks}
 
 Dynamic typing may give programmers more flexibility but can make it harder for little scripts to grow into mature
-and robust code bases and to perform refactorings. For instance, in the case of RIAs, a mispell in an event name may
-break the program behavior without anyone getting a sensible error message.
+and robust code bases and to perform refactorings~\cite{Meijer04_StaticDynamic}. For instance, in the case of RIAs, a
+mispell in an event name may break the program behavior without anyone getting a sensible error message.
 
 \subsubsection{Code hard to reason about and to modularize}
 
 Callback-driven APIs are very common in JavaScript but their inverted control makes the code flow hard to follow and
 hampers modularization. Furthermore, native APIs are too verbose, making the code hard to read.
 
-\subsubsection{Sharing type safe code between clients and servers is hard to achieve}
+\subsubsection{Sharing type-safe code between clients and servers is hard to achieve}
 
 The lack of static checks is even harder to tackle in the case of code shared between client and server sides. If one
 writes the expression \code{xs.size == 0}, how should it be translated to the client-side environment
@@ -570,7 +579,7 @@ object KeyUp extends EventDef { type Data = KeyboardEvent }
 object MouseWheel extends EventDef { type Data = MouseWheelEvent }
 \end{lstlisting}
 
-The following Scala listing generates code equivalent to listing \ref{event-js} and is completely type safe: if
+The following Scala listing generates code equivalent to listing \ref{event-js} and is completely type-safe: if
 the user misspells the event name or tries to use an undefined property on an event his program won’t compile.
 
 \begin{lstlisting}
@@ -1151,7 +1160,7 @@ trait Args { type Lhs; type Rhs }
 type ~[A, B] = Args { type Lhs = A; type Rhs = B }
 \end{lstlisting}
 
-The \code{\~} type is just an alias to the \code{Args} type to get the infix notation. The \code{Args} type
+The \code{\~} type is just an alias for the \code{Args} type to get the infix notation. The \code{Args} type
 aggregates the types of the operands (\code{Lhs} and \code{Rhs}) involved in a binary operation.
 
 When a numeric operation is used, the Scala compiler fills the required implicit parameter of type
@@ -1203,7 +1212,7 @@ trait OptionOpsExp extends OptionOps { this: EffectExp =>
 \end{lstlisting}
 \end{figure}
 
-We limited the DSL to two operations (\code{foreach} and \code{isEmpty}) for the sake of brevity. The
+We limited the listing to two operations (\code{foreach} and \code{isEmpty}) for the sake of brevity. The
 \code{OptionOps} trait defines the user facing DSL, it enriches \code{Rep[Option[_]]} values by providing an implicit
 conversion to \code{OptionOpsCls} that defines the \code{isEmpty} and \code{foreach} methods that respectively tests
 the emptiness of a value and derefences a value if not empty. These methods provide a convenient syntax to use
@@ -1274,10 +1283,10 @@ trait JSGenOptionOps extends JSGenEffect {
 
 \subsection{Evaluation}
 
-Our goal was to define, with a minimal effort, a language for RIAs development. The main challange was to provide
-programming language constructs both safer and more expressive without abstraction penalty. We focused on the main
-concerns of RIA development: event handling, asynchronous programming and DOM fragments definition, as well as on
-more general programming concerns: \code{null} reference handling and type safety.
+Our goal was to define, with a minimal effort, a language for RIAs development. The main challenge was to provide
+programming language constructs that are both safer and more expressive without performance penalty. We focused on
+the main concerns of RIA development: event handling, asynchronous programming and DOM fragments definition, as well
+as on more general programming concerns: \code{null} reference handling and type safety.
 
 Using our DSL, we were able to completely rewrite the client-side part of our mind mapping application and to
 integrate it in a mainstream Web framework for the server-side part. The number of
@@ -1303,7 +1312,7 @@ available.
 The most popular JavaScript library, jQuery~\cite{Bibeault08_jQuery}, used by more than 40\% of the top million
 sites\footnote{\href{http://trends.builtwith.com/javascript}{http://trends.builtwith.com/javascript}} aims to
 simplify RIA development. It handles the \code{null} references problem by wrapping each query result in a container
-so before each further method call it tests the emptiness of the container and applies effectively the operation only
+so before each further method call it tests the emptiness of the container and applies the operation effectively only
 if the container is not empty. It provides an expressive API but the emptiness checking involves a slight performance
 penalty since each result is wrapped and then unwrapped for the subsequent method invocation. jQuery also has an API
 to turn asynchronous computations into first-class citizens. However, jQuery is just a library and thus cannot bring
@@ -1320,7 +1329,7 @@ JavaScript. It features global type inference, algebraic data types, pattern mat
 similar to Scala’s \code{for} notation. Roy does not address concerns such as event handling and DOM fragments
 definition.
 
-GWT~\cite{Chaganti07_GWT} compiles Java code to JavaScript. It exposes the browser’s APIs through type safe Java APIs
+GWT~\cite{Chaganti07_GWT} compiles Java code to JavaScript. It exposes the browser’s APIs through type-safe Java APIs
 and simplifies DOM fragments definition. However, it still uses a callback-driven programming model for asynchronous
 computations.
 
@@ -1342,9 +1351,9 @@ high-level concurrent programming system similar to an actor system. Finally, Da
 client and server sides but the compiler is not extensible so developers cannot customize the compilation process of
 a given abstraction on client and server sides.
 
-Table \ref{comparison} gives a synthetic view of the comparison of our work with other approaches. Lines give
-features desired to write large Web applications and colums list mainstream tools for Web programming. Cells show the
-support level of each feature for each tool.
+Table \ref{comparison} gives a synthetic view of the comparison of our work with other mainstream approaches. Lines
+give features desired to write large Web applications and colums list mainstream tools for Web programming. Cells
+show the support level of each feature for each tool.
 
 \begin{table}
 \centering
@@ -1375,6 +1384,11 @@ Client-server code sharing & & * & * & * & * & *  & * & *** \\
 at all, three stars mean a strong support.}
 \label{comparison}
 \end{table}
+
+Several model-driven methodologies for creating web applications have been proposed, including
+\cite{schwabe1996systematic,lima2003modeling,ceri2000web,koch2001authoring,pastor2003oows,valverde2007mda,vdovjak2003engineering,kraus2007model,nunes2006rapid,brambilla2008designing,valderas2007transformational,van2006hera,Groenewegen08_WebDSL}.
+Many of them follow the standard top-down MDE vision in providing abstractions and code generators, nevertheless
+these cannot be easily customized or generate only application skeletons.
 
 \section{Conclusion and Perspectives}
 \label{discussion}
