@@ -6,9 +6,10 @@ trait JSDom { this: Base =>
 
   trait EventTarget
   implicit class EventTargetOps(t: Rep[EventTarget]) {
-    def on(event: EventDef, capture: Rep[Boolean] = unit(false))(handler: Rep[event.Type] => Rep[Unit])(implicit m: Manifest[event.Type]) = eventtarget_on(t, event, capture)(handler)
+    def on(event: EventDef, capture: Rep[Boolean] = unit(false))(handler: Rep[event.Type] => Rep[Unit])(implicit m: Manifest[event.Type]) = eventtarget_on(t, new EventName[event.Type](event.name), capture, handler)
   }
-  def eventtarget_on(t: Rep[EventTarget], event: EventDef, capture: Rep[Boolean])(handler: Rep[event.Type] => Rep[Unit])(implicit m: Manifest[event.Type]): Rep[Unit]
+  //def eventtarget_on(t: Rep[EventTarget], event: EventDef, capture: Rep[Boolean])(handler: Rep[event.Type] => Rep[Unit])(implicit m: Manifest[event.Type]): Rep[Unit]
+  def eventtarget_on[A : Manifest](t: Rep[EventTarget], e: EventName[A], capture: Rep[Boolean], handler: Rep[A] => Rep[Unit]): Rep[Unit]
 
   trait Event
   def infix_target(e: Rep[Event]): Rep[EventTarget]
@@ -67,10 +68,15 @@ trait JSDom { this: Base =>
 }
 
 trait JSDomExp extends JSDom with EffectExp {
-  def eventtarget_on(t: Exp[EventTarget], event: EventDef, capture: Exp[Boolean])(handler: Exp[event.Type] => Exp[Unit])(implicit m: Manifest[event.Type]) = {
+  /*def eventtarget_on(t: Exp[EventTarget], event: EventDef, capture: Exp[Boolean])(handler: Exp[event.Type] => Exp[Unit])(implicit m: Manifest[event.Type]) = {
     val e = fresh[event.Type]
     val block = reifyEffects(handler(e))
     reflectEffect(EventTargetOn(t, event, capture, e, block))
+  }*/
+  def eventtarget_on[A : Manifest](t: Exp[EventTarget], event: EventName[A], capture: Exp[Boolean], handler: Exp[A] => Exp[Unit]) = {
+    val e = fresh[A]
+    val b = reifyEffects(handler(e))
+    reflectEffect(EventTargetOn(t, event, capture, e, b))
   }
   def infix_target(e: Exp[Event]) = EventGetTarget(e)
   def infix_state[A : Manifest](e: Exp[PopStateEvent[A]]) = PopStateEventState(e)
