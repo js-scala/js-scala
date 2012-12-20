@@ -49,21 +49,15 @@ Jean-Marc \noun{Jézéquel}\textsuperscript{\textasteriskcentered}}
 
 
 \begin{abstract}
-Rich Internet Applications rely on ever more code on the client-side, 
-typically written in JavaScript, dealing
-with DOM manipulation, event handling and asynchronous calls to the 
-server. Beyond well documented JavaScript programming intrinsic issues,
-the hard wired distribution of an application business logic across 
-clients and servers hampers its flexibility and maintainability. This 
-paper presents a Scala compiled
-embedded DSL for Web programming trying to address these shortcomings. 
-Close to JavaScript, it provides type-safe
-and expressive abstractions for DOM manipulation, event handling and
-asynchronous programming. Code written using the DSL can be compiled to both
-server and client sides. Built on top of the Lightweight Modular Staging
-framework, this DSL uses both type-level information and staging to  introduce
-high-level abstractions that translate to efficient JavaScript and Scala 
-code using native APIs.
+Rich Internet Applications rely on ever more code on the client-side, typically written in JavaScript, dealing with
+DOM manipulation, event handling and asynchronous calls to the server. Beyond well documented JavaScript programming
+intrinsic issues, the hard wired distribution of an application business logic across clients and servers hampers its
+flexibility and maintainability. This paper presents a Scala compiled embedded DSL for Web programming trying to
+address these shortcomings. Close to JavaScript, it provides type-safe and expressive abstractions for DOM
+manipulation, event handling and asynchronous programming. Code written using the DSL can be compiled to both server
+and client sides. Built on top of the Lightweight Modular Staging framework, this DSL uses both type-level information
+and staging to  introduce high-level abstractions that translate to efficient JavaScript and Scala code using native
+APIs.
 \end{abstract}
 
 {\bf Keywords:} Web, programming languages, embedded DSL, type-level programming, staging, Scala
@@ -644,11 +638,14 @@ able to define our DSL by just defining these methods on \code{Rep[Future[A]]} v
 \item \code{flatMap(f: Rep[A] => Rep[Future[B]]): Rep[Future[B]]} also eventually transforms the value when available~;
 \end{itemize}
 
-Asynchronous values can be transformed using the \code{map} and \code{flatMap} methods, turning them into first-class
-citizens: functions can take them as parameters and return them.
+Asynchronous values can be used and transformed using the \code{foreach}, \code{map} and \code{flatMap} methods, turning them into first-class
+citizens: functions can take them as parameters and return them. Consequently, it is easier to write concurrent code:
+listing \ref{async-parallel-1} shows how to run two parallel asynchronous computations and to do something with their
+results when both are available. Writing equivalent code in pure JavaScript is tedious because it requires that the
+callback passed to each asynchronous computation checks if the other has been completed before, and to store the
+value, when availalbe, in a shared place (so both callbacks can get the other’s value).
 
 \begin{figure}
-\begin{multicols}{2}
 \begin{lstlisting}[caption=Parallel computations in Scala,label=async-parallel-1]
 val fooAsync = Ajax.get("/foo")
 val barAsync = Ajax.get("/bar")
@@ -657,32 +654,7 @@ for {
   bar <- barAsync
 } println(foo + bar)
 \end{lstlisting}
-\vfill
-\columnbreak
-\begin{lstlisting}[language=JavaScript,caption=Generated JavaScript code,label=async-parallel-2]
-var x1 = { cs: [] };
-AjaxGet("/foo", x1);
-var x2 = { cs: [] };
-AjaxGet("/bar", x2);
-foreach(x1, function (foo) {
- foreach(x2, function (bar) {
-  var x3 = foo + bar;
-  console.log(x3);
- });
-});
-\end{lstlisting}
-\end{multicols}
 \end{figure}
-
-Listing \ref{async-parallel-1} defines two asynchronous computations running in parallel and listing
-\ref{async-parallel-2} shows the generated JavaScript code (we renamed some identifiers for the sake of readability).
-The \code{x1} and \code{x2} values encode the asynchronous results of the Ajax requests, they contain an array of
-callbacks (\code{cs}, initially empty) to call when the result is available. The \code{AjaxGet} function code has
-been omitted, it creates a \code{XMLHttpRequest} object that sends a HTTP request and completes the value of its
-last parameter with the response, when received. Completing an asynchronous value means defining a \code{v} field
-on it containing the actual value, and calling all pending callbacks that are in the \code{cs} field. The
-\code{foreach} code has also been omitted, it registers a callback on an asynchronous value or calls the callback
-directly with the value if this one is already available.
 
 \subsection{DOM Definition}
 
@@ -1280,6 +1252,49 @@ trait JSGenOptionOps extends JSGenEffect {
 }
 \end{lstlisting}
 \end{figure}
+
+\subsubsection{Taking advantage of the three transformation steps}
+
+The asynchronous programming DSL makes use of a combination of the three transformation steps described above.
+Asynchronous values are reified in values with a \code{put} and a \code{get} operations. The \code{put} operation
+sets the value of the asynchronous value and the \code{get} operation uses the asynchronous value when available.
+All other operations (\code{foreach}, \code{map} and \code{flatMap}) are implemented in terms of these two primitives.
+
+\begin{figure}
+\begin{lstlisting}[language=JavaScript,caption={Generated JavaScript code for listing \protect\ref{async-parallel-1}},label=async-parallel-2]
+var x1 = { v: null, cs: [] };
+AjaxGet("/foo", x1);
+var x2 = { v: null, cs: [] };
+AjaxGet("/bar", x2);
+var Get = function (f, callback) {
+  if (f.v === null) f.cs.push(callback)
+  else callback(f.v)
+};
+Get(x1, function (foo) {
+ Get(x2, function (bar) {
+  var x3 = foo + bar;
+  console.log(x3);
+ });
+});
+\end{lstlisting}
+\end{figure}
+
+Listing \ref{async-parallel-2} shows the generated JavaScript code for the Scala listing \ref{async-parallel-1} (we
+renamed some identifiers for the sake of readability). The \code{x1} and \code{x2} values reify the asynchronous
+results of the Ajax requests, they contain a field \code{v} holding the result value (initialized to \code{null}) and an
+array of callbacks \code{cs} (initially empty) to call when the result is available. The \code{AjaxGet} function code
+has been omitted, it creates a \code{XMLHttpRequest} object that sends a HTTP request and completes the value of its
+last parameter with the response, when received, using the \code{put} operation. The implementation of \code{put} sets
+the \code{v} field to the value and calls all the pending \code{cs} callbacks. The \code{Get} function shows the
+implementation of the \code{get} primitive. It takes two parameters, an asynchronous value and a callback. If the value
+is not yet available it adds the callback on the pending callback list, otherwise it calls it with the value as
+parameter.
+
+The transformation process of code using the asynchronous programming DSL can be summarized as follows. First, the
+compilation step desugars the \code{for} notation to calls to \code{foreach}, \code{map} and \code{flatMap}. These
+methods are implemented in terms of the \code{put} and \code{get} primitives, so they evaluate to an intermediate
+representation containing \code{Put} and \code{Get} nodes. Finally, these nodes are translated into the code actually
+implementing the asynchronous values reification.
 
 \subsection{Evaluation}
 
