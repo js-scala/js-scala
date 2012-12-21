@@ -49,6 +49,7 @@ Jean-Marc \noun{Jézéquel}\textsuperscript{\textasteriskcentered}}
 
 
 \begin{abstract}
+\vspace*{-0.7cm}
 Rich Internet Applications rely on ever more code on the client-side, typically written in JavaScript, dealing with
 DOM manipulation, event handling and asynchronous calls to the server. Beyond well documented JavaScript programming
 intrinsic issues, the hard wired distribution of an application business logic across clients and servers hampers its
@@ -59,11 +60,11 @@ and client sides. Built on top of the Lightweight Modular Staging framework, thi
 and staging to  introduce high-level abstractions that translate to efficient JavaScript and Scala code using native
 APIs.
 \end{abstract}
-
+\vspace*{-0.3cm}
 {\bf Keywords:} Web, programming languages, embedded DSL, type-level programming, staging, Scala
 
 \section{Introduction}
-
+\vspace*{-0.2cm}
 The Web is an appealing platform on which to write applications (\aka{} Rich Internet Applications, RIA) because it
 makes them easy to deploy on clients and allows large scale innovative collaborative
 experiences~\cite{Farrell07_RIA,Mikkonen08_SpaghettiJs}. RIAs are characterized by partial updates of the user
@@ -1353,12 +1354,13 @@ JetBrains, that targets both the JVM and JavaScript. It has libraries addressing
 and supports advanced programming language features such as mixins, type inference, variance annotations for type
 parameters and pattern matching.
 
-Opa\footnote{\href{http://opalang.org/}{http://opalang.org/}} is a language and a full stack designed for Web
-programming. It features static typing with global type inference, modules and pattern matching. The language
-provides a syntactic sugar for writing HTML fragments in the code. The server and client parts of an application can
-be written in the Opa language, the system can decide whether a code fragment will run on server-side, client-side or
-both. However, the Opa language is not extensible, so there is no way for developers to customize the compilation
-process of their abstractions on client and server sides.
+Opa\footnote{\href{http://opalang.org/}{http://opalang.org/}} and Links~\cite{Cooper07_Links} are languages designed
+for Web programming. They feature static typing with global type inference, modules and pattern matching. These
+languages provide a syntactic sugar for writing HTML fragments directly in the code. The server and client parts of
+an application are written in a single language and the system can decide whether a code fragment will run on
+server-side, client-side or both. However, these languages are not extensible, so there is no way for developers to
+customize the compilation process of their abstractions on client and server sides. Furthermore, hiding the code
+execution distribution gives programmers less control on communication error handling~\cite{Guerraoui99_Distributed}.
 
 Dart~\cite{Griffith11_Dart} is a language designed specifically for Web programming. It has been designed to have a
 familiar syntax for JavaScript developers and supports soft typing, classes and a module system. It also provides a
