@@ -1,36 +1,11 @@
 function test1(x0) {
 var x2 = 0;
 var x1 = [1, 2, 3];
-var x15 = function() {
-var x16 = x2;
-var x17 = x1.length;
-var x18 = x16 < x17;
-var x33
-if (x18) {
-var x19 = x1[x16];
-var x20 = x19 * 1000;
-var x21 = "sleeping for "+x20;
-var x22 = console.log(x21);
-var x24 = String(x19);
-var x23 = function() {
-var x25 = console.log(x24);
-var x26 = x2 += 1;
-var x27 = x15();
-return x27
-}
-var x29 = window.setTimeout(x23,x20);
-x33=undefined
-} else {
-var x31 = console.log("done");
-x33=x31
-}
-return x33
-}
 var x3 = function() {
 var x4 = x2;
 var x5 = x1.length;
 var x6 = x4 < x5;
-var x41
+var x21
 if (x6) {
 var x7 = x1[x4];
 var x8 = x7 * 1000;
@@ -40,341 +15,230 @@ var x12 = String(x7);
 var x11 = function() {
 var x13 = console.log(x12);
 var x14 = x2 += 1;
-var x35 = x15();
-return x35
+var x15 = x3();
+return x15
 }
-var x37 = window.setTimeout(x11,x8);
-x41=undefined
+var x17 = window.setTimeout(x11,x8);
+x21=undefined
 } else {
-var x39 = console.log("done");
-x41=x39
+var x19 = console.log("done");
+x21=x19
 }
-return x41
+return x21
 }
-var x43 = x3();
-return x43
+var x23 = x3();
+return x23
 }
-function test2(x45) {
-var x49 = 0;
-var x46 = [4, 5, 6];
-var x47 = [];
-var x48 = 0;
-var x64 = function() {
-var x65 = x49;
-var x66 = x46.length;
-var x67 = x65 < x66;
-var x85
-if (x67) {
-var x68 = x46[x65];
-var x69 = x68 * 1000;
-var x70 = "sleeping for "+x69;
-var x71 = console.log(x70);
-var x73 = x68 + 1;
-var x72 = function() {
-var x74 = x48;
-var x75 = x47[x74] = x73;
-var x76 = x48 += 1;
-var x77 = x49 += 1;
-var x78 = x64();
+function test2(x25) {
+var x29 = 0;
+var x26 = [4, 5, 6];
+var x27 = [];
+var x28 = 0;
+var x30 = function() {
+var x31 = x29;
+var x32 = x26.length;
+var x33 = x31 < x32;
+var x51
+if (x33) {
+var x34 = x26[x31];
+var x35 = x34 * 1000;
+var x36 = "sleeping for "+x35;
+var x37 = console.log(x36);
+var x39 = x34 + 1;
+var x38 = function() {
+var x40 = x28;
+var x41 = x27[x40] = x39;
+var x42 = x28 += 1;
+var x43 = x29 += 1;
+var x44 = x30();
+return x44
+}
+var x46 = window.setTimeout(x38,x35);
+x51=undefined
+} else {
+var x48 = String(x27);
+var x49 = console.log(x48);
+x51=x49
+}
+return x51
+}
+var x53 = x30();
+return x53
+}
+function test3(x55) {
+var x70 = 0;
+var x76 = function() {
+var x77 = x70 += 1;
+var x78 = x71();
 return x78
 }
-var x80 = window.setTimeout(x72,x69);
-x85=undefined
-} else {
-var x82 = String(x47);
-var x83 = console.log(x82);
-x85=x83
+var x56 = [1, 2, 3];
+var x69=x56.map(
+function(x57){
+var x58 = new Cell();
+var x59 = x57 * 1000;
+var x60 = "sleeping for "+x59;
+var x61 = console.log(x60);
+var x63 = String(x57);
+var x62 = function() {
+var x64 = console.log(x63);
+var x65 = x58.set(x64);
+return x65
 }
-return x85
-}
-var x50 = function() {
-var x51 = x49;
-var x52 = x46.length;
-var x53 = x51 < x52;
-var x94
-if (x53) {
-var x54 = x46[x51];
-var x55 = x54 * 1000;
-var x56 = "sleeping for "+x55;
-var x57 = console.log(x56);
-var x59 = x54 + 1;
-var x58 = function() {
-var x60 = x48;
-var x61 = x47[x60] = x59;
-var x62 = x48 += 1;
-var x63 = x49 += 1;
-var x87 = x64();
-return x87
-}
-var x89 = window.setTimeout(x58,x55);
-x94=undefined
-} else {
-var x91 = String(x47);
-var x92 = console.log(x91);
-x94=x92
-}
-return x94
-}
-var x96 = x50();
-return x96
-}
-function test3(x98) {
-var x113 = 0;
-var x126 = function() {
-var x127 = x113 += 1;
-var x128 = x121();
-return x128
-}
-var x99 = [1, 2, 3];
-var x112=x99.map(
-function(x100){
-var x101 = new Cell();
-var x102 = x100 * 1000;
-var x103 = "sleeping for "+x102;
-var x104 = console.log(x103);
-var x106 = String(x100);
-var x105 = function() {
-var x107 = console.log(x106);
-var x108 = x101.set(x107);
-return x108
-}
-var x110 = window.setTimeout(x105,x102);
-return x101
+var x67 = window.setTimeout(x62,x59);
+return x58
 })
-var x121 = function() {
-var x122 = x113;
-var x123 = x112.length;
-var x124 = x122 < x123;
-var x134
-if (x124) {
-var x125 = x112[x122];
-var x130 = x125.get(x126);
-x134=x130
+var x71 = function() {
+var x72 = x70;
+var x73 = x69.length;
+var x74 = x72 < x73;
+var x84
+if (x74) {
+var x75 = x69[x72];
+var x80 = x75.get(x76);
+x84=x80
 } else {
-var x132 = console.log("done");
-x134=x132
+var x82 = console.log("done");
+x84=x82
 }
-return x134
+return x84
 }
-var x119 = function() {
-var x120 = x113 += 1;
-var x136 = x121();
-return x136
+var x86 = x71();
+return x86
 }
-var x114 = function() {
-var x115 = x113;
-var x116 = x112.length;
-var x117 = x115 < x116;
-var x142
-if (x117) {
-var x118 = x112[x115];
-var x138 = x118.get(x119);
-x142=x138
-} else {
-var x140 = console.log("done");
-x142=x140
+function test3b(x88) {
+var x105 = 0;
+var x104 = [];
+var x106 = 0;
+var x112 = function(x113) {
+var x114 = x105;
+var x115 = x104[x114] = x113;
+var x116 = x105 += 1;
+var x117 = x106 += 1;
+var x118 = x107();
+return x118
 }
-return x142
+var x89 = [3, 2, 1];
+var x103=x89.map(
+function(x90){
+var x91 = new Cell();
+var x92 = x90 * 1000;
+var x93 = "sleeping for "+x92;
+var x94 = console.log(x93);
+var x96 = String(x90);
+var x98 = x90 + 1;
+var x95 = function() {
+var x97 = console.log(x96);
+var x99 = x91.set(x98);
+return x99
 }
-var x144 = x114();
-return x144
-}
-function test3b(x146) {
-var x163 = 0;
-var x162 = [];
-var x164 = 0;
-var x181 = function(x182) {
-var x183 = x163;
-var x184 = x162[x183] = x182;
-var x185 = x163 += 1;
-var x186 = x164 += 1;
-var x187 = x176();
-return x187
-}
-var x147 = [3, 2, 1];
-var x161=x147.map(
-function(x148){
-var x149 = new Cell();
-var x150 = x148 * 1000;
-var x151 = "sleeping for "+x150;
-var x152 = console.log(x151);
-var x154 = String(x148);
-var x156 = x148 + 1;
-var x153 = function() {
-var x155 = console.log(x154);
-var x157 = x149.set(x156);
-return x157
-}
-var x159 = window.setTimeout(x153,x150);
-return x149
+var x101 = window.setTimeout(x95,x92);
+return x91
 })
-var x176 = function() {
-var x177 = x164;
-var x178 = x161.length;
-var x179 = x177 < x178;
-var x194
-if (x179) {
-var x180 = x161[x177];
-var x189 = x180.get(x181);
-x194=x189
+var x107 = function() {
+var x108 = x106;
+var x109 = x103.length;
+var x110 = x108 < x109;
+var x125
+if (x110) {
+var x111 = x103[x108];
+var x120 = x111.get(x112);
+x125=x120
 } else {
-var x191 = String(x162);
-var x192 = console.log(x191);
-x194=x192
+var x122 = String(x104);
+var x123 = console.log(x122);
+x125=x123
 }
-return x194
+return x125
 }
+var x127 = x107();
+return x127
+}
+function test3c(x129) {
+var x144 = 0;
+var x150 = function() {
+var x151 = x144 += 1;
+var x152 = x145();
+return x152
+}
+var x130 = [3, 2, 1];
+var x143=x130.map(
+function(x131){
+var x132 = new Cell();
+var x133 = x131 * 1000;
+var x134 = "sleeping for "+x133;
+var x135 = console.log(x134);
+var x137 = String(x131);
+var x136 = function() {
+var x138 = console.log(x137);
+var x139 = x132.set(x138);
+return x139
+}
+var x141 = window.setTimeout(x136,x133);
+return x132
+})
+var x145 = function() {
+var x146 = x144;
+var x147 = x143.length;
+var x148 = x146 < x147;
+var x158
+if (x148) {
+var x149 = x143[x146];
+var x154 = x149.get(x150);
+x158=x154
+} else {
+var x156 = console.log("done");
+x158=x156
+}
+return x158
+}
+var x160 = x145();
+return x160
+}
+function test4(x162) {
+var x183 = 0;
+var x189 = function() {
+var x190 = x183 += 1;
+var x191 = x184();
+return x191
+}
+var x163 = ["gkossakowski", "odersky", "adriaanm"];
+var x182=x163.map(
+function(x164){
+var x165 = new Cell();
+var x166 = "fetching "+x164;
+var x167 = console.log(x166);
+var x168 = {'screen_name' : x164,'include_rts' : true,'count' : 5,'include_entities' : true};
+var x169 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x168};
 var x170 = function(x171) {
-var x172 = x163;
-var x173 = x162[x172] = x171;
-var x174 = x163 += 1;
-var x175 = x164 += 1;
-var x196 = x176();
-return x196
-}
-var x165 = function() {
-var x166 = x164;
-var x167 = x161.length;
-var x168 = x166 < x167;
-var x203
-if (x168) {
-var x169 = x161[x166];
-var x198 = x169.get(x170);
-x203=x198
-} else {
-var x200 = String(x162);
-var x201 = console.log(x200);
-x203=x201
-}
-return x203
-}
-var x205 = x165();
-return x205
-}
-function test3c(x207) {
-var x222 = 0;
-var x235 = function() {
-var x236 = x222 += 1;
-var x237 = x230();
-return x237
-}
-var x208 = [3, 2, 1];
-var x221=x208.map(
-function(x209){
-var x210 = new Cell();
-var x211 = x209 * 1000;
-var x212 = "sleeping for "+x211;
-var x213 = console.log(x212);
-var x215 = String(x209);
-var x214 = function() {
-var x216 = console.log(x215);
-var x217 = x210.set(x216);
-return x217
-}
-var x219 = window.setTimeout(x214,x211);
-return x210
+var x177=x171.forEach(
+function(x172,i_,a_){
+var x173 = x172.text;
+var x174 = "fetched "+x173;
+var x175 = console.log(x174);
+return x175
 })
-var x230 = function() {
-var x231 = x222;
-var x232 = x221.length;
-var x233 = x231 < x232;
-var x243
-if (x233) {
-var x234 = x221[x231];
-var x239 = x234.get(x235);
-x243=x239
-} else {
-var x241 = console.log("done");
-x243=x241
+var x178 = x165.set(x177);
+return x178
 }
-return x243
-}
-var x228 = function() {
-var x229 = x222 += 1;
-var x245 = x230();
-return x245
-}
-var x223 = function() {
-var x224 = x222;
-var x225 = x221.length;
-var x226 = x224 < x225;
-var x251
-if (x226) {
-var x227 = x221[x224];
-var x247 = x227.get(x228);
-x251=x247
-} else {
-var x249 = console.log("done");
-x251=x249
-}
-return x251
-}
-var x253 = x223();
-return x253
-}
-function test4(x255) {
-var x276 = 0;
-var x289 = function() {
-var x290 = x276 += 1;
-var x291 = x284();
-return x291
-}
-var x256 = ["gkossakowski", "odersky", "adriaanm"];
-var x275=x256.map(
-function(x257){
-var x258 = new Cell();
-var x259 = "fetching "+x257;
-var x260 = console.log(x259);
-var x261 = {'screen_name' : x257,'include_rts' : true,'count' : 5,'include_entities' : true};
-var x262 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x261};
-var x263 = function(x264) {
-var x270=x264.forEach(
-function(x265,i_,a_){
-var x266 = x265.text;
-var x267 = "fetched "+x266;
-var x268 = console.log(x267);
-return x268
+x169.success = x170
+var x180 = $.ajax(x169);
+return x165
 })
-var x271 = x258.set(x270);
-return x271
-}
-x262.success = x263
-var x273 = $.ajax(x262);
-return x258
-})
-var x284 = function() {
-var x285 = x276;
-var x286 = x275.length;
-var x287 = x285 < x286;
-var x295
-if (x287) {
-var x288 = x275[x285];
-var x293 = x288.get(x289);
-x295=x293
+var x184 = function() {
+var x185 = x183;
+var x186 = x182.length;
+var x187 = x185 < x186;
+var x195
+if (x187) {
+var x188 = x182[x185];
+var x193 = x188.get(x189);
+x195=x193
 } else {
-x295=undefined
+x195=undefined
 }
-return x295
+return x195
 }
-var x282 = function() {
-var x283 = x276 += 1;
-var x297 = x284();
-return x297
-}
-var x277 = function() {
-var x278 = x276;
-var x279 = x275.length;
-var x280 = x278 < x279;
-var x301
-if (x280) {
-var x281 = x275[x278];
-var x299 = x281.get(x282);
-x301=x299
-} else {
-x301=undefined
-}
-return x301
-}
-var x303 = x277();
-return x303
+var x197 = x184();
+return x197
 }

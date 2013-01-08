@@ -2,25 +2,27 @@ name := "js-scala"
 
 organization := "EPFL"
 
-version := "0.2-SNAPSHOT"
+version := "0.3-SNAPSHOT"
 
-scalaVersion := Option(System.getenv("SCALA_VIRTUALIZED_VERSION")).getOrElse("2.10.0-M1-virtualized")
+scalaOrganization := "org.scala-lang.virtualized"
+
+scalaVersion := "2.10.0"
 
 //--- Dependencies
 
-resolvers ++= Seq(
-    ScalaToolsSnapshots, 
-    //needed for custom build of scala test
-    "Dropbox" at "http://dl.dropbox.com/u/12870350/scala-virtualized"
-    )
+libraryDependencies += "org.scala-lang.virtualized" % "scala-library" % "2.10.0"
+
+libraryDependencies += "org.scala-lang.virtualized" % "scala-compiler" % "2.10.0"
+
+libraryDependencies += "org.scala-lang" % "scala-actors" % "2.10.0" // for ScalaTest
 
 libraryDependencies ++= Seq(
-    "org.scalatest" % "scalatest_2.10.0-virtualized-SNAPSHOT" % "1.6.1-SNAPSHOT" % "test",
-    "EPFL" %% "lms" % "0.2")
+    "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
+    "EPFL" %% "lms" % "0.3-SNAPSHOT")
     
 //--- End of Dependencies
 
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics")
 
 //Our tests are not threadsafe so disabling parallel execution for now
 parallelExecution in Test := false
@@ -32,7 +34,7 @@ publishArtifact in (Compile, packageDoc) := false
 autoCompilerPlugins := true
 
 libraryDependencies <<= (scalaVersion, libraryDependencies) { (ver, deps) =>
-    deps :+ compilerPlugin("org.scala-lang.plugins" % "continuations" % ver)
+    deps :+ compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % ver)
 }
 
 scalacOptions += "-P:continuations:enable"
