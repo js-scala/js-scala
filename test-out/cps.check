@@ -32,8 +32,8 @@ return x23
 function test2(x25) {
 var x29 = 0;
 var x26 = [4, 5, 6];
-var x27 = [];
 var x28 = 0;
+var x27 = [];
 var x30 = function() {
 var x31 = x29;
 var x32 = x26.length;
@@ -67,11 +67,6 @@ return x53
 }
 function test3(x55) {
 var x70 = 0;
-var x76 = function() {
-var x77 = x70 += 1;
-var x78 = x71();
-return x78
-}
 var x56 = [1, 2, 3];
 var x69=x56.map(
 function(x57){
@@ -103,21 +98,16 @@ x84=x82
 }
 return x84
 }
+var x76 = function() {
+var x77 = x70 += 1;
+var x78 = x71();
+return x78
+}
 var x86 = x71();
 return x86
 }
 function test3b(x88) {
-var x105 = 0;
-var x104 = [];
 var x106 = 0;
-var x112 = function(x113) {
-var x114 = x105;
-var x115 = x104[x114] = x113;
-var x116 = x105 += 1;
-var x117 = x106 += 1;
-var x118 = x107();
-return x118
-}
 var x89 = [3, 2, 1];
 var x103=x89.map(
 function(x90){
@@ -135,6 +125,7 @@ return x99
 var x101 = window.setTimeout(x95,x92);
 return x91
 })
+var x104 = [];
 var x107 = function() {
 var x108 = x106;
 var x109 = x103.length;
@@ -151,16 +142,20 @@ x125=x123
 }
 return x125
 }
+var x105 = 0;
+var x112 = function(x113) {
+var x114 = x105;
+var x115 = x104[x114] = x113;
+var x116 = x105 += 1;
+var x117 = x106 += 1;
+var x118 = x107();
+return x118
+}
 var x127 = x107();
 return x127
 }
 function test3c(x129) {
 var x144 = 0;
-var x150 = function() {
-var x151 = x144 += 1;
-var x152 = x145();
-return x152
-}
 var x130 = [3, 2, 1];
 var x143=x130.map(
 function(x131){
@@ -192,16 +187,16 @@ x158=x156
 }
 return x158
 }
+var x150 = function() {
+var x151 = x144 += 1;
+var x152 = x145();
+return x152
+}
 var x160 = x145();
 return x160
 }
 function test4(x162) {
 var x183 = 0;
-var x189 = function() {
-var x190 = x183 += 1;
-var x191 = x184();
-return x191
-}
 var x163 = ["gkossakowski", "odersky", "adriaanm"];
 var x182=x163.map(
 function(x164){
@@ -238,6 +233,11 @@ x195=x193
 x195=undefined
 }
 return x195
+}
+var x189 = function() {
+var x190 = x183 += 1;
+var x191 = x184();
+return x191
 }
 var x197 = x184();
 return x197
