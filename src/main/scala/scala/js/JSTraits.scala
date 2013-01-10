@@ -51,7 +51,7 @@ trait JSTraitsExp extends JSTraits with JSProxyExp {
 
     val self = proxyTrait[T](This[T](), parentConstructor, outer)
     val methods = 
-      for (method <- implClazz.getDeclaredMethods.toList)
+      for (method <- implClazz.getDeclaredMethods.toList.sortWith(_.getName < _.getName))
 	yield {
 	  val n = method.getParameterTypes.length
 	  val params = (1 to (n-1)).toList.map(_ => fresh[Any])
