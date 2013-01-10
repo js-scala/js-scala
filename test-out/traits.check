@@ -2,16 +2,16 @@ function main(x0) {
 var x5 = function() {
 this.$init$()
 }
+x5.prototype.$init$ = function() {
+var x1 = this.someVar = 1;
+return null
+}
 x5.prototype.someMethod = function() {
 return 1
 }
-x5.prototype.someOtherMethod = function(x1) {
-var x2 = x1 + 1;
-return x2
-}
-x5.prototype.$init$ = function() {
-var x3 = this.someVar = 1;
-return null
+x5.prototype.someOtherMethod = function(x3) {
+var x4 = x3 + 1;
+return x4
 }
 var x6 = new x5();
 var x7 = x6.someMethod();

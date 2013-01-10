@@ -2,22 +2,25 @@ function main(x0) {
 var x5 = function() {
 this.$init$()
 }
+x5.prototype.$init$ = function() {
+var x1 = this.someVar = 1;
+return null
+}
 x5.prototype.someMethod = function() {
 return 1
 }
-x5.prototype.someOtherMethod = function(x1) {
-var x2 = x1 + 1;
-return x2
-}
-x5.prototype.$init$ = function() {
-var x3 = this.someVar = 1;
-return null
+x5.prototype.someOtherMethod = function(x3) {
+var x4 = x3 + 1;
+return x4
 }
 var x6 = new x5();
 var x13 = function() {
 this.$init$()
 }
 x13.prototype = x6
+x13.prototype.$init$ = function() {
+return null
+}
 x13.prototype.someMethod = function() {
 var x7 = x5.prototype.someMethod.call(this);
 var x8 = this.someVar;
@@ -28,21 +31,18 @@ x13.prototype.someNewMethod = function(x11) {
 var x12 = x11 * 2;
 return x12
 }
-x13.prototype.$init$ = function() {
-return null
-}
 var x14 = new x13();
 var x18 = function() {
 this.$init$()
 }
 x18.prototype = x14
+x18.prototype.$init$ = function() {
+return null
+}
 x18.prototype.someMethod = function() {
 var x15 = x13.prototype.someMethod.call(this);
 var x16 = x15 + 1;
 return x16
-}
-x18.prototype.$init$ = function() {
-return null
 }
 var x19 = new x18();
 var x20 = x19.someMethod();
