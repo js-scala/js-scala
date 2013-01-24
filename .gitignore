@@ -6,3 +6,6 @@ local.properties
 .\#*
 *~
 .target/
+project/user.sbt
+.idea/
+.idea_modules/
