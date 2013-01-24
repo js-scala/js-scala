@@ -7,7 +7,7 @@
 
 ### Setup
 
-1. Setup [virtualization-lms-core](http://github.com/js-scala/virtualization-lms-core), including [Scala-Virtualized](http://github.com/js-scala/scala/tree/js). If you deploy locally, ensure the `SCALA_VIRTUALIZED_VERSION` environment variable is set consistently.
+1. Setup [virtualization-lms-core](http://github.com/TiarkRompf/virtualization-lms-core).
 
 2. Run `sbt`. `test` to ensure everything works. Then `publish-local`.
 
