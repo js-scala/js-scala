@@ -47,7 +47,7 @@ trait JSCodegen extends GenericCodegen {
   }
 
   def emitAssignment(lhs: String, rhs: String): Unit = {
-    stream.println(lhs + " = " + rhs)
+    stream.println(lhs + " = " + rhs + ";")
   }
 
   override def quote(x: Exp[Any]) : String = x match {

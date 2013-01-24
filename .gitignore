@@ -7,5 +7,9 @@ local.properties
 *~
 .target/
 project/user.sbt
+.classpath
+.project
+.history
+.settings/
 .idea/
 .idea_modules/
