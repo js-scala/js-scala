@@ -8,4 +8,7 @@ object Main extends App {
   Twitter.writeJs("examples/ajax/twitter_.js")
 
   D3.writeHtml("examples/d3/d3_.html")
+
+  HelloWorld.printJs()
+  HelloWorld.printScala()
 }
