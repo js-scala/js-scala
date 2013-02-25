@@ -1,43 +1,45 @@
 function main(x0) {
-var x5 = function() {
+var x7 = function() {
 this.$init$()
 }
-x5.prototype.$init$ = function() {
-var x1 = this.someVar = 1;
+x7.prototype.$init$ = function() {
+var x1 = 1;
+var x2 = x1;
+var x3 = this.someVar = x2;
 return null
 }
-x5.prototype.someMethod = function() {
+x7.prototype.someMethod = function() {
 return 1
 }
-x5.prototype.someOtherMethod = function(x3) {
-var x4 = x3 + 1;
-return x4
+x7.prototype.someOtherMethod = function(x5) {
+var x6 = x5 + 1;
+return x6
 }
-var x6 = new x5();
-var x14 = new x5();
-var x13 = function() {
+var x8 = new x7();
+var x16 = new x7();
+var x15 = function() {
 this.$init$()
 }
-x13.prototype = x6
-x13.prototype.$init$ = function() {
+x15.prototype = x8
+x15.prototype.$init$ = function() {
 return null
 }
-x13.prototype.someMethod = function() {
-var x7 = x5.prototype.someMethod.call(this);
-var x8 = this.someVar;
-var x9 = x7 + x8;
-return x9
+x15.prototype.someMethod = function() {
+var x9 = x7.prototype.someMethod.call(this);
+var x10 = this.someVar;
+var x11 = x9 + x10;
+return x11
 }
-x13.prototype.someNewMethod = function(x11) {
-var x12 = x11 * 2;
-return x12
+x15.prototype.someNewMethod = function(x13) {
+var x14 = x13 * 2;
+return x14
 }
-var x15 = new x13();
-var x16 = x15.someVar = 2;
-var x17 = x15.someNewMethod(x0);
-var x18 = x15.someMethod();
-var x20 = x14.someVar;
-var x19 = x17 + x18;
+var x17 = new x15();
+var x18 = x17.someVar = 2;
+var x19 = x17.someNewMethod(x0);
+var x20 = x17.someMethod();
+var x22 = x16.someVar;
 var x21 = x19 + x20;
-return x21
+var x23 = x21 + x22;
+return x23
 }

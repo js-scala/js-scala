@@ -36,11 +36,11 @@ object Twitter {
         log("fetching " + user)
         append("#jstwitter", string_plus("<div class='span-one-third'><h4>@", string_plus(user, string_plus("</h4><ul id='", string_plus(user, "'></ul></div>")))))
         val data = ajax.get {
-          new JSLiteral {
+          new Record {
             val url = "http://api.twitter.com/1/statuses/user_timeline.json"
             val `type` = "GET"
             val dataType = "jsonp"
-            val data = new JSLiteral {
+            val data = new Record {
               val screen_name = user
               val include_rts = true
               val count = 5
@@ -48,7 +48,7 @@ object Twitter {
             }
           }
         }
-        val tweets = data.as[Array[JSLiteral {val text: String}]]
+        val tweets = data.as[Array[Record {val text: String}]]
         log("done fetching " + user)
         for (t <- tweets) {
           append("#" + user, "<li>" + t.text + "</li>")

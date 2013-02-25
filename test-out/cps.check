@@ -188,8 +188,8 @@ function(x164){
 var x165 = new Cell();
 var x166 = "fetching "+x164;
 var x167 = console.log(x166);
-var x168 = {'screen_name' : x164,'include_rts' : true,'count' : 5,'include_entities' : true};
-var x169 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x168};
+var x169 = {'screen_name' : x164,'include_rts' : true,'count' : 5,'include_entities' : true};
+var x168 = {'url' : "http://api.twitter.com/1/statuses/user_timeline.json",'type' : "GET",'dataType' : "jsonp",'data' : x169};
 var x170 = function(x171) {
 var x177=x171.forEach(
 function(x172,i_,a_){
@@ -201,8 +201,8 @@ return x175
 var x178 = x165.set(x177);
 return x178
 };
-x169.success = x170
-var x180 = $.ajax(x169);
+x168.success = x170
+var x180 = $.ajax(x168);
 return x165
 })
 var x184 = function() {

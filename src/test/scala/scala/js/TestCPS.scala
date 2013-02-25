@@ -64,11 +64,11 @@ trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax with Casts =
     for (user <- array("gkossakowski", "odersky", "adriaanm").parSuspendable) {
       log("fetching " + user)
       val data = ajax.get {
-        new JSLiteral {
+        new Record {
           val url = "http://api.twitter.com/1/statuses/user_timeline.json"
           val `type` = "GET"
           val dataType = "jsonp"
-          val data = new JSLiteral {
+          val data = new Record {
             val screen_name = user
             val include_rts = true
             val count = 5
@@ -76,7 +76,7 @@ trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax with Casts =
           }
         }
       }
-      val tweets = data.as[Array[JSLiteral {val text: String}]]
+      val tweets = data.as[Array[Record {val text: String}]]
       for (t <- tweets)
         log("fetched " + t.text)
     }

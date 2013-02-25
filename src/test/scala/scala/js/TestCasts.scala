@@ -13,19 +13,19 @@ trait RefinementCastProg { this: Casts =>
 
 trait JSLiteralCastProg { this: JS with Casts =>
   def test(x: Rep[Any]): Rep[Any] = {
-    x.as[JSLiteral {val foo: String; val bar: Int}]
+    x.as[Record {val foo: String; val bar: Int}]
   }
 }
 
 trait NestedJSLiteralCastProg { this: JS with Casts =>
   def test(x: Rep[Any]): Rep[Any] = {
-    x.as[JSLiteral {val foo: String; val lit: JSLiteral { val a: Int }}]
+    x.as[Record {val foo: String; val lit: Record { val a: Int }}]
   }
 }
 
 trait ArrayOfJSLiteralCastProg { this: JS with Casts =>
   def test(x: Rep[Any]): Rep[Any] = {
-    x.as[Array[JSLiteral {val data: String}]]
+    x.as[Array[Record {val data: String}]]
   }
 }
 

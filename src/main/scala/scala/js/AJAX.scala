@@ -7,11 +7,11 @@ import java.io.PrintWriter
 
 trait Ajax extends JS with CPS {
 
-  type Request = JSLiteral {
+  type Request = Record {
     val url: String
     val `type`: String
     val dataType: String
-    val data: JSLiteral
+    val data: Record
   }
 
   type Response = Any

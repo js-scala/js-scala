@@ -9,7 +9,10 @@ trait InScala extends Base {
   protected def unit[T:Manifest](x: T) = x
 }
 
-trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala with WhileInScala with BooleanOpsInScala with StringOpsInScala with ObjectOpsInScala with DynamicInScala with ArraysInScala with JSFunctionsInScala with JSLiteralInScala with JSRegExpsInScala with TupleOpsInScala
+trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala
+  with WhileInScala with BooleanOpsInScala with StringOpsInScala with VariablesInScala with ListOpsInScala
+  with ObjectOpsInScala with JSFunctionsInScala with StructsInScala with PrimitiveOpsInScala with MiscOpsInScala
+  with DynamicInScala with ArraysInScala with JSRegExpsInScala with TupleOpsInScala with OptionOpsInScala
 
 trait VariablesInScala extends Variables with ReadVarImplicit with InScala with ImplicitOpsInScala {
   override implicit def readVar[T:Manifest](v: Var[T])(implicit pos: SourceContext) : T = ???
@@ -317,4 +320,73 @@ trait DomsInScala extends Doms with JSProxyInScala {
     def fillRect(x: Rep[Int], y: Rep[Int], width: Rep[Int], height: Rep[Int]) = ???
   }
   val document = new ElementInScala
+}
+
+trait ListOpsInScala extends ListOps with InScala {
+  def list_new[A](xs: Seq[A])(implicit ev: Manifest[A], pos: SourceContext) = xs.to[List]
+  def list_fromseq[A](xs: Seq[A])(implicit ev: Manifest[A], pos: SourceContext) = xs.to[List]
+  def list_map[A, B](l: List[A], f: A => B)(implicit mA: Manifest[A], mB: Manifest[B], pos: SourceContext) = l.map(f)
+  def list_flatMap[A, B](f: A => List[B])(xs: List[A])(implicit mA: Manifest[A], mB: Manifest[B], pos: SourceContext) = xs.flatMap(f)
+  def list_filter[A](l: List[A], f: A => Boolean)(implicit mA: Manifest[A], pos: SourceContext) = l.filter(f)
+  def list_sortby[A, B](l: List[A], f: A => B)(implicit mA: Manifest[A], mB: Manifest[B], ev: Ordering[B], pos: SourceContext) = l.sortBy(f)
+  def list_prepend[A](l: List[A], e: A)(implicit mA: Manifest[A], pos: SourceContext) = e :: l
+  def list_toarray[A](l: List[A])(implicit mA: Manifest[A], pos: SourceContext) = l.to[Array]
+  def list_toseq[A](l: List[A])(implicit mA: Manifest[A], pos: SourceContext) = l.to[Seq]
+  def list_concat[A](xs: List[A], ys: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs ::: ys
+  def list_cons[A](x: A, xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = x :: xs
+  def list_mkString[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.mkString
+  def list_head[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.head
+  def list_tail[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.tail
+  def list_isEmpty[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.isEmpty
+}
+
+trait StructsInScala extends Structs with InScala {
+  def record_new[T](fields: Seq[(String, Boolean, Rep[T] => Rep[_])])(implicit ev: Manifest[T]) = ???
+  def record_select[T](record: Record, field: String)(implicit ev: Manifest[T]) = ???
+}
+
+trait PrimitiveOpsInScala extends PrimitiveOps with InScala {
+  def obj_double_parse_double(s: String)(implicit pos: SourceContext) = s.toDouble
+  def obj_double_positive_infinity(implicit pos: SourceContext) = Double.PositiveInfinity
+  def obj_double_negative_infinity(implicit pos: SourceContext) = Double.NegativeInfinity
+  def obj_double_min_value(implicit pos: SourceContext) = Double.MinValue
+  def obj_double_max_value(implicit pos: SourceContext) = Double.MaxValue
+  def double_float_value(lhs: Double)(implicit pos: SourceContext) = lhs.toFloat
+  def obj_integer_parse_int(s: String)(implicit pos: SourceContext) = s.toInt
+  def obj_int_max_value(implicit pos: SourceContext) = Int.MaxValue
+  def obj_int_min_value(implicit pos: SourceContext) = Int.MinValue
+  def int_divide_frac[A:Manifest:Fractional](lhs: Int, rhs: A)(implicit pos: SourceContext) = ???
+  def int_divide(lhs: Int, rhs: Int)(implicit pos: SourceContext) = lhs / rhs
+  def int_mod(lhs: Int, rhs: Int)(implicit pos: SourceContext) = lhs % rhs
+  def int_binaryor(lhs: Int, rhs: Int)(implicit pos: SourceContext) = lhs | rhs
+  def int_binaryand(lhs: Int, rhs: Int)(implicit pos: SourceContext) = lhs & rhs
+  def int_binaryxor(lhs: Int, rhs: Int)(implicit pos: SourceContext)= lhs ^ rhs
+  def int_float_value(lhs: Int)(implicit pos: SourceContext) = lhs.toFloat
+  def int_double_value(lhs: Int)(implicit pos: SourceContext) = lhs.toDouble
+  def int_bitwise_not(lhs: Int)(implicit pos: SourceContext) = ~lhs
+  def int_tolong(lhs: Int)(implicit pos: SourceContext) = lhs.toLong
+  def long_binaryand(lhs: Long, rhs: Long)(implicit pos: SourceContext) = lhs & rhs
+  def long_binaryor(lhs: Long, rhs: Long)(implicit pos: SourceContext) = lhs | rhs
+  def long_shiftleft(lhs: Long, rhs: Int)(implicit pos: SourceContext) = lhs << rhs
+  def long_shiftright_unsigned(lhs: Long, rhs: Int)(implicit pos: SourceContext) = lhs >>> rhs
+  def long_toint(lhs: Long)(implicit pos: SourceContext) = lhs.toInt
+}
+
+trait MiscOpsInScala extends MiscOps with InScala {
+  def returnL(x: Any)(implicit pos: SourceContext) = ???
+  def printf(f: String, x: Any*)(implicit pos: SourceContext) = Predef.printf(f, x: _*)
+  def println(x: Any)(implicit pos: SourceContext) = Predef.println(x)
+  def print(x: Any)(implicit pos: SourceContext) = Predef.print(x)
+  override def exit(status: Rep[Int])(implicit pos: SourceContext) = unit(???)
+  def error(s: String)(implicit pos: SourceContext) = sys.error(s)
+}
+
+trait OptionOpsInScala extends OptionOps with InScala {
+  implicit class OptionOpsCls[+A: Manifest](o: Option[A]) extends OptionOpsBase[A] {
+    def foreach(f: A => Unit) = o.foreach(f)
+    def map[B : Manifest](f: A => B) = o.map(f)
+    def flatMap[B : Manifest](f: A => Option[B]) = o.flatMap(f)
+    def isEmpty = o.isEmpty
+    def fold[B: Manifest](none: => B, some: A => B) = o.fold(none)(some)
+  }
 }

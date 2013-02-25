@@ -5,9 +5,9 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 
-trait LiteralProg { this: JSLiteral with LiftNumeric with NumericOps =>
+trait LiteralProg { this: Structs with LiftNumeric with NumericOps =>
   def test(x: Rep[Double]): Rep[Double] = {
-    val o = new JSLiteral {
+    val o = new Record {
       val a = x
       val b = x + 2.0
       val c = 1.0
@@ -20,11 +20,12 @@ trait LiteralProg { this: JSLiteral with LiftNumeric with NumericOps =>
 
 trait LiteralFunProg { this: JS =>
   def test(x: Rep[Int]): Rep[Int] = {
-    val o = new JSLiteral {
+    val o = new Record {
       val a = x + 2
       val f = fun { (y : Rep[Int]) => y + a }
     }
-    o.f(x)
+    val f = o.f
+    f(x)
   }
 }
 
@@ -33,8 +34,8 @@ class TestLiteral extends FileDiffSuite {
   
   def testLiteral = {
     withOutFile(prefix+"literal") {
-      new LiteralProg with JSLiteralExp with LiftNumeric with NumericOpsExpOpt { self =>
-        val codegen = new JSNestedCodegen with JSGenLiteral with JSGenNumericOps { val IR: self.type = self }
+      new LiteralProg with StructExp with LiftNumeric with NumericOpsExpOpt { self =>
+        val codegen = new JSNestedCodegen with JSGenStruct with JSGenNumericOps { val IR: self.type = self }
         codegen.emitSource(test _, "test", new PrintWriter(System.out))
       }
     }
