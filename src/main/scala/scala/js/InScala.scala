@@ -382,6 +382,8 @@ trait MiscOpsInScala extends MiscOps with InScala {
 }
 
 trait OptionOpsInScala extends OptionOps with InScala {
+  val none = None
+  def some[A : Manifest](a: A) = Some(a)
   implicit class OptionOpsCls[+A: Manifest](o: Option[A]) extends OptionOpsBase[A] {
     def foreach(f: A => Unit) = o.foreach(f)
     def map[B : Manifest](f: A => B) = o.map(f)

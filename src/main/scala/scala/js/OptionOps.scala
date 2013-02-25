@@ -4,6 +4,9 @@ import virtualization.lms.common._
 
 trait OptionOps { this: Base =>
 
+  val none: Rep[None.type]
+  def some[A : Manifest](a: Rep[A]): Rep[Option[A]]
+
   implicit def OptionOpsCls[A : Manifest](o: Rep[Option[A]]): OptionOpsCls[A]
   type OptionOpsCls[+A] <: OptionOpsBase[A]
 
@@ -17,6 +20,11 @@ trait OptionOps { this: Base =>
 }
 
 trait OptionOpsExp extends OptionOps with EffectExp {
+
+  case object none extends Exp[None.type]
+  case class OptionSome[A](a: Rep[A]) extends Def[Option[A]]
+  def some[A : Manifest](a: Rep[A]) = OptionSome(a)
+
   implicit class OptionOpsCls[+A : Manifest](o: Rep[Option[A]]) extends OptionOpsBase[A] {
     def foreach(f: Exp[A] => Exp[Unit]) = {
       val a = fresh[A]
@@ -111,6 +119,13 @@ trait JSGenOptionOps extends JSGenEffect {
       emitBlock(n)
       emitAssignment(quote(sym), quote(getBlockResult(n)))
       stream.println("}")
+    case OptionSome(a) =>
+      emitValDef(sym, quote(a))
     case _ => super.emitNode(sym, rhs)
+  }
+
+  override def quote(x: Exp[Any]) = x match {
+    case `none` => "null"
+    case _ => super.quote(x)
   }
 }
