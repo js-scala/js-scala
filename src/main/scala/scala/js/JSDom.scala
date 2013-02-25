@@ -42,6 +42,8 @@ trait JSDom { this: Base =>
   case object MouseMove extends EventName[MouseEvent]("mousemove")
   case object MouseUp extends EventName[MouseEvent]("mouseup")
 
+  case object Change extends EventName[Event]("change")
+
   trait Window extends EventTarget
 
   val window: Rep[Window]
@@ -65,6 +67,11 @@ trait JSDom { this: Base =>
   }
   def history_replaceState(h: Rep[History], state: Rep[_], title: Rep[String], url: Rep[String]): Rep[Unit]
 
+  trait Form
+  implicit class FormOps(form: Rep[Form]) {
+    def submit() = form_submit(form)
+  }
+  def form_submit(form: Rep[Form]): Rep[Unit]
 }
 
 trait JSDomExp extends JSDom with EffectExp {
@@ -89,6 +96,7 @@ trait JSDomExp extends JSDom with EffectExp {
   def infix_setAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) = reflectEffect(ElementSetAttribute(e, name, value))
   def infix_tagName(e: Exp[Element]) = ElementTagName(e)
   def history_replaceState(h: Exp[History], state: Exp[_], title: Exp[String], url: Exp[String]) = reflectEffect(HistoryReplaceState(h, state, title, url))
+  def form_submit(form: Exp[Form]) = reflectEffect(FormSubmit(form))
   case object window extends Exp[Window]
 
   // FIXME We can’t yet use dependent types on constructors parameters, see https://issues.scala-lang.org/browse/SI-5712 so at this point we lost the information that event.Type =:= A
@@ -104,6 +112,7 @@ trait JSDomExp extends JSDom with EffectExp {
   case class ElementSetAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) extends Def[Unit]
   case class ElementTagName(e: Exp[Element]) extends Def[String]
   case class HistoryReplaceState(h: Exp[History], state: Exp[_], title: Exp[String], url: Exp[String]) extends Def[Unit]
+  case class FormSubmit(form: Exp[Form]) extends Def[Unit]
 
   override def syms(e: Any) = e match {
     case EventTargetOn(t, event, capture, _, handler) => List(t, event, capture, handler).flatMap(syms)
@@ -156,6 +165,8 @@ trait JSGenDom extends JSGenEffect {
       emitValDef(sym, quote(e) + ".tagName")
     case HistoryReplaceState(h, state, title, url) =>
       emitValDef(sym, quote(h) + ".replaceState(" + quote(state) + ", " + quote(title) + ", " + quote(url) + ")")
+    case FormSubmit(form) =>
+      emitValDef(sym, quote(form) + ".submit()")
     case _ => super.emitNode(sym, rhs)
   }
 }
