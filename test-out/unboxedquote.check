@@ -1,7 +1,7 @@
 function main(x0) {
 var x1 = function(x2,x3) {
 return {_1:x2,_2:x3}
-}
+};
 var x5 = x1(1,2);
 return x5
 }

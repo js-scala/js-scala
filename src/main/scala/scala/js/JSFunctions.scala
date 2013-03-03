@@ -2,8 +2,6 @@ package scala.js
 
 import scala.virtualization.lms.common._
 
-import java.io.PrintWriter
-
 trait JSFunctions extends TupledFunctions
 
 trait JSFunctionsExp extends JSFunctions with TupledFunctionsRecursiveExp
@@ -16,14 +14,20 @@ trait JSGenFunctions extends JSGenEffect with BaseGenFunctions {
     case Lambda(fun, UnboxedTuple(xs), y) =>
       stream.println("var " + quote(sym) + " = function" + xs.map(quote).mkString("(", ",", ")") + " {")
       emitBlock(y)
-      stream.println("return " + quote(getBlockResult(y)))
-      stream.println("}")
+      val result = getBlockResult((y))
+      if (!(result.tp <:< manifest[Unit])) {
+        stream.println("return " + quote(result))
+      }
+      stream.println("};")
 
     case Lambda(fun, x, y) =>
       stream.println("var " + quote(sym) + " = function(" + quote(x) + ") {")
       emitBlock(y)
-      stream.println("return " + quote(getBlockResult(y)))
-      stream.println("}")
+      val result = getBlockResult((y))
+      if (!(result.tp <:< manifest[Unit])) {
+        stream.println("return " + quote(result))
+      }
+      stream.println("};")
 
     case Apply(fun, UnboxedTuple(args)) =>
       emitValDef(sym, quote(fun) + args.map(quote).mkString("(", ",", ")"))

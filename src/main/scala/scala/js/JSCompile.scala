@@ -28,25 +28,36 @@ trait JSCodegen extends GenericCodegen {
     val argsStr = args.map(quote).mkString(", ")
 
     withStream(out) {
-      stream.println("function"+(if (name.isEmpty) "" else (" "+name))+"("+argsStr+") {")
+      stream.println("function "+(if (name.isEmpty) "" else (name))+"("+argsStr+") {")
       emitBlock(body)
-      stream.println("return "+quote(getBlockResult(body)))
+      val result = getBlockResult(body)
+      if (!(result.tp <:< manifest[Unit])) {
+        stream.println("return "+quote(result))
+      }
 
       stream.println("}")
-      stream.flush
+      stream.flush()
     }
     getFreeDataBlock(body)
   }
 
-  override def emitValDef(sym: Sym[Any], rhs: String): Unit = {
+  def emitExecution[A : Manifest](a: => Exp[A], out: PrintWriter): List[(Sym[Any], Any)] = {
+    val b = reifyBlock(a)
+    out.print("(")
+    emitSource(Nil, b, "", out)
+    out.println(")()")
+    getFreeDataBlock(b)
+  }
+
+  override def emitValDef(sym: Sym[Any], rhs: String) {
     stream.println("var " + quote(sym) + " = " + rhs + ";")
   }
 
-  def emitVarDef(sym: Sym[Any], rhs: String): Unit = {
+  def emitVarDef(sym: Sym[Any], rhs: String) {
     emitValDef(sym, rhs)
   }
 
-  def emitAssignment(lhs: String, rhs: String): Unit = {
+  def emitAssignment(lhs: String, rhs: String) {
     stream.println(lhs + " = " + rhs + ";")
   }
 

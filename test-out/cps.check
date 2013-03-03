@@ -16,18 +16,15 @@ var x11 = function() {
 var x13 = console.log(x12);
 var x14 = x2 += 1;
 var x15 = x3();
-return x15
-}
+};
 var x17 = window.setTimeout(x11,x8);
 x21=undefined
 } else {
 var x19 = console.log("done");
 x21=x19
 }
-return x21
-}
+};
 var x23 = x3();
-return x23
 }
 function test2(x25) {
 var x29 = 0;
@@ -51,8 +48,7 @@ var x41 = x27[x40] = x39;
 var x42 = x28 += 1;
 var x43 = x29 += 1;
 var x44 = x30();
-return x44
-}
+};
 var x46 = window.setTimeout(x38,x35);
 x51=undefined
 } else {
@@ -60,10 +56,8 @@ var x48 = String(x27);
 var x49 = console.log(x48);
 x51=x49
 }
-return x51
-}
+};
 var x53 = x30();
-return x53
 }
 function test3(x55) {
 var x70 = 0;
@@ -79,7 +73,7 @@ var x62 = function() {
 var x64 = console.log(x63);
 var x65 = x58.set(x64);
 return x65
-}
+};
 var x67 = window.setTimeout(x62,x59);
 return x58
 })
@@ -96,15 +90,12 @@ x84=x80
 var x82 = console.log("done");
 x84=x82
 }
-return x84
-}
+};
 var x76 = function() {
 var x77 = x70 += 1;
 var x78 = x71();
-return x78
-}
+};
 var x86 = x71();
-return x86
 }
 function test3b(x88) {
 var x106 = 0;
@@ -121,7 +112,7 @@ var x95 = function() {
 var x97 = console.log(x96);
 var x99 = x91.set(x98);
 return x99
-}
+};
 var x101 = window.setTimeout(x95,x92);
 return x91
 })
@@ -140,8 +131,7 @@ var x122 = String(x104);
 var x123 = console.log(x122);
 x125=x123
 }
-return x125
-}
+};
 var x105 = 0;
 var x112 = function(x113) {
 var x114 = x105;
@@ -149,10 +139,8 @@ var x115 = x104[x114] = x113;
 var x116 = x105 += 1;
 var x117 = x106 += 1;
 var x118 = x107();
-return x118
-}
+};
 var x127 = x107();
-return x127
 }
 function test3c(x129) {
 var x144 = 0;
@@ -168,7 +156,7 @@ var x136 = function() {
 var x138 = console.log(x137);
 var x139 = x132.set(x138);
 return x139
-}
+};
 var x141 = window.setTimeout(x136,x133);
 return x132
 })
@@ -185,15 +173,12 @@ x158=x154
 var x156 = console.log("done");
 x158=x156
 }
-return x158
-}
+};
 var x150 = function() {
 var x151 = x144 += 1;
 var x152 = x145();
-return x152
-}
+};
 var x160 = x145();
-return x160
 }
 function test4(x162) {
 var x183 = 0;
@@ -215,7 +200,7 @@ return x175
 })
 var x178 = x165.set(x177);
 return x178
-}
+};
 x169.success = x170
 var x180 = $.ajax(x169);
 return x165
@@ -232,13 +217,10 @@ x195=x193
 } else {
 x195=undefined
 }
-return x195
-}
+};
 var x189 = function() {
 var x190 = x183 += 1;
 var x191 = x184();
-return x191
-}
+};
 var x197 = x184();
-return x197
 }

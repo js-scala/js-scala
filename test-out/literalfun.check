@@ -3,7 +3,7 @@ var x1 = x0 + 2;
 var x2 = function(x3) {
 var x4 = x3 + x1;
 return x4
-}
+};
 var x5 = {'a' : x1,'f' : x2};
 var x6 = x5.f;
 var x7 = x6(x0);

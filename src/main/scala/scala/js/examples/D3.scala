@@ -39,7 +39,7 @@ object D3 {
   def codegen(pw: PrintWriter) {
     new SimpleExample with JSExp with D3APIExp { self =>
       val codegen = new JSGenOpt with JSGenD3API { val IR: self.type = self }
-      codegen.emitSource0(draw _, "draw", pw)
+      codegen.emitExecution(draw(), pw)
     }
   }
 
@@ -56,7 +56,6 @@ object D3 {
         codegen(new java.io.PrintWriter(writer))
         scala.xml.Unparsed(writer.toString)
       }
-      draw()
       </script>
     </body>
     </html>
