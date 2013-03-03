@@ -135,7 +135,7 @@ trait JSGenDom extends JSGenEffect {
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case EventTargetOn(t, event, capture, e, handler) =>
-      stream.println("var " + quote(sym) + " = " + quote(t) + ".addEventListener('" + event.name + "', function (" + quote(e) + ") {")
+      stream.println(quote(t) + ".addEventListener('" + event.name + "', function (" + quote(e) + ") {")
       emitBlock(handler)
       stream.println("}, " + quote(capture) + ");")
     case EventGetTarget(e) =>

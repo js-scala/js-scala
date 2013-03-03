@@ -1,5 +1,5 @@
 function test() {
-var x3 = window.addEventListener('mouseup', function (x0) {
+window.addEventListener('mouseup', function (x0) {
 var x1 = console.log(x0);
 }, false);
 }
