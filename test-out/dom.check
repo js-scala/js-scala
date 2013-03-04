@@ -1,5 +1,11 @@
-function test() {
+function main() {
 window.addEventListener('mouseup', function (x0) {
 var x1 = console.log(x0);
 }, false);
+}
+function selectors() {
+var x5 = document.querySelector(".bar");
+var x6 = console.log(x5);
+var x7 = document.querySelector("input");
+var x8 = console.log(x7);
 }

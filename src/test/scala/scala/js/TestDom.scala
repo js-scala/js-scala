@@ -14,16 +14,24 @@ class TestDom extends FileDiffSuite {
 
     trait Prog { this: DSL =>
 
-      def main(): Rep[Unit] = {
+      def main() = {
         window.on(MouseUp) { e =>
           log(e)
         }
+      }
+
+      def selectors() = {
+        val bar = document.find(unit(".bar"))
+        log(bar: Rep[Option[Element]])
+        val input = document.find[Input](unit("input"))
+        log(input: Rep[Option[Input]])
       }
     }
     withOutFile(prefix+"dom") {
       val prog = new Prog with DSLExp
       val codegen = new DSLJSGen { val IR: prog.type = prog }
-      codegen.emitSource0(prog.main _, "test", new PrintWriter(System.out))
+      codegen.emitSource0(prog.main _, "main", new PrintWriter(System.out))
+      codegen.emitSource0(prog.selectors _, "selectors", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"dom")
   }
