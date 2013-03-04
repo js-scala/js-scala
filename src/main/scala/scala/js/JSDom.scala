@@ -56,13 +56,20 @@ trait JSDom extends Base {
   val document = window.document
   val history = window.history
 
+  class Selectable[A]
+  object Selectable {
+    implicit val el: Selectable[Element] = new Selectable[Element]
+    implicit def elSub[A <: Element]: Selectable[A] = new Selectable[A]
+  }
+
   trait SelectorApi
   implicit class SelectorApiOps(s: Rep[SelectorApi]) {
-    def find[A : Manifest](selector: Rep[String])(implicit ev: A <:< Element) = selector_find[A](s, selector)
-    def findAll[A : Manifest](selector: Rep[String])(implicit ev: A <:< Element) = selector_findAll(s, selector)
+    def find[A : Selectable : Manifest](selector: Rep[String]) = selector_find[A](s, selector)
+    def findAll[A : Selectable : Manifest](selector: Rep[String]) = selector_findAll(s, selector)
   }
-  def selector_find[A : Manifest](s: Rep[SelectorApi], selector: Rep[String])(implicit ev: A <:< Element): Rep[Option[A]]
-  def selector_findAll[A : Manifest](s: Rep[SelectorApi], selector: Rep[String])(implicit ev: A <:< Element): Rep[List[A]]
+  // Note that selector_find[A](…)(implicit ev: A <:< Element) was simpler but sometimes didn’t make the type inferencer happy
+  def selector_find[A : Selectable : Manifest](s: Rep[SelectorApi], selector: Rep[String]): Rep[Option[A]]
+  def selector_findAll[A : Selectable : Manifest](s: Rep[SelectorApi], selector: Rep[String]): Rep[List[A]]
 
   trait Document extends SelectorApi with EventTarget
 
@@ -163,10 +170,10 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
   def infix_history(w: Exp[Window]) = WindowHistory
 
   // TODO generate a getElementById if possible
-  def selector_find[A : Manifest](s: Exp[SelectorApi], selector: Exp[String])(implicit ev: A <:< Element) =
+  def selector_find[A : Selectable : Manifest](s: Exp[SelectorApi], selector: Exp[String]) =
     reflectEffect(SelectorFind[A](s, selector))
   // TODO generate a getElementsByClassName or getElementsByTagName if possible
-  def selector_findAll[A : Manifest](s: Exp[SelectorApi], selector: Exp[String])(implicit ev: A <:< Element) = {
+  def selector_findAll[A : Selectable : Manifest](s: Exp[SelectorApi], selector: Exp[String]) = {
     val ns = reflectEffect(SelectorFindAll[A](s, selector))
     val toArray: Exp[NodeList => List[A]] = NodeListToArray[A]()
     toArray(ns)
@@ -229,8 +236,8 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
   case object WindowDocument extends Exp[Document]
   case object WindowHistory extends Exp[History]
 
-  case class SelectorFind[A](s: Exp[SelectorApi], selector: Exp[String])(implicit ev: A <:< Element) extends Def[Option[A]]
-  case class SelectorFindAll[A](s: Exp[SelectorApi], selector: Exp[String])(implicit ev: A <:< Element) extends Def[NodeList]
+  case class SelectorFind[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[Option[A]]
+  case class SelectorFindAll[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList]
 
   case class ElementSetAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) extends Def[Unit]
   case class ElementTagName(e: Exp[Element]) extends Def[String]
@@ -259,7 +266,7 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
   case class InputName(input: Exp[Input]) extends Def[String]
   case class InputValue(input: Exp[Input]) extends Def[String]
 
-  case class NodeListToArray[A](implicit ev: A <:< Element) extends Def[NodeList => List[A]]
+  case class NodeListToArray[A : Selectable]() extends Def[NodeList => List[A]]
 
   override def syms(e: Any) = e match {
     case EventTargetOn(t, event, capture, _, handler) => List(t, event, capture, handler).flatMap(syms)
