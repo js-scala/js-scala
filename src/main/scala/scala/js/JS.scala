@@ -15,7 +15,7 @@ trait JSExp extends JS with JsScalaExp with DynamicExp with ArraysExp
 trait JSExpOpt extends JSExp with JsScalaExpOpt with NumericOpsExpOpt
 
 trait JSGen extends JSGenJsScala with JSGenDynamic with JSGenArrays
-  with JSGenRegExps with JSGenTupleOps with GenericGenUnboxedTupleAccess with JSGenOptionOps {
+  with JSGenRegExps with JSGenOptionOps {
   val IR: JSExp
 }
 

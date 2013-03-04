@@ -2,7 +2,7 @@ package scala.js
 
 import virtualization.lms.common._
 
-trait JSDom { this: Base =>
+trait JSDom extends Base {
 
   trait EventTarget
   implicit class EventTargetOps(t: Rep[EventTarget]) {
@@ -70,19 +70,31 @@ trait JSDom { this: Base =>
   implicit class ElementOps(e: Rep[Element]) {
     def setAttribute(name: Rep[String], value: Rep[_]) = element_setAttribute(e, name, value)
     def tagName = element_tagName(e)
+    def className = element_className(e)
     def parentNode = element_parentNode(e)
+    def previousSibling = element_previousSibling(e)
     def classList = element_classList(e)
     def closest(p: Rep[Element] => Rep[Boolean]) = element_closest(e, p)
+    def prev(p: Rep[Element] => Rep[Boolean]) = element_prev(e, p)
     def remove() = element_remove(e)
     def removeChild(c: Rep[Element]) = element_removeChild(e, c)
+    def appendChild(c: Rep[Element]) = element_appendChild(e, c)
+    def focus() = element_focus(e)
+    def style = element_style(e)
   }
   def element_setAttribute(e: Rep[Element], name: Rep[String], value: Rep[_]): Rep[Unit]
   def element_tagName(e: Rep[Element]): Rep[String]
+  def element_className(e: Rep[Element]): Rep[String]
   def element_parentNode(e: Rep[Element]): Rep[Option[Element]]
+  def element_previousSibling(e: Rep[Element]): Rep[Option[Element]]
   def element_classList(e: Rep[Element]): Rep[DOMTokenList]
   def element_closest(e: Rep[Element], p: Rep[Element] => Rep[Boolean]): Rep[Option[Element]]
+  def element_prev(e: Rep[Element], p: Rep[Element] => Rep[Boolean]): Rep[Option[Element]]
   def element_remove(e: Rep[Element]): Rep[Unit]
   def element_removeChild(e: Rep[Element], c: Rep[Element]): Rep[Unit]
+  def element_appendChild(e: Rep[Element], c: Rep[Element]): Rep[Unit]
+  def element_focus(e: Rep[Element]): Rep[Unit]
+  def element_style(e: Rep[Element]): Rep[CSSStyleDeclaration]
 
   trait DOMTokenList
   implicit class DOMTokenListOps(ts: Rep[DOMTokenList]) {
@@ -93,6 +105,14 @@ trait JSDom { this: Base =>
   def domtokenlist_contains(ts: Rep[DOMTokenList], token: Rep[String]): Rep[Boolean]
   def domtokenlist_add(ts: Rep[DOMTokenList], tokens: Seq[Rep[String]]): Rep[Unit]
   def domtokenlist_remove(ts: Rep[DOMTokenList], tokens: Seq[Rep[String]]): Rep[Unit]
+
+  trait CSSStyleDeclaration
+  implicit class CSSStyleDeclarationOps(css: Rep[CSSStyleDeclaration]) {
+    def fontWeight = css_fontweight(css)
+    def fontWeight_=(v: Rep[Int]) = css_set_fontweight(css, v)
+  }
+  def css_fontweight(css: Rep[CSSStyleDeclaration]): Rep[Int]
+  def css_set_fontweight(css: Rep[CSSStyleDeclaration], v: Rep[Int]): Rep[Unit]
 
   trait History
   implicit class HistoryOps(h: Rep[History]) {
@@ -108,12 +128,21 @@ trait JSDom { this: Base =>
 
   trait Input extends Element
   implicit class InputOps(input: Rep[Input]) {
-    def disabled(b: Rep[Boolean]) = input_set_disabled(input, b)
+    def disabled_=(b: Rep[Boolean]) = input_set_disabled(input, b)
+    def disabled = input_disabled(input)
+    def name_=(n: Rep[String]) = input_set_name(input, n)
+    def name = input_name(input)
+    def value = input_value(input)
   }
   def input_set_disabled(input: Rep[Input], value: Rep[Boolean]): Rep[Unit]
+  def input_disabled(input: Rep[Input]): Rep[Boolean]
+  def input_set_name(input: Rep[Input], value: Rep[String]): Rep[Unit]
+  def input_name(input: Rep[Input]): Rep[String]
+  def input_value(input: Rep[Input]): Rep[String]
 }
 
-trait JSDomExp extends JSDom with EffectExp { this: JSFunctionsExp with OptionOps with IfThenElse =>
+trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsExp with IfThenElseExp {
+
   /*def eventtarget_on(t: Exp[EventTarget], event: EventDef, capture: Exp[Boolean])(handler: Exp[event.Type] => Exp[Unit])(implicit m: Manifest[event.Type]) = {
     val e = fresh[event.Type]
     val block = reifyEffects(handler(e))
@@ -136,19 +165,36 @@ trait JSDomExp extends JSDom with EffectExp { this: JSFunctionsExp with OptionOp
   // TODO generate a getElementById if possible
   def selector_find(s: Exp[SelectorApi], selector: Exp[String]) = reflectEffect(SelectorFind(s, selector))
   // TODO generate a getElementsByClassName or getElementsByTagName if possible
-  def selector_findAll(s: Exp[SelectorApi], selector: Exp[String]) = reflectEffect(SelectorFindAll(s, selector))
+  def selector_findAll(s: Exp[SelectorApi], selector: Exp[String]) = {
+    val ns = reflectEffect(SelectorFindAll(s, selector))
+    val toArray: Exp[NodeList => List[Element]] = NodeListToArray
+    toArray(ns)
+  }
+  trait NodeList
 
   def element_setAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) = reflectEffect(ElementSetAttribute(e, name, value))
   def element_tagName(e: Exp[Element]) = ElementTagName(e)
+  def element_className(e: Exp[Element]) = ElementClassName(e)
   def element_parentNode(e: Exp[Element]) = ElementParentNode(e)
+  def element_previousSibling(e: Exp[Element]) = ElementPreviousSibling(e)
   def element_classList(e: Exp[Element]) = ElementClassList(e)
   def element_removeChild(e: Exp[Element], c: Exp[Element]) = reflectEffect(ElementRemoveChild(e, c))
-  def element_closest(e: Exp[Element], p: Exp[Element] => Exp[Boolean]) = fun { e: Exp[Element] =>
-    e.parentNode.fold(none, parent => if (p(parent)) some(parent) else parent.closest(p))
-  } apply e
+  def element_appendChild(e: Exp[Element], c: Exp[Element]) = reflectEffect(ElementAppendChild(e, c))
+  def element_focus(e: Exp[Element]) = reflectEffect(ElementFocus(e))
+  def element_closest_reified: Exp[((Element, Element => Boolean)) => Option[Element]] =
+    fun { (e: Exp[Element], p: Exp[Element => Boolean]) =>
+      e.parentNode.fold(none, parent => if (p(parent)) some(parent) else element_closest_reified(parent, p))
+    }
+  def element_closest(e: Exp[Element], p: Exp[Element] => Exp[Boolean]) = element_closest_reified(e, p)
+  def element_prev_reified: Exp[((Element, Element => Boolean)) => Option[Element]] =
+    fun { (e: Exp[Element], p: Exp[Element => Boolean]) =>
+      e.previousSibling.fold(none, sib => if (p(sib)) some(sib) else element_prev_reified(sib, p))
+    }
+  def element_prev(e: Exp[Element], p: Exp[Element] => Exp[Boolean]) = element_prev_reified(e, p)
   def element_remove(e: Exp[Element]) = fun { e: Exp[Element] =>
     e.parentNode.fold((), _.removeChild(e))
   } apply e
+  def element_style(e: Exp[Element]) = ElementStyle(e)
 
   // TODO Check that tokens are well formed
   // TODO Handle effects in contains
@@ -156,11 +202,18 @@ trait JSDomExp extends JSDom with EffectExp { this: JSFunctionsExp with OptionOp
   def domtokenlist_add(ts: Rep[DOMTokenList], tokens: Seq[Rep[String]]) = reflectEffect(DOMTokenListAdd(ts, tokens))
   def domtokenlist_remove(ts: Rep[DOMTokenList], tokens: Seq[Rep[String]]) = reflectEffect(DOMTokenListRemove(ts, tokens))
 
+  def css_fontweight(css: Rep[CSSStyleDeclaration]) = reflectEffect(CSSFontWeight(css))
+  def css_set_fontweight(css: Rep[CSSStyleDeclaration], v: Rep[Int]) = reflectEffect(CSSSetFontWeight(css, v))
+
   def history_replaceState(h: Exp[History], state: Exp[_], title: Exp[String], url: Exp[String]) = reflectEffect(HistoryReplaceState(h, state, title, url))
 
   def form_submit(form: Exp[Form]) = reflectEffect(FormSubmit(form))
 
   def input_set_disabled(input: Exp[Input], value: Exp[Boolean]) = reflectEffect(InputSetDisabled(input, value))
+  def input_disabled(input: Exp[Input]) = reflectEffect(InputDisabled(input)) // TODO Optimize effect description
+  def input_set_name(input: Exp[Input], value: Exp[String]) = reflectEffect(InputSetName(input, value))
+  def input_name(input: Exp[Input]) = reflectEffect(InputName(input))
+  def input_value(input: Exp[Input]) = reflectEffect(InputValue(input))
 
   case object window extends Exp[Window]
 
@@ -176,22 +229,36 @@ trait JSDomExp extends JSDom with EffectExp { this: JSFunctionsExp with OptionOp
   case object WindowHistory extends Exp[History]
 
   case class SelectorFind(s: Exp[SelectorApi], selector: Exp[String]) extends Def[Option[Element]]
-  case class SelectorFindAll(s: Exp[SelectorApi], selector: Exp[String]) extends Def[List[Element]]
+  case class SelectorFindAll(s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList]
 
   case class ElementSetAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) extends Def[Unit]
   case class ElementTagName(e: Exp[Element]) extends Def[String]
+  case class ElementClassName(e: Exp[Element]) extends Def[String]
   case class ElementParentNode(e: Exp[Element]) extends Def[Option[Element]]
+  case class ElementPreviousSibling(e: Exp[Element]) extends Def[Option[Element]]
   case class ElementClassList(e: Exp[Element]) extends Def[DOMTokenList]
   case class ElementRemoveChild(e: Exp[Element], c: Exp[Element]) extends Def[Unit]
+  case class ElementAppendChild(e: Exp[Element], c: Exp[Element]) extends Def[Unit]
+  case class ElementFocus(e: Exp[Element]) extends Def[Unit]
+  case class ElementStyle(e: Exp[Element]) extends Def[CSSStyleDeclaration]
 
   case class DOMTokenListContains(ts: Exp[DOMTokenList], token: Exp[String]) extends Def[Boolean]
   case class DOMTokenListAdd(ts: Exp[DOMTokenList], tokens: Seq[Exp[String]]) extends Def[Unit]
   case class DOMTokenListRemove(ts: Exp[DOMTokenList], tokens: Seq[Exp[String]]) extends Def[Unit]
 
+  case class CSSFontWeight(css: Exp[CSSStyleDeclaration]) extends Def[Int]
+  case class CSSSetFontWeight(css: Exp[CSSStyleDeclaration], v: Exp[Int]) extends Def[Unit]
+
   case class HistoryReplaceState(h: Exp[History], state: Exp[_], title: Exp[String], url: Exp[String]) extends Def[Unit]
 
   case class FormSubmit(form: Exp[Form]) extends Def[Unit]
   case class InputSetDisabled(input: Exp[Input], value: Exp[Boolean]) extends Def[Unit]
+  case class InputDisabled(input: Exp[Input]) extends Def[Boolean]
+  case class InputSetName(input: Exp[Input], value: Exp[String]) extends Def[Unit]
+  case class InputName(input: Exp[Input]) extends Def[String]
+  case class InputValue(input: Exp[Input]) extends Def[String]
+
+  case object NodeListToArray extends Def[NodeList => List[Element]]
 
   override def syms(e: Any) = e match {
     case EventTargetOn(t, event, capture, _, handler) => List(t, event, capture, handler).flatMap(syms)
@@ -211,7 +278,7 @@ trait JSDomExp extends JSDom with EffectExp { this: JSFunctionsExp with OptionOp
 }
 
 trait JSGenDom extends JSGenEffect with JSGenFunctions with JSGenOptionOps with JSGenIfThenElse {
-  val IR: EffectExp with TupledFunctionsRecursiveExp with OptionOpsExp with IfThenElseExp with JSDomExp
+  val IR: JSDomExp
   import IR._
 
   override def quote(x: Exp[Any]) = x match {
@@ -244,24 +311,48 @@ trait JSGenDom extends JSGenEffect with JSGenFunctions with JSGenOptionOps with 
       emitValDef(sym, quote(e) + ".setAttribute(" + quote(name) + ", " + quote(value) + ")")
     case ElementTagName(e) =>
       emitValDef(sym, quote(e) + ".tagName")
+    case ElementClassName(e) =>
+      emitValDef(sym, quote(e) + ".className")
     case ElementParentNode(e) =>
       emitValDef(sym, quote(e) + ".parentNode")
+    case ElementPreviousSibling(e) =>
+      emitValDef(sym, quote(e) + ".previousSibling")
     case ElementClassList(e) =>
       emitValDef(sym, quote(e) + ".classList")
     case ElementRemoveChild(e, c) =>
       emitValDef(sym, quote(e) + ".removeChild(" + quote(c) + ")")
+    case ElementAppendChild(e, c) =>
+      emitValDef(sym, quote(e) + ".appendChild(" + quote(c) + ")")
+    case ElementFocus(e) =>
+      emitValDef(sym, quote(e) + ".focus()")
+    case ElementStyle(e) =>
+      emitValDef(sym, quote(e) + ".style")
     case DOMTokenListContains(ts, token) =>
       emitValDef(sym, quote(ts) + ".contains(" + quote(token) + ")")
     case DOMTokenListAdd(ts, tokens) =>
       emitValDef(sym, quote(ts) + ".add(" + tokens.map(quote).mkString(", ") + ")")
     case DOMTokenListRemove(ts, tokens) =>
       emitValDef(sym, quote(ts) + ".remove(" + tokens.map(quote).mkString(", ") + ")")
+    case CSSFontWeight(css) =>
+      emitValDef(sym, quote(css) + ".fontWeight")
+    case CSSSetFontWeight(css, v) =>
+      emitAssignment(s"${quote(css)}.fontWeight", quote(v))
     case HistoryReplaceState(h, state, title, url) =>
       emitValDef(sym, quote(h) + ".replaceState(" + quote(state) + ", " + quote(title) + ", " + quote(url) + ")")
     case FormSubmit(form) =>
       emitValDef(sym, quote(form) + ".submit()")
     case InputSetDisabled(input, value) =>
       emitAssignment(quote(input) + ".disabled", quote(value))
+    case InputDisabled(input) =>
+      emitValDef(sym, quote(input) + ".disabled")
+    case InputSetName(input, name) =>
+      emitAssignment(s"${quote(input)}.name", quote(name))
+    case InputName(input) =>
+      emitValDef(sym, s"${quote(input)}.name")
+    case InputValue(input) =>
+      emitValDef(sym, s"${quote(input)}.value")
+    case NodeListToArray =>
+      emitValDef(sym, "function (ns) { var r = []; for (var i = 0, l = ns.length ; i < l ; i++) r.push(ns.item(i)) ; return r }")
     case _ => super.emitNode(sym, rhs)
   }
 }

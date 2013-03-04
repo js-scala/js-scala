@@ -12,7 +12,7 @@ trait InScala extends Base {
 trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala
   with WhileInScala with BooleanOpsInScala with StringOpsInScala with VariablesInScala with ListOpsInScala
   with ObjectOpsInScala with JSFunctionsInScala with StructsInScala with PrimitiveOpsInScala with MiscOpsInScala
-  with DynamicInScala with ArraysInScala with JSRegExpsInScala with TupleOpsInScala with OptionOpsInScala
+  with DynamicInScala with ArraysInScala with JSRegExpsInScala with TupleOpsInScala with OptionOpsInScala with ListOps2InScala
 
 trait VariablesInScala extends Variables with ReadVarImplicit with InScala with ImplicitOpsInScala {
   override implicit def readVar[T:Manifest](v: Var[T])(implicit pos: SourceContext) : T = ???
@@ -338,6 +338,14 @@ trait ListOpsInScala extends ListOps with InScala {
   def list_head[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.head
   def list_tail[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.tail
   def list_isEmpty[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.isEmpty
+}
+
+trait ListOps2InScala extends ListOps2 with InScala {
+  def list_mkString2[A](l: List[A], sep: String) = l.mkString(sep)
+  def list_foreach[A : Manifest](l: List[A], f: A => Unit) = l.foreach(f)
+  def list_foreachWithIndex[A : Manifest](l: List[A], f: (A, Int) => Unit) =
+    l.zipWithIndex.foreach { case (a, i) => f(a, i) }
+  def list_size[A](l: List[A]) = l.size
 }
 
 trait StructsInScala extends Structs with InScala {
