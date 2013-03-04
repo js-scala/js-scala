@@ -12,7 +12,10 @@ trait JSDom extends Base {
   def eventtarget_on[A : Manifest](t: Rep[EventTarget], e: EventName[A], capture: Rep[Boolean], handler: Rep[A] => Rep[Unit]): Rep[Unit]
 
   trait Event
-  def infix_target(e: Rep[Event]): Rep[EventTarget]
+  implicit class EventOps(e: Rep[Event]) {
+    def target[A : Manifest](implicit ev: A <:< EventTarget) = event_target[A](e)
+  }
+  def event_target[A : Manifest](e: Rep[Event])(implicit ev: A <:< EventTarget): Rep[A]
 
   class EventDef(val name: String) {
     type Type
@@ -160,7 +163,7 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
     val b = reifyEffects(handler(e))
     reflectEffect(EventTargetOn(t, event, capture, e, b))
   }
-  def infix_target(e: Exp[Event]) = EventGetTarget(e)
+  def event_target[A : Manifest](e: Exp[Event])(implicit ev: A <:< EventTarget) = EventGetTarget[A](e)
   def infix_state[A : Manifest](e: Exp[PopStateEvent[A]]) = PopStateEventState(e)
   def infix_offsetX(e: Exp[MouseEvent]) = MouseEventOffsetX(e)
   def infix_offsetY(e: Exp[MouseEvent]) = MouseEventOffsetY(e)
@@ -227,7 +230,7 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
 
   // FIXME We can’t yet use dependent types on constructors parameters, see https://issues.scala-lang.org/browse/SI-5712 so at this point we lost the information that event.Type =:= A
   case class EventTargetOn[A](t: Exp[EventTarget], event: EventDef, capture: Exp[Boolean], e: Sym[A], handler: Block[Unit]) extends Def[Unit]
-  case class EventGetTarget(e: Exp[Event]) extends Def[EventTarget]
+  case class EventGetTarget[A](e: Exp[Event])(implicit ev: A <:< EventTarget) extends Def[A]
   case class PopStateEventState[A : Manifest](e: Exp[PopStateEvent[A]]) extends Def[Option[A]]
   case class MouseEventOffsetX(e: Exp[MouseEvent]) extends Def[Double]
   case class MouseEventOffsetY(e: Exp[MouseEvent]) extends Def[Double]
