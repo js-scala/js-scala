@@ -51,29 +51,31 @@ keyword1, keyword2
 
 \section{Introduction}
 
-(TODO more context)
+Rich Internet Applications have interesting properties: they require no installation or deployment on
+clients and enables large scale collaborative experiences. However, writing large Web applications is known to be
+difficult~\cite{Mikkonen08_SpaghettiJs,Preciado05_RIAMethodologyNecessity}. One challenge comes from the fact
+that the business logic is scattered into heterogeneous client-side and server-side
+environments~\cite{Echeverria09_RIA,Kuuskeri09_PartitioningClientServer}. For instance, HTML fragments may be
+built from the server-side when a page is requested by a client, but they may also be built from the client-side to
+perform an incremental update subsequent to a user action. How could developers write HTML fragment definitions once
+and render them on both client-side and server-side? The more interactive the application is, the more logic needs to
+be duplicated between the server-side and the client-side.
 
-Writing large Web applications is known to be
-challenging~\cite{Mikkonen08_SpaghettiJs,Preciado05_RIAMethodologyNecessity} mainly because the business logic is
-distributed into heterogeneous client-side and server-side
-environments~\cite{Echeverria09_RIA,Kuuskeri09_PartitioningClientServer}. This makes it difficult to share code
-between client-side and server-side (FIXME more on the motivation for code sharing?).
-
-Using the same programming language on both server-side and client-side could reduce this gap, however the JavaScript
-language -- which is currently the only action language natively supported by all Web browsers -- has several
-drawbacks making it hardly suitable for large code bases (\eg no static typing, no module system, verbose syntax,
-\etc). An increasing number of programming languages support generating JavaScript (\eg GWT,
-SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Dart,
+Using the same programming language on both server-side and client-side could reduce the gap between client-side and
+server-side environments, however the JavaScript language -- which is currently the only action language natively
+supported by all Web browsers -- has several drawbacks making it hardly suitable for large code bases (\eg no static
+typing, no module system, verbose syntax, \etc). An increasing number of programming languages support generating
+JavaScript (\eg GWT, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Dart,
 Kotlin\footnote{\href{http://kotlin.jetbrains.org/}{http://kotlin.jetbrains.org/}},
 ClojureScript~\cite{McGranaghan11_ClojureScript}, Fay\footnote{\href{http://fay-lang.org/}{http://fay-lang.org/}},
 Haxe~\cite{Cannasse08_HaXe} or Opa\footnote{\href{http://opalang.org/}{http://opalang.org/}}), increasing the panel
 of programming languages available to write both the client-side and the server-side code of a Web application.
 
-Having a full featured, cutting edge, programming language that can be run on both client-side and server-side can
-help developers to write more maintainable code, however by abstracting over the differences of the client-side and
-the server-side environments, the code may suffer from performance issues. Performance is a primary concern in Web
+Having a full featured, cutting edge, programming language that runs on both client-side and server-side can help
+developers to write more maintainable code, however by abstracting over the differences of the client-side and the
+server-side environments, the code may suffer from performance issues. Performance is a primary concern in Web
 applications, because they are supposed to run on a broad range of devices, from the powerful desktop personal
-computer to the less powerful smartphone. “every 100~ms delay costs 1\% of sales”, said Amazon in 2006.
+computer to the less powerful smartphone. “Every 100~ms delay costs 1\% of sales”, said Amazon in 2006.
 
 For instance, the boundaries of the code parts to emit on client-side are less visible when you share code between
 client-side and server-side so transitive dependencies may pull a lot of code, causing a high download overhead.
