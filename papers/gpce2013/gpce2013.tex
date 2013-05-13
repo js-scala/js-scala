@@ -10,6 +10,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[unicode=true,hidelinks]{hyperref}
 
+\input{macros}
 
 \newcommand{\ie}{\emph{i.e.}}
 \newcommand{\eg}{\emph{e.g.}}
@@ -51,14 +52,14 @@ keyword1, keyword2
 
 \section{Introduction}
 
-Web applications are attractive because they require no installation or deployment on clients and enable large scale
-collaborative experiences. However, writing large Web applications is known to be
+Web applications are attractive because they require no installation or deployment steps on clients and enable large
+scale collaborative experiences. However, writing large Web applications is known to be
 difficult~\cite{Mikkonen08_SpaghettiJs,Preciado05_RIAMethodologyNecessity}. One challenge comes from the fact
 that the business logic is scattered into heterogeneous client-side and server-side
 environments~\cite{Echeverria09_RIA,Kuuskeri09_PartitioningClientServer}. This gives less flexibility in the
 engineering process and requires a higher maintainance effort: once you decided to implement a feature on
 client-side, changing your *mind* means completely rewriting the feature on server-side (and \emph{vice versa}).
-Even worse, logic parts that need to run on both client-side and server-side are duplicated. For instance HTML
+Even worse, logic parts that need to run on both client-side and server-side are duplicated. For instance, HTML
 fragments may be built from the server-side when a page is requested by a client, but they may also be built from the
 client-side to perform an incremental update subsequent to an user action. How could developers write HTML fragment
 definitions once and render them on both client-side and server-side? The more interactive the application is, the
@@ -66,7 +67,7 @@ more logic needs to be duplicated between the server-side and the client-side (e
 
 Using the same programming language on both server-side and client-side can improve the software engineering
 process by enabling code reuse between both sides. Incidentally, the JavaScript language -- which is currently the
-only action language natively supported by almost all Web clients -- can be used on server-side, and an increasing
+action language natively supported by most of Web clients -- can be used on server-side, and an increasing
 number of programming languages or compiler backends can generate JavaScript code (\eg
 Java/GWT~\cite{Chaganti07_GWT}, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}},
 Dart~\cite{Griffith11_Dart}, Kotlin\footnote{\href{http://kotlin.jetbrains.org/}{http://kotlin.jetbrains.org/}},
@@ -94,9 +95,9 @@ Compiled domain specific embedded languages~\cite{Elliott2003_Compiling} allow t
 languages (DSLs) as libraries on top of a host language, and to compile them to a target platform. The deep embedding
 gives the opportunity to control the code generation scheme for a given abstraction and target platform.
 
-This paper presents such a DSL allowing developers to write Web applications in a single language which code
-fragments can be shared between client and server sides, and which is efficiently compiled to each side. More
-precisely, we demonstrate the following features:
+This paper presents such a compiled embedded DSL allowing developers to write Web applications in a single language
+which code fragments can be shared between client and server sides, and which is efficiently compiled to each side.
+More precisely, we demonstrate the following features:
 
 \begin{itemize}
  \item Type-directed ad-hoc polymorphism on client-side without runtime dynamic dispatch logic;
@@ -128,11 +129,260 @@ generate JavaScript code~\cite{Kossakowski12_JsDESL}.
 
 \subsection{Ad-Hoc Polymorphism}
 
+Because of the dynamically typed nature of JavaScript, when calling a function there is no proper way to select a
+specialized implementation according to the function’s parameters types. JavaScript is only able to dispatch
+according to a method receiver prototype, \eg{} if one writes \code{foo.bar()} the JavaScript runtime will look into
+the prototype of the \code{foo} object for a property named \code{bar} and will call it. So, the only way to achieve
+\emph{ad hoc} polymorphism on JavaScript objects consists in defining the polymorphic function on the prototypes of
+the objects. However, modifying existing object prototypes is considered bad
+practice~\cite{Zakas12_MaintainableJs}. Another way could consist in manually coding the dispatch logic, by
+registering supported data types at the beginning of the program execution, as described in section 2.4.3
+of~\cite{Abelson83_SICP}, but this solution is painful for developers and incurs a performance overhead.
+
+We propose to achieve \emph{ad hoc} polymorphism using
+typeclasses~\cite{Wadler89_AdhocPolymorphism,Odersky06_Typeclasses,Oliveira10_Typeclasses} so that it supports
+retroactive extension without modifying objects prototypes because it is type-directed: the dispatch happens at
+compile-time rather than at runtime.
+
+\begin{figure}
+\begin{lstlisting}[label=polymorphism,caption=Ad hoc polymorphism using typeclasses]
+// Interface
+case class Show[A](show: Rep[A => Node])
+
+// Polymorphic function
+def listWidget[A : Show](items: Rep[List[A]]): Rep[Node] = {
+  tag("ul")(
+    for (item <- items) yield {
+      tag("li")(implicitly[Show[A]].show(item))
+    }
+  )
+}
+
+// Type `User`
+type User = Record { val name: String; val age: Int }
+// Implementation of Show for a User
+implicit val showUser = Show[User] { user =>
+  tag("span", "class"->"user")(
+    text(user.name + "(" + user.age + " years)")
+  )
+}
+
+// Type `Article`
+type Article = Record { val name: String; val price: Double }
+// Implementation of Show for an Article
+implicit val showArticle = Show[Article] { article =>
+  tag("span")(
+    text(article.name),
+    tag("strong")(text(article.price + " Euros"))
+  )
+}
+
+// Main program
+def main(users: Rep[List[User]], articles: Rep[List[Article]]) = {
+  document.body.append(listWidget(users))
+  document.body.append(listWidget(articles))
+}
+\end{lstlisting}
+\end{figure}
+
+Listing \ref{polymorphism} demonstrates how to define a polymorphic \code{listWidget} function that returns a DOM
+tree containing the representation of a list of items. The \code{Show[A]} typeclass defines how to produce a DOM tree
+for a value of type \code{A}. It is used by the \code{listWidget} function to get the DOM fragments of the list
+items. The listing shows how to reuse the same \code{listWidget} function to show a list of users and a list of
+articles.
+
 \subsection{Monads Sequencing}
+
+
+The previous work on js-scala \cite{Kossakowski12_JsDESL} showed how to make asynchronous programming more
+convenient by making asynchronous calls looking like synchronous calls (\ie{} returning a value instead of taking a
+callback as parameter). This work was based on the Scala continuations compiler plugin. We claim that, although this
+programming model removes the “callback hell”, it can make the code hard to reason about because there is no explicit
+distinction between synchronous and asynchronous computations.
+
+We propose a DSL that explicitly reflects the asynchronous nature of computations in their types and provides methods
+turning them into first-class citizens. The DSL is monadic so we can solve the callback hell problem thanks to the
+Scala \code{for} notation.
+
+For instance, listing \ref{async-first-class} shows how the listing \ref{async-js} can be re-written using our DSL.
+The \code{createVertex} function now returns an asynchronous value instead of taking a callback as
+parameter. Then, the \code{for} expression allows us to get the vertex, when available, and to insert it on the user
+interface. By making the \code{createVertex} function return an asynchronous value instead of taking a callback as
+a parameter, the code is easier to modularize into loosely coupled parts.
+
+\begin{figure}
+\centering
+\begin{lstlisting}[caption=Asynchronous values are first class citizen,label=async-first-class]
+def createVertex(text: Rep[String]): Rep[Future[Vertex]] =
+  Ajax.post[Vertex]("/create", new Record { val content = text })
+
+for (vertex <- createVertex("Hello, World!")) {
+  addVertex(vertex)
+}
+\end{lstlisting}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{lstlisting}[caption=No callback hell,label=async-no-callback]
+for {
+  foo <- Ajax.get(fooUrl())
+  bar <- Ajax.get(barUrl(foo))
+  _ <- future(println("bar = " + bar))
+  baz <- Ajax.get(bazUrl(bar))
+} println(foo + bar + baz)
+\end{lstlisting}
+\end{figure}
+
+Listing \ref{async-no-callback} translates the callback hell example (listing \ref{async-callback-hell}) using
+our DSL. The \code{for} notation can intuitively be thought of as a sequencing notation: whenever the response of the
+first Ajax request is available, the next statement is executed, and so on. There is no nested callbacks and the
+order of execution is directly reflected by the order of statements.
+
+An asynchronous value of type \code{Rep[A]} is modelled by a value of type \code{Rep[Future[A]]}. Because Scala’s
+\code{for} notation is just syntactic sugar for methods \code{foreach}, \code{map} and \code{flatMap}, we are
+able to define our DSL by just defining these methods on \code{Rep[Future[A]]} values, with the following semantic:
+\begin{itemize}
+\item \code{foreach(f: Rep[A] => Rep[Unit]): Rep[Unit]}, eventually does something with the value when available~;
+\item \code{map(f: Rep[A] => Rep[B]): Rep[Future[B]]}, eventually transforms the value when available~;
+\item \code{flatMap(f: Rep[A] => Rep[Future[B]]): Rep[Future[B]]} also eventually transforms the value when
+available~;
+\end{itemize}
+
+Asynchronous values can be used and transformed using the \code{foreach}, \code{map} and \code{flatMap} methods,
+turning them into first-class
+citizens: functions can take them as parameters and return them. Consequently, it is easier to write concurrent code:
+listing \ref{async-parallel-1} shows how to run two parallel asynchronous computations and to do something with their
+results when both are available. Writing equivalent code in pure JavaScript is tedious because it requires that the
+callback passed to each asynchronous computation checks if the other has been completed before, and to store the
+value, when availalbe, in a shared place (so both callbacks can get the other’s value).
+
+\begin{figure}
+\begin{lstlisting}[caption=Parallel computations in Scala,label=async-parallel-1]
+val fooAsync = Ajax.get("/foo")
+val barAsync = Ajax.get("/bar")
+for {
+  foo <- fooAsync
+  bar <- barAsync
+} println(foo + bar)
+\end{lstlisting}
+\end{figure}
+
+
+As an illustration of the staging mechanism, we present a simple DSL to handle null references. This DSL provides an
+abstraction at the stage-level that is removed by optimization during the code generation.
+
+Null references are a known source of problems in programming languages~\cite{Hoare09_Null,Nanda09_Null}. For
+example, consider the following typical JavaScript code finding a particular widget in the page and a then particular
+button in the widget:
+
+\begin{lstlisting}[language=JavaScript,label=null-unsafe,caption=Unsafe code]
+var loginWidget = document.querySelector("div.login");
+var loginButton = loginWidget.querySelector("button.submit");
+loginButton.addEventListener("click", function (e) { ... });
+\end{lstlisting}
+
+The native \code{querySelector} method returns \code{null} if no node matched the given selector in the document. If
+we run the above code in a page where the widget is not present, it will throw an error and stop further JavaScript
+execution. We can write defensive code to handle \code{null} cases, but it leads to very cumbersome code:
+
+\begin{lstlisting}[language=JavaScript,label=null-defensive,caption=Defensive programming to handle null references]
+var loginWidget = document.querySelector("div.login");
+if (loginWidget !== null) {
+  var loginButton = loginWidget.querySelector("button.submit");
+  if (loginButton !== null) {
+    loginButton.addEventListener("click", function (e) { ... });
+  }
+}
+\end{lstlisting}
+
+We want to define a DSL that has both the safety and performance of listing \ref{null-defensive} but the
+expressiveness of listing \ref{null-unsafe}. We can get safety by wrapping potentially null values of type
+\code{Rep[A]} in a container of type \code{Rep[Option[A]]} requiring explicit dereferencing, we can get
+expressiveness by using the Scala \code{for} notation for dereferencing, and finally we can get performance by
+generating code that does not actually wraps values in a container but instead checks if they are \code{null} or not
+when dereferenced. The wrapping container exists only at the stage-level and is removed during the code generation.
+Here is a Scala listing that uses our DSL (implementation details are given in section \ref{implementation}):
+
+\begin{lstlisting}
+for {
+  loginWidget <- document.find("div.login")
+  loginButton <- loginWidget.find("submit.button")
+} loginButton.on(Click) { e => ... }
+\end{lstlisting}
+
+The evaluation of the above listing produces a graph of statements from which JavaScript code equivalent to
+listing \ref{null-defensive} is generated.
 
 \subsection{DOM Fragments}
 
+
+In this section we show how we can define a template engine as an embedded DSL with minimal effort. This template
+engine is statically typed and able to insert dynamic content in a safe way. It provides a powerful expression
+language, requires no extra compilation step and can be used on both client-side and server-side.
+
+Because the template engine is defined as en embedded DSL, we can reuse Scala’s constructs:
+
+\begin{itemize}
+\item a function taking some parameters and returning a DOM fragment directly models a template taking parameters and
+returning a DOM fragment~;
+\item the type system typechecks template definitions and template calls~;
+\item the Scala language itself is the expression language~;
+\item compiling a template is the same as compiling user code.
+\end{itemize}
+
+So the only remaining work consists in defining the DSL vocabulary to define DOM nodes. We provide a \code{tag}
+function to define a tag and a \code{text} function to define a text node.
+
+\begin{figure}
+\begin{lstlisting}[label=forest-hello,caption=DOM definition DSL]
+def vertexDom(v: Rep[Vertex]) =
+    tag("g", "class"->"vertex",
+             "transform"->("translate("+v.x+","+v.y+")"))(
+        tag("rect", "width"->v.width, "height"->v.height)(),
+        tag("text", "width"->v.width, "height"->v.height)(
+            text(v.content)
+        )
+    )
+\end{lstlisting}
+\end{figure}
+
+Listing \ref{forest-hello} uses our DSL and generates a code equivalent to listing \ref{dom-api}. The readability has
+been highly improved: nesting tags is just like nesting code blocks, HTML entities are
+automatically escaped in text nodes, developers have the full computational power of Scala to inject dynamic data and
+DOM fragments definitions are written using functions so they compose just as functions compose. These benefits come
+with no performance loss because the DSL generates code building DOM fragments by using the native JavaScript API.
+
+\subsubsection{Reuse the DOM definition DSL on server-side}
+
+Our DSL is equivalent to a template engine with Scala as the expression language. Making it usable on both server and
+client sides was surprisingly as simple as defining another code generator for the DSL, producing Scala code.
+
+For instance, the template written in listing \ref{forest-hello} produces the following Scala code usable on
+server-side (the generated code for client-side is roughly equivalent to listing \ref{dom-api}):
+
+\begin{lstlisting}
+def vertexDom(v: Vertex) = {
+  val x0 =
+    <text width="{v.width}" height="{v.height}">
+      {v.content}
+    </text>
+  val x1 = <rect width="{v.width}" height="{v.height}" />
+  val x2 =
+    <g class="vertex" transform="translate({v.x},{v.y})">
+      {List(x0, x1)}
+    </g>
+  x2
+}
+\end{lstlisting}
+
+We are able to tackle the code sharing issues described in section \ref{assessment} because of the embdedded nature
+of our DSLs: dynamic content of templates is written using embedded DSLs too, so their translation into JavaScript
+and Scala is managed by their respective code generators.
+
 \subsection{Selectors}
+
+querySelectorAll, getElementsByTagName, getElementsByClassName, getElementById, querySelector
 
 \section{Implementation?}
 
