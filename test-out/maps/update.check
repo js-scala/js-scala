@@ -1,0 +1,6 @@
+function test4(x0) {
+var x1 = x0["test"] = 4;
+}
+function test5(x3) {
+var x4 = x3[3] = "tmp";
+}

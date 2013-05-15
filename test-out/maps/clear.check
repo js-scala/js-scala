@@ -1,0 +1,7 @@
+function test10(x0) {
+var x1 = Object.keys(x0).forEach(function(_el,_i,_a) {
+if(x0.hasOwnProperty(_el)) {
+delete x0[_el];
+}
+})
+}

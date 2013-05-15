@@ -1,0 +1,4 @@
+function test1() {
+var x0 = {};
+return x0
+}

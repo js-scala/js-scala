@@ -1,0 +1,8 @@
+function test6(x0) {
+var x1 = "test" in x0;
+return x1
+}
+function test7(x2) {
+var x3 = 3 in x2;
+return x3
+}

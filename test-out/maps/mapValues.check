@@ -1,0 +1,10 @@
+function test13(x0) {
+var x3 = {};
+Object.keys(x0).forEach(
+function(_k,_i,_a){
+var x1 = x0[_k];
+var x2 = x1 + 3;
+x3[_k] = x2;
+})
+return x3
+}
