@@ -7,7 +7,7 @@ import java.io.FileOutputStream
 
 trait MapsProg { this: JS with JSMaps =>
   def test1(): Rep[Map[String, Int]] = {
-    Map[String, Int]()
+    JSMap[String, Int]()
   }
 
   def test2(map: Rep[Map[String, Int]]): Rep[Int] = {
@@ -16,6 +16,14 @@ trait MapsProg { this: JS with JSMaps =>
 
   def test3(map: Rep[Map[Int, String]]): Rep[String] = {
     map(3)
+  }
+
+  def test2b(map: Rep[Map[String, Int]]): Rep[Option[Int]] = {
+    map.get("test")
+  }
+
+  def test3b(map: Rep[Map[Int, String]]): Rep[Option[String]] = {
+    map.get(3)
   }
 
   def test4(map: Rep[Map[String, Int]]): Rep[Unit] = {
@@ -94,6 +102,18 @@ class TestMaps extends FileDiffSuite {
 
     }
     assertFileEqualsCheck(prefix+"access")
+  }
+
+  def testFieldAccessOpt = {
+    withOutFile(prefix+"access-opt") {
+      new MapsProg with JSExp with JSMapsExp { self =>
+        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        codegen.emitSource(test2 _, "test2b", new PrintWriter(System.out))
+        codegen.emitSource(test3 _, "test3b", new PrintWriter(System.out))
+      }
+
+    }
+    assertFileEqualsCheck(prefix+"access-opt")
   }
 
   def testFieldUpdate = {

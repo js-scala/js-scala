@@ -1,6 +1,6 @@
 function test12(x0) {
 var x7 = Object.keys(x0).forEach(
-function(x1,_i,_a){
+function(x1){
 var x2 = x0[x1];
 var x4 = x2 + 1;
 var x5 = x0[x1] = x4;

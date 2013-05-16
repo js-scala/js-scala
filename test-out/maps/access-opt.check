@@ -1,0 +1,8 @@
+function test2b(x0) {
+var x1 = x0["test"];
+return x1
+}
+function test3b(x2) {
+var x3 = x2[3];
+return x3
+}
