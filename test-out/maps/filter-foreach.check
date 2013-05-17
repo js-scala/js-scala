@@ -1,0 +1,14 @@
+function test15(x0) {
+var x3 = {};
+Object.keys(x0).forEach(
+function(x1){
+var x2 = x0[x1];
+if(true) {
+x3[x1] = x2
+}
+});
+var x6 = Object.keys(x3).forEach(
+function(x4){
+var x5 = x3[x4];
+});
+}

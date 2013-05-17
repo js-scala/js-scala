@@ -1,0 +1,12 @@
+function test14(x0) {
+var x4 = {};
+Object.keys(x0).forEach(
+function(x1){
+var x2 = x0[x1];
+var x3 = x2 > 10;
+if(x3) {
+x4[x1] = x2
+}
+});
+return x4
+}

@@ -1,0 +1,4 @@
+function test11(x0) {
+var x1 = Object.keys(x0);
+return x1
+}

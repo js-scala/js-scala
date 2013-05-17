@@ -1,0 +1,5 @@
+function test10(x0) {
+var x1 = Object.keys(x0).forEach(function(_el) {
+delete x0[_el];
+});
+}

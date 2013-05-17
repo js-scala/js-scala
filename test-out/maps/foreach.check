@@ -1,0 +1,8 @@
+function test12(x0) {
+var x6 = Object.keys(x0).forEach(
+function(x1){
+var x2 = x0[x1];
+var x3 = x2 + 1;
+var x4 = x0[x1] = x3;
+});
+}

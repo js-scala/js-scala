@@ -1,0 +1,4 @@
+function test9(x0) {
+var x1 = Object.keys(x0).map(function(k) { return x0[k] });
+return x1
+}
