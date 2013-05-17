@@ -33,11 +33,7 @@ trait JSMaps extends Base {
     implicit val boolKey = new JSKey[Boolean] {}
   }
 
-  implicit def repMapToMapOps[K:JSKey,V:Manifest](m: Rep[Map[K,V]]) = new mapOpsCls(m)
-
-  class mapOpsCls[K:JSKey,V:Manifest](m: Rep[Map[K,V]]) {
-    val keyType = implicitly[Manifest[K]]
-    val valueType = implicitly[Manifest[V]]
+  implicit class mapOpsCls[K:JSKey,V:Manifest](m: Rep[Map[K,V]]) {
     def apply(k: Rep[K]) = map_apply(m, k)
     def get(k: Rep[K]) = map_get(m, k)
     def update(k: Rep[K], v: Rep[V]) = map_update(m,k,v)
@@ -46,9 +42,9 @@ trait JSMaps extends Base {
     def values = map_values(m)
     def clear() = map_clear(m)
     def keys = map_keys(m)
-    def foreach(block: Rep[(K,V)] => Rep[Unit]) = map_foreach(m, block)
+    def foreach(block: ((Rep[K], Rep[V])) => Rep[Unit]) = map_foreach(m, block)
     def mapValues[U:Manifest](block: Rep[V] => Rep[U]) = map_mapValues(m, block)
-    def filter(block: Rep[(K,V)] => Rep[Boolean]) = map_filter(m, block)
+    def filter(block: ((Rep[K], Rep[V])) => Rep[Boolean]) = map_filter(m, block)
   }
 
   def map_new[K:JSKey,V:Manifest]() : Rep[Map[K,V]]
@@ -60,9 +56,9 @@ trait JSMaps extends Base {
   def map_values[K:JSKey,V:Manifest](m: Rep[Map[K,V]]): Rep[Array[V]]
   def map_clear[K:JSKey,V:Manifest](m: Rep[Map[K,V]]): Rep[Unit]
   def map_keys[K:JSKey,V:Manifest](m: Rep[Map[K,V]]): Rep[Array[K]]
-  def map_foreach[K:JSKey,V:Manifest](m: Rep[Map[K,V]], block: Rep[(K,V)] => Rep[Unit]): Rep[Unit]
+  def map_foreach[K:JSKey,V:Manifest](m: Rep[Map[K,V]], block: ((Rep[K], Rep[V])) => Rep[Unit]): Rep[Unit]
   def map_mapValues[K:JSKey,V:Manifest,U:Manifest](m: Rep[Map[K,V]], block: Rep[V] => Rep[U]): Rep[Map[K,U]]
-  def map_filter[K:JSKey,V:Manifest](m: Rep[Map[K,V]], block: Rep[(K,V)] => Rep[Boolean]): Rep[Map[K,V]]
+  def map_filter[K:JSKey,V:Manifest](m: Rep[Map[K,V]], block: ((Rep[K], Rep[V])) => Rep[Boolean]): Rep[Map[K,V]]
 }
 
 trait JSMapsExp extends JSMaps with EffectExp with TupleOpsExp {
@@ -81,7 +77,7 @@ trait JSMapsExp extends JSMaps with EffectExp with TupleOpsExp {
 
   def map_new[K:JSKey,V:Manifest]() = reflectMutable(MapNew[K,V]())
   def map_apply[K:JSKey,V:Manifest](m: Exp[Map[K,V]], k: Exp[K]) = MapApply(m,k)
-  def map_get[K:JSKey,V:Manifest](m: Rep[Map[K,V]], k: Rep[K]) = MapGet(m, k)
+  def map_get[K:JSKey,V:Manifest](m: Exp[Map[K,V]], k: Exp[K]) = MapGet(m, k)
   def map_update[K:JSKey,V:Manifest](m: Exp[Map[K,V]], k: Exp[K], v: Exp[V]) =
     // reflectWrite(m)(MapUpdate(m,k,v))
     reflectEffect(MapUpdate(m,k,v))
@@ -92,10 +88,10 @@ trait JSMapsExp extends JSMaps with EffectExp with TupleOpsExp {
     // reflectWrite(m)(MapClear(m))
     reflectEffect(MapClear(m))
   def map_keys[K:JSKey,V:Manifest](m: Rep[Map[K,V]]) = MapKeys(m)
-  def map_foreach[K:JSKey,V:Manifest](m: Exp[Map[K,V]], block: Exp[(K,V)] => Exp[Unit]) = {
+  def map_foreach[K:JSKey,V:Manifest](m: Exp[Map[K,V]], block: ((Exp[K], Exp[V])) => Exp[Unit]) = {
     val k = fresh[K]
     val v = fresh[V]
-    val b = reifyEffects(block(k -> v))
+    val b = reifyEffects(block(k, v))
     reflectEffect(MapForeach(m, k, v, b), summarizeEffects(b).star)
   }
   def map_mapValues[K:JSKey,V:Manifest,U:Manifest](m: Exp[Map[K,V]], block: Exp[V] => Exp[U]) = {
@@ -103,10 +99,10 @@ trait JSMapsExp extends JSMaps with EffectExp with TupleOpsExp {
     val b = reifyEffects(block(v))
     reflectEffect(MapMapValues(m, v, b), Alloc() andAlso summarizeEffects(b).star)
   }
-  def map_filter[K:JSKey,V:Manifest](m: Exp[Map[K,V]], block: Exp[(K,V)] => Exp[Boolean]) = {
+  def map_filter[K:JSKey,V:Manifest](m: Exp[Map[K,V]], block: ((Exp[K], Exp[V])) => Exp[Boolean]) = {
     val k = fresh[K]
     val v = fresh[V]
-    val b = reifyEffects(block(k -> v))
+    val b = reifyEffects(block(k, v))
     reflectEffect(MapFilter(m, k, v, b), Alloc() andAlso summarizeEffects(b).star)
   }
 
@@ -155,14 +151,14 @@ trait JSGenMaps extends JSGenEffect with QuoteGen {
     case MapClear(m)            =>
       stream.println(q"var $sym = Object.keys($m).forEach(function(_el) {")
       stream.println(q"delete $m[_el];")
-      stream.println("})")
+      stream.println("});")
     case MapKeys(m)             => emitValDef(sym, q"Object.keys($m)")
     case MapForeach(m, k, v, b) =>
       stream.println(q"var $sym = Object.keys($m).forEach(")
       stream.println(q"function($k){")
       stream.println(q"var $v = $m[$k];")
       emitBlock(b)
-      stream.println("})")
+      stream.println("});")
     case MapMapValues(m, v, b)  =>
       val k = fresh[Any]
       stream.println(q"var $sym = {};")
@@ -172,7 +168,7 @@ trait JSGenMaps extends JSGenEffect with QuoteGen {
       emitBlock(b)
       val res = getBlockResult(b)
       stream.println(q"$sym[$k] = $res;")
-      stream.println("})")
+      stream.println("});")
     case MapFilter(m, k, v, b)  =>
       stream.println(q"var $sym = {};")
       stream.println(q"Object.keys($m).forEach(")
@@ -183,7 +179,7 @@ trait JSGenMaps extends JSGenEffect with QuoteGen {
       stream.println(q"if($res) {")
       stream.println(q"$sym[$k] = $v")
       stream.println("}")
-      stream.println("})")
+      stream.println("});")
     case _                      => super.emitNode(sym, rhs)
   }
 }

@@ -59,8 +59,9 @@ trait MapsProg { this: JS with JSMaps =>
   }
 
   def test12(map: Rep[Map[String, Int]]): Rep[Unit] = {
-    map.foreach { pair =>
-      map(pair._1) = pair._2 + 1
+    map.foreach {
+      case (key, value) =>
+        map(key) = value + 1
     }
   }
 
@@ -71,10 +72,18 @@ trait MapsProg { this: JS with JSMaps =>
   }
 
   def test14(map: Rep[Map[String, Int]]): Rep[Map[String, Int]] = {
-    map.filter { pair =>
-      pair._2 > 10
+    map.filter {
+      case (_, value) =>
+        value > 10
     }
   }
+
+  def test15(map: Rep[Map[String, Int]]): Rep[Unit] = {
+    for((key, value) <- map) {
+      ()
+    }
+  }
+
 }
 
 class TestMaps extends FileDiffSuite {
@@ -215,5 +224,16 @@ class TestMaps extends FileDiffSuite {
 
     }
     assertFileEqualsCheck(prefix+"filter")
+  }
+
+  def testFilterForeach = {
+    withOutFile(prefix+"filter-foreach") {
+      new MapsProg with JSExp with JSMapsExp { self =>
+        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        codegen.emitSource(test15 _, "test15", new PrintWriter(System.out))
+      }
+
+    }
+    assertFileEqualsCheck(prefix+"filter-foreach")
   }
 }
