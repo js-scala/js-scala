@@ -21,8 +21,18 @@ class TestDom extends FileDiffSuite {
       }
 
       def selectors() = {
-        val bar = document.find(unit(".bar"))
-        log(bar: Rep[Option[Element]])
+        val bar = document.findAll(unit("babar"))
+        log(bar: Rep[List[Element]])
+        val bar2 = document.findAll(unit(".babar"))
+        log(bar2: Rep[List[Element]])
+        val foo = document.find(unit(" #foo-1-0    "))
+        log(foo: Rep[Option[Element]])
+        val foo2 = document.find(unit(" #---    "))
+        log(foo2: Rep[Option[Element]])
+        val foo3 = document.find(unit(" #-a_a    "))
+        log(foo3: Rep[Option[Element]])
+        val foo4 = document.find(unit(" #bbaa    "))
+        log(foo4: Rep[Option[Element]])
         val input = document.find[Input](unit("input"))
         log(input: Rep[Option[Input]])
       }

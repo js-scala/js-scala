@@ -4,8 +4,21 @@ var x1 = console.log(x0);
 }, false);
 }
 function selectors() {
-var x5 = document.querySelector(".bar");
-var x6 = console.log(x5);
-var x7 = document.querySelector("input");
+var x6 = document.getElementsByTagName("babar");
+var x5 = function (ns) { var r = []; for (var i = 0, l = ns.length ; i < l ; i++) r.push(ns.item(i)) ; return r };
+var x7 = x5(x6);
 var x8 = console.log(x7);
+var x9 = document.getElementsByClassName("babar");
+var x10 = x5(x9);
+var x11 = console.log(x10);
+var x12 = document.getElementById("foo-1-0");
+var x13 = console.log(x12);
+var x14 = document.querySelector(" #---    ");
+var x15 = console.log(x14);
+var x16 = document.getElementById("-a_a");
+var x17 = console.log(x16);
+var x18 = document.getElementById("bbaa");
+var x19 = console.log(x18);
+var x20 = document.querySelector("input");
+var x21 = console.log(x20);
 }
