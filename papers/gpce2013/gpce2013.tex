@@ -30,7 +30,7 @@
 \titlebanner{banner above paper title}        % These are ignored unless
 \preprintfooter{short description of paper}   % 'preprint' option specified.
 
-\title{Title Text}
+\title{How to build an homogeneous language for heterogeneous platforms}
 \subtitle{You don’t have to trade abstraction for control}
 
 \authorinfo{Julien Richard-Foy\and Olivier Barais\and Jean-Marc Jézéquel}
@@ -58,35 +58,40 @@ scale collaborative experiences. However, writing large Web applications is know
 difficult~\cite{Mikkonen08_SpaghettiJs,Preciado05_RIAMethodologyNecessity}. One challenge comes from the fact
 that the business logic is scattered into heterogeneous client-side and server-side
 environments~\cite{Echeverria09_RIA,Kuuskeri09_PartitioningClientServer}. This gives less flexibility in the
-engineering process and requires a higher maintainance effort: once you decided to implement a feature on
-client-side, changing your *mind* means completely rewriting the feature on server-side (and \emph{vice versa}).
-Even worse, logic parts that need to run on both client-side and server-side have to be duplicated. For instance,
-HTML fragments may be built from the server-side when a page is requested by a client, but they may also be built
-from the client-side to perform an incremental update subsequent to an user action. How could developers write HTML
-fragment definitions once and render them on both client-side and server-side? The more interactive the application
-is, the more logic needs to be duplicated between the server-side and the client-side (explain why?).
+engineering process and requires a higher maintenance effort: if a piece of logic was implemented on
+client-side and it turns out that it needs to be implemented on server-side instead, the code can not be reused and
+the feature needs to be completely rewritten (and \emph{vice versa}). Even worse, logic parts that run on both
+client-side and server-side need to be duplicated. For instance, HTML fragments may be built from the server-side
+when a page is requested by a client, but they may also be built from the client-side to perform an incremental
+update subsequent to an user action. How could developers write HTML fragment definitions once and render them on
+both client-side and server-side? The more interactive the application is, the more logic needs to be duplicated
+between the server-side and the client-side (explain why?).
 
 Using the same programming language on both server-side and client-side can improve the software engineering
 process by enabling code reuse between both sides. Incidentally, the JavaScript language -- which is currently the
 action language natively supported by most of Web clients -- can be used on server-side, and an increasing
-number of programming languages or compiler backends can generate JavaScript code (\eg
+number of programming languages or compiler back-ends can generate JavaScript code (\eg
 Java/GWT~\cite{Chaganti07_GWT}, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}},
 Dart~\cite{Griffith11_Dart}, Kotlin\footnote{\href{http://kotlin.jetbrains.org/}{http://kotlin.jetbrains.org/}},
 ClojureScript~\cite{McGranaghan11_ClojureScript}, Fay\footnote{\href{http://fay-lang.org/}{http://fay-lang.org/}},
 Haxe~\cite{Cannasse08_HaXe} or Opa\footnote{\href{http://opalang.org/}{http://opalang.org/}}).
 
-However, this engineering comfort may come at the price of an inefficient runtime: abstracting over platform
-differences often means restricting to a subset of common features and losing opportunities to perform platform
-specific optimizations. Performance is a primary concern in Web applications, because they are expected to run on a
-broad range of devices, from the powerful desktop personal computer to the less powerful smartphone. “Every 100~ms
-delay costs 1\% of sales”, said Amazon in 2006. For instance, because the boundaries of the code sent to the client
-are less visible when you share code between client-side and server-side, transitive dependencies may pull a lot of
-code on the client, causing a high download overhead. Moreover, generating efficient code for heterogeneous platforms
-is hard to achieve in an extensible way: the translation of common abstractions like collections into their native
-counterpart (JavaScript arrays on client-side and standard library’s collections on server-side) may be hardcoded in
-the compiler, but that would not scale to handle all the abstractions a complete application may use (\eg HTML
-fragment definitions, form validation rules, or even some business data type that may be represented differently for
-performance reasons).
+However, using the same programming language is not enough because the client and server programming environments
+are not the same. For instance, DOM fragments can be defined on client-side using the standard DOM API, but this
+API does not exist on server-side. How to define a common vocabulary for such concepts? And how to make it leverage
+the native APIs, when possible, for performance reasons?
+
+Performance is a primary concern in Web applications, because they are expected to run on a broad range of devices,
+from the powerful desktop personal computer to the less powerful smart phone. “Every 100~ms delay costs 1\% of
+sales”, said Amazon in 2006.
+
+For instance, because the boundaries of the code sent to the client are less visible when you share code between
+client-side and server-side, transitive dependencies may pull a lot of code on the client, causing a high download
+overhead. Moreover, generating efficient code for heterogeneous platforms is hard to achieve in an extensible way:
+the translation of common abstractions like collections into their native counterpart (JavaScript arrays on
+client-side and standard library's collections on server-side) may be hard coded in the compiler, but that would not
+scale to handle all the abstractions a complete application may use (\eg HTML fragment definitions, form validation
+rules, or even some business data type that may be represented differently for performance reasons).
 
 On one hand, for engineering reasons, developers want to write Web applications using a single language, abstracting
 over the target platforms differences. But on the other hand, for performance reasons, they want to keep
@@ -109,6 +114,8 @@ code using standard APIs on both server-side and client-side;
 more optimized native APIs.
 \end{itemize}
 
+(More on the results metrics)
+
 The remainder of this paper is organized as follows. The next section introduces existing approaches for defining
 cross-compiling languages. Section \ref{contribution} presents our contribution. Section \ref{validation} evaluates
 our contribution. Section \ref{discussion} concludes.
@@ -120,7 +127,7 @@ section presents different approaches for defining cross-platform languages.
 
 \subsection{Fat Languages}
 
-One way consists in hard-coding, in the language’s compiler, the transformation to each target platform. Figure
+One way consists in hard-coding, in the language's compiler, the transformation to each target platform. Figure
 \ref{fat-lang} depicts this process. In order to support a feature related to a specific domain, the whole compiler
 pipeline (parser, code generator, \etc) may have to be adapted. This approach gives \emph{fat} languages because
 a lot of concepts are defined at the language level. Examples of such languages are Links~\cite{Cooper07_Links},
@@ -159,7 +166,7 @@ characteristics.
 
 \subsection{Deeply Embedded Languages}
 
-Figure \ref{dedsl} shows a last approach that tries to get the benifits of the two previous approaches, without
+Figure \ref{dedsl} shows a last approach that tries to get the benefits of the previous two approaches, without
 their shortcomings.
 
 \begin{figure}
@@ -230,7 +237,6 @@ listing \ref{null-defensive} is generated.
 
 \subsection{DOM Fragments}
 
-
 In this section we show how we can define a template engine as an embedded DSL with minimal effort. This template
 engine is statically typed and able to insert dynamic content in a safe way. It provides a powerful expression
 language, requires no extra compilation step and can be used on both client-side and server-side.
@@ -240,7 +246,7 @@ Because the template engine is defined as en embedded DSL, we can reuse Scala’
 \begin{itemize}
 \item a function taking some parameters and returning a DOM fragment directly models a template taking parameters and
 returning a DOM fragment~;
-\item the type system typechecks template definitions and template calls~;
+\item the type system type-checks template definitions and template calls~;
 \item the Scala language itself is the expression language~;
 \item compiling a template is the same as compiling user code.
 \end{itemize}
