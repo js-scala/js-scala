@@ -13,3 +13,13 @@ project/user.sbt
 .settings/
 .idea/
 .idea_modules/
+
+# Examples
+examples/ajax/twitter_.js
+examples/birds/Bird_.js
+examples/canvas/koch_.html
+examples/d3/d3_.html
+
+# Tests
+test-out/
+!test-out/*.check
