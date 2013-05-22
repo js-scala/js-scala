@@ -179,20 +179,17 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
     
     //pattern matching on the selector
     selector match {
-      //if it is a constant (which is normally always the case here)
+      //if it is a constant
       case Const(selectorString) => 
-        //we check the selector's value
         selectorString.trim match {
-          //if it's a '#' we are searching a ID
+          //if the first charactere is a '#' we are searching a ID
           case Id(id, _) => 
-            //we call SelectorGetElementById (with reflect effect) for this ID
             reflectEffect(SelectorGetElementById[A](s, unit(id)))
           //in other cases
           case _ =>
-            //we call by default SelectorFind for the selector
             reflectEffect(SelectorFind[A](s, selector))           
         }
-      //if it's a variable, we call SelectorFind with the selector
+      //if it's a variable
       case _ => 
         reflectEffect(SelectorFind[A](s, selector))
     }  
@@ -209,35 +206,26 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
     val toArray: Exp[NodeList => List[A]] = NodeListToArray[A]() 
     
     //pattern matching on the selector
-    selector match {
-      //if it is a constant (which is normally always the case here)
+    val result:Exp[NodeList] = selector match {
+      //if it is a constant 
       case Const(selectorString) => 
-        //we check the selector's value
         selectorString.trim match {
-          //if it's a '.' we are searching a class
+          //if the first charactere is a '.' we are searching a class
           case Classe(classe, _) => 
-            //we call SelectorGetElementsByClassName (with reflect effect) for this class name
-            val ns = reflectEffect(SelectorGetElementsByClassName[A](s, unit(classe)))
-            //we transform the result in a list
-            toArray(ns) 
+            reflectEffect(SelectorGetElementsByClassName[A](s, unit(classe)))            
           //if it's a character chain we are searching a tag
           case Tag(tag, _) => 
-            //we call SelectorGetElementsByTagName (with reflect effect) for this tag name
-            val ns = reflectEffect(SelectorGetElementsByTagName[A](s, unit(tag)))
-            //we transform the result in a list
-            toArray(ns) 
+            reflectEffect(SelectorGetElementsByTagName[A](s, unit(tag)))
           //in other cases
           case _ =>
-            //we call by default SelectorFindAll for the selector 
-            val ns = reflectEffect(SelectorFindAll[A](s, selector))  
-            //we transform the result in a list
-            toArray(ns)          
+            reflectEffect(SelectorFindAll[A](s, selector))  
         }
-      //if it's a variable, we call selectorFinAll with the selector
+      //if it's a variable
       case _ => 
-         val ns = reflectEffect(SelectorFindAll[A](s, selector))
-         toArray(ns) 
+         reflectEffect(SelectorFindAll[A](s, selector))
     }  
+    //we transform the result in a list
+    toArray(result) 
   }
   
   trait NodeList
