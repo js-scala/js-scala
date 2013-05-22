@@ -172,15 +172,62 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
   def infix_document(w: Exp[Window]) = WindowDocument
   def infix_history(w: Exp[Window]) = WindowHistory
 
-  // TODO generate a getElementById if possible
-  def selector_find[A : Selectable : Manifest](s: Exp[SelectorApi], selector: Exp[String]) =
-    reflectEffect(SelectorFind[A](s, selector))
-  // TODO generate a getElementsByClassName or getElementsByTagName if possible
-  def selector_findAll[A : Selectable : Manifest](s: Exp[SelectorApi], selector: Exp[String]) = {
-    val ns = reflectEffect(SelectorFindAll[A](s, selector))
-    val toArray: Exp[NodeList => List[A]] = NodeListToArray[A]()
-    toArray(ns)
+  def selector_find[A : Selectable : Manifest](s: Exp[SelectorApi], selector: Exp[String]) = {
+   
+    //the Regex to recover the ID
+    val Id = "#((-?[A-Za-z0-9_]+)+)".r
+    
+    //pattern matching on the selector
+    selector match {
+      //if it is a constant
+      case Const(selectorString) => 
+        selectorString.trim match {
+          //if the first charactere is a '#' we are searching a ID
+          case Id(id, _) => 
+            reflectEffect(SelectorGetElementById[A](s, unit(id)))
+          //in other cases
+          case _ =>
+            reflectEffect(SelectorFind[A](s, selector))           
+        }
+      //if it's a variable
+      case _ => 
+        reflectEffect(SelectorFind[A](s, selector))
+    }  
   }
+    
+  def selector_findAll[A : Selectable : Manifest](s: Exp[SelectorApi], selector: Exp[String]) = {
+    
+    //the Regex to recover the class
+    val Classe = "\\.((-?[A-Za-z0-9_]+)+)".r
+    //the Regex to recover the tag
+    val Tag = "((-?[A-Za-z0-9_]+)+)".r
+    
+    //function for transform a nodeList to a list
+    val toArray: Exp[NodeList => List[A]] = NodeListToArray[A]() 
+    
+    //pattern matching on the selector
+    val result:Exp[NodeList] = selector match {
+      //if it is a constant 
+      case Const(selectorString) => 
+        selectorString.trim match {
+          //if the first charactere is a '.' we are searching a class
+          case Classe(classe, _) => 
+            reflectEffect(SelectorGetElementsByClassName[A](s, unit(classe)))            
+          //if it's a character chain we are searching a tag
+          case Tag(tag, _) => 
+            reflectEffect(SelectorGetElementsByTagName[A](s, unit(tag)))
+          //in other cases
+          case _ =>
+            reflectEffect(SelectorFindAll[A](s, selector))  
+        }
+      //if it's a variable
+      case _ => 
+         reflectEffect(SelectorFindAll[A](s, selector))
+    }  
+    //we transform the result in a list
+    toArray(result) 
+  }
+  
   trait NodeList
 
   def element_setAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) = reflectEffect(ElementSetAttribute(e, name, value))
@@ -238,9 +285,12 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
 
   case object WindowDocument extends Exp[Document]
   case object WindowHistory extends Exp[History]
-
+  
   case class SelectorFind[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[Option[A]]
+  case class SelectorGetElementById[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[Option[A]]
   case class SelectorFindAll[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList]
+  case class SelectorGetElementsByClassName[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList]
+  case class SelectorGetElementsByTagName[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList]
 
   case class ElementSetAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) extends Def[Unit]
   case class ElementTagName(e: Exp[Element]) extends Def[String]
@@ -316,8 +366,14 @@ trait JSGenDom extends JSGenEffect with JSGenFunctions with JSGenOptionOps with 
       emitValDef(sym, quote(e) + ".wheelDeltaY")
     case SelectorFind(s, selector) =>
       emitValDef(sym, quote(s) + ".querySelector(" + quote(selector) + ")")
+    case SelectorGetElementById(s, selector) =>
+      emitValDef(sym, quote(s) + ".getElementById(" + quote(selector) + ")")
     case SelectorFindAll(s, selector) =>
       emitValDef(sym, quote(s) + ".querySelectorAll(" + quote(selector) + ")")
+    case SelectorGetElementsByClassName(s, selector) =>
+      emitValDef(sym, quote(s) + ".getElementsByClassName(" + quote(selector) + ")")
+    case SelectorGetElementsByTagName(s, selector) =>
+      emitValDef(sym, quote(s) + ".getElementsByTagName(" + quote(selector) + ")")
     case ElementSetAttribute(e, name, value) =>
       emitValDef(sym, quote(e) + ".setAttribute(" + quote(name) + ", " + quote(value) + ")")
     case ElementTagName(e) =>
