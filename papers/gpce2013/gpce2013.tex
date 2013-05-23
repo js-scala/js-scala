@@ -7,6 +7,7 @@
 % authoryear    To obtain author/year citation style instead of numeric.
 
 \usepackage{amsmath}
+\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[unicode=true,hidelinks]{hyperref}
 \usepackage{graphicx}
@@ -67,6 +68,9 @@ update subsequent to an user action. How could developers write HTML fragment de
 both client-side and server-side? The more interactive the application is, the more logic needs to be duplicated
 between the server-side and the client-side (explain why?).
 
+(Mention the problem of using client-side libraries to get high-level abstractions: double runtime overhead --
+download and execution)
+
 Using the same programming language on both server-side and client-side can improve the software engineering
 process by enabling code reuse between both sides. Incidentally, the JavaScript language -- which is currently the
 action language natively supported by most of Web clients -- can be used on server-side, and an increasing
@@ -101,17 +105,19 @@ Compiled domain specific embedded languages~\cite{Elliott2003_Compiling} allow t
 languages (DSLs) as libraries on top of a host language, and to compile them to a target platform. The deep embedding
 gives the opportunity to control the code generation scheme for a given abstraction and target platform.
 
-This paper presents such a compiled embedded DSL allowing developers to write Web applications in a single language
-which code fragments can be shared between client and server sides, and which is efficiently compiled to each side.
-More precisely, we demonstrate the following features:
+\texttt{js-scala}~\cite{Kossakowski12_JsDESL} is a compiled embedded DSL defined in Scala that generates JavaScript
+code. In this paper we present additional contributions on top of this DSL. We use staging (explain) to generate
+efficient code for typical abstractions used for Web programming and to generate efficient specialized code for both
+client and server sides for shared abstractions. More precisely, we demonstrate the following features:
 
 \begin{itemize}
- \item Type-directed ad-hoc polymorphism on client-side without runtime dynamic dispatch logic;
+ \item An API for searching in the DOM, that exposes a single entry point but that generates code potentially using
+more optimized native APIs;
  \item Usage of monads without extra container object creation;
  \item Ability to define DOM fragments using a common language for server-side and client-side, but that generates
 code using standard APIs on both server-side and client-side;
- \item An API for searching in the DOM, that exposes a single entry point but that generates code potentially using
-more optimized native APIs.
+ \item Type-directed ad-hoc polymorphism on client-side without runtime dynamic dispatch logic.
+ \item (Modules?)
 \end{itemize}
 
 (More on the results metrics)
@@ -183,10 +189,99 @@ generate JavaScript code~\cite{Kossakowski12_JsDESL}.
 \section{High-Level Abstractions Generating Efficient (and Heterogeneous) Code}
 \label{contribution}
 
+\subsection{Selectors}
+
+In a Web application, the user interface is defined by a HTML document which can be manipulated by the JavaScript
+code to be updated. One typical operation consists in searching some “interesting” element in the document, in order
+to extract its content, replace it or listen to user events fired on this element. The standard API provides several
+function to search elements in a Web document according to their characteristics such as their attribute values.
+Figure~\ref{selectors-api} (wrong reference number) summarizes the available functions and their differences.
+
+\begin{figure}
+\label{selectors-api}
+\begin{tabular}{| l | p{3cm} |}
+\hline
+Function & Description \\
+\hline
+\code{querySelector(s)} & First element matching the CSS selector \code{s} \\
+\hline
+\code{getElementById(i)} & Element which attribute \code{id} equals to \code{i} \\
+\hline
+\code{querySelectorAll(s)} & All nodes matching the CSS selector \code{s} \\
+\hline
+\code{getElementsByTagName(n)} & All elements of type \code{n} \\
+\hline
+\code{getElementsByClassName(c)} & All elements which \code{class} attribute equals to \code{c} \\
+\hline
+\end{tabular}
+\caption{Standard selectors API}
+\end{figure}
+
+The \code{querySelector} and \code{querySelectorAll} are the most general functions, the others handle special
+cases. For the developer it is not convenient to have to master several functions performing similar tasks. In fact,
+most JavaScript developers use the jQuery library (ref and stats) that provides just one function to search for
+elements. Listing~\ref{jquery-vanilla-api} shows two equivalent snippets of code, the first one using the native
+APIs (a) and the second one using jQuery (b).
+
+\begin{figure}
+\begin{lstlisting}[language=JavaScript]
+function getWords() {
+  var form = document.getElementById('add-user');
+  var sections =
+    form.getElementsByTagName('fieldset');
+  var results = [];
+  for (var i = 0 ; i < sections.length ; i++) {
+    var words = sections[i]
+      .getElementsByClassName('word');
+    results[i] = words;
+  }
+  return results
+}
+\end{lstlisting}
+\caption{(a)}
+\begin{lstlisting}
+function getWords() {
+  var form = $('#add-user');
+  var sections = $('fieldset', form);
+  return sections.map(function () {
+    return $('.word', this)
+  })
+}
+\end{lstlisting}
+\caption{(b)}
+\label{jquery-vanilla-api}
+\end{figure}
+
+jQuery provides an API that is simpler to master because it has less functions, but by doing so it can not benefit
+from the performance of the browser’s implementation of specialized search functions (\code{getElementById},
+\code{getElementsByTagName} and \code{getElementsByClassName}).
+
+Using LMS we are able to provide a simple API (like jQuery) and to generate code using specialized functions (and
+hence benefit from their performances), by analyzing the staged program. Listing~\ref{js-scala-selectors} shows how
+to implement listing~\ref{jquery-vanilla-api} using js-scala. This listing generates a JavaScript program similar to
+listing~\ref{jquery-vanilla-api} (a).
+
+\begin{figure}
+\label{js-scala-selectors}
+\begin{lstlisting}
+def getWords() = {
+  val form = document.find("#add-user")
+  val sections = form.findAll("fieldset")
+  sections map (_.findAll(".word"))
+}
+\end{lstlisting}
+\caption{Selectors in Js-Scala}
+\end{figure}
+
+Writing the program with js-scala instead of using a JavaScript library such as jQuery is interesting because the
+abstraction for searching elements exist only in the initial program source code, not in the final JavaScript
+program. It gives two advantages: (1) the execution of the final program is more performant because of the use of
+specialized APIs, (2) the final program’s size is smaller because it does not need to include jQuery.
+
 \subsection{Monads Sequencing}
 
-As an illustration of the staging mechanism, we present a simple DSL to handle null references. This DSL provides an
-abstraction at the stage-level that is removed by optimization during the code generation.
+As another illustration of the staging mechanism, we present a simple DSL to handle null references. This DSL
+provides an abstraction at the stage-level that is removed by optimization during the code generation.
 
 Null references are a known source of problems in programming languages~\cite{Hoare09_Null,Nanda09_Null}. For
 example, consider the following typical JavaScript code finding a particular widget in the page and then a particular
@@ -237,6 +332,34 @@ listing \ref{null-defensive} is generated.
 
 \subsection{DOM Fragments}
 
+\begin{figure}
+\label{dom-api}
+\begin{lstlisting}[language=JavaScript]
+var articleUi = function (article) {
+  var div = document.createElement('div');
+  div.setAttribute('class', 'article');
+  var span = document.createElement('span');
+  var name =
+    document.createTextNode(article.name + ': ');
+  span.appendChild(name);
+  div.appendChild(span);
+  var strong = document.createElement('strong');
+  var price = document.createTextNode(article.price);
+  strong.appendChild(price);
+  div.appendChild(strong);
+  return div
+};
+\end{lstlisting}
+
+\begin{lstlisting}[language=HTML]
+<div class=article>
+  <span>French wine: </span>
+  <strong>10</strong>
+</div>
+\end{lstlisting}
+\caption{DOM}
+\end{figure}
+
 In this section we show how we can define a template engine as an embedded DSL with minimal effort. This template
 engine is statically typed and able to insert dynamic content in a safe way. It provides a powerful expression
 language, requires no extra compilation step and can be used on both client-side and server-side.
@@ -255,48 +378,40 @@ So the only remaining work consists in defining the DSL vocabulary to define DOM
 function to define a tag and any \code{String} value is considered to be a text node.
 
 \begin{figure}
-\begin{lstlisting}[label=forest-hello,caption=DOM definition DSL]
-def vertexDom(v: Rep[Vertex]) =
-    el("g", "class"->"vertex",
-            "transform"->("translate("+v.x+","+v.y+")"))(
-        el("rect", "width"->v.width, "height"->v.height)(),
-        el("text", "width"->v.width, "height"->v.height)(
-            v.content
-        )
+\begin{lstlisting}[label=forest,caption=DOM definition DSL]
+def articleUi(article: Rep[Article]) =
+    el('div, 'class -> 'article)(
+        el('span)(article.name + ": "),
+        el('strong)(article.price)
     )
 \end{lstlisting}
 \end{figure}
 
-Listing \ref{forest-hello} uses our DSL and generates a code equivalent to listing \ref{dom-api}. The readability has
+Listing \ref{forest} uses our DSL and generates a code equivalent to listing \ref{dom-api}. The readability has
 been highly improved: nesting tags is just like nesting code blocks, HTML entities are
 automatically escaped in text nodes, developers have the full computational power of Scala to inject dynamic data and
 DOM fragments definitions are written using functions so they compose just as functions compose. These benefits come
 with no performance loss because the DSL generates code building DOM fragments by using the native JavaScript API.
 
-\subsubsection{Reuse the DOM definition DSL on server-side}
-
 Our DSL is equivalent to a template engine with Scala as the expression language. Making it usable on both server and
 client sides was surprisingly as simple as defining another code generator for the DSL, producing Scala code.
 
-For instance, the template written in listing \ref{forest-hello} produces the following Scala code usable on
-server-side (the generated code for client-side is roughly equivalent to listing \ref{dom-api}):
+For instance, the template written in listing \ref{forest} produces the following Scala code usable on
+server-side:
 
 \begin{lstlisting}
-def vertexDom(v: Vertex) = {
-  val x0 =
-    <text width="{v.width}" height="{v.height}">
-      {v.content}
-    </text>
-  val x1 = <rect width="{v.width}" height="{v.height}" />
+def articleUi(article: Article) = {
+  val x0 = <span>{ article.name + ": " }</span>
+  val x1 = <strong>{ article.price }</strong>
   val x2 =
-    <g class="vertex" transform="translate({v.x},{v.y})">
+    <div class="article">
       {List(x0, x1)}
-    </g>
+    </div>
   x2
 }
 \end{lstlisting}
 
-We are able to tackle the code sharing issues described in section \ref{assessment} because of the embdedded nature
+We are able to tackle the code sharing issues described in the introduction because of the embdedded nature
 of our DSLs: dynamic content of templates is written using embedded DSLs too, so their translation into JavaScript
 and Scala is managed by their respective code generators.
 
@@ -356,13 +471,31 @@ for a value of type \code{A}. It is used by the \code{listWidget} function to ge
 items. The listing shows how to reuse the same \code{listWidget} function to show a list of users and a list of
 articles.
 
-\subsection{Selectors}
-
-querySelectorAll, getElementsByTagName, getElementsByClassName, getElementById, querySelector
-
-\section{Implementation?}
+\section{Implementation}
+\label{implementation}
 
 See http://github.com/js-scala/js-scala.
+
+\subsection{Selectors}
+
+\begin{figure}
+\label{selector-impl}
+\begin{lstlisting}
+def find(receiver: Exp[SelectorApi],
+         selector: Exp[String]) =
+  getConstIdentifier(selector) match {
+    case Some(id) if receiver == document =>
+      DocumentGetElementById(Const(id))
+    case _ =>
+      SelectorFind(receiver, selector)
+  }
+\end{lstlisting}
+\caption{Selectors optimization}
+\end{figure}
+
+\subsection{DOM Fragments}
+
+\subsection{Ad-Hoc Polymorphism}
 
 \section{Evaluation}
 \label{validation}
