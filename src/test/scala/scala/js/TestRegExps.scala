@@ -46,21 +46,21 @@ class TestRegExps extends FileDiffSuite {
 
   def testScala = {
     new RegExpsProgInScala { self =>
-      expect(true){testTest("123")}
-      expect(true){testTest("x123y")}
-      expect(false){testTest("xy")}
+      expectResult(true){testTest("123")}
+      expectResult(true){testTest("x123y")}
+      expectResult(false){testTest("xy")}
 
-      expect(true){testTestWhole("123")}
-      expect(false){testTestWhole("x123y")}
-      expect(false){testTestWhole("xy")}
+      expectResult(true){testTestWhole("123")}
+      expectResult(false){testTestWhole("x123y")}
+      expectResult(false){testTestWhole("xy")}
 
-      expect(0){testSearch("123")}
-      expect(1){testSearch("x123y")}
-      expect(-1){testSearch("xy")}
+      expectResult(0){testSearch("123")}
+      expectResult(1){testSearch("x123y")}
+      expectResult(-1){testSearch("xy")}
 
-      expect(true){testSearchMatch("123")}
-      expect(true){testSearchMatch("x123y")}
-      expect(false){testSearchMatch("xy")}
+      expectResult(true){testSearchMatch("123")}
+      expectResult(true){testSearchMatch("x123y")}
+      expectResult(false){testSearchMatch("xy")}
     }
   }
 }

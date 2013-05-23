@@ -4,6 +4,7 @@ import scala.virtualization.lms.common._
 
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import org.scalatest.Ignore
 
 trait LiteralProg { this: Structs with LiftNumeric with NumericOps =>
   def test(x: Rep[Double]): Rep[Double] = {
@@ -31,8 +32,9 @@ trait LiteralFunProg { this: JS =>
 
 class TestLiteral extends FileDiffSuite {
   val prefix = "test-out/"
-  
-  def testLiteral = {
+
+  // Ignore these tests until self references are handled by structs
+  @Ignore def testLiteral = {
     withOutFile(prefix+"literal") {
       new LiteralProg with StructExp with LiftNumeric with NumericOpsExpOpt { self =>
         val codegen = new JSNestedCodegen with JSGenStruct with JSGenNumericOps { val IR: self.type = self }
@@ -42,7 +44,7 @@ class TestLiteral extends FileDiffSuite {
     assertFileEqualsCheck(prefix+"literal")
   }
 
-  def testLiteralFun = {
+  @Ignore def testLiteralFun = {
     withOutFile(prefix+"literalfun") {
       new LiteralFunProg with JSExp { self =>
         val codegen = new JSGen { val IR: self.type = self }

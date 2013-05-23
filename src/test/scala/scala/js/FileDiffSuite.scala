@@ -6,7 +6,7 @@ import org.scalatest._
 
 trait FileDiffSuite extends Suite {
   
-  def withOutFile(name: String)(func: => Unit): Unit = {
+  def withOutFile(name: String)(func: => Unit) {
     val file = new File(name)
     file.getParentFile.mkdirs()
     withOutput(new PrintStream(new FileOutputStream(file)))(func)
@@ -16,7 +16,7 @@ trait FileDiffSuite extends Suite {
     withOutput(new PrintStream(bstream))(func)
     bstream.toString
   }
-  def withOutput(out: PrintStream)(func: => Unit): Unit = {
+  def withOutput(out: PrintStream)(func: => Unit) {
     val oldStdOut = System.out
     val oldStdErr = System.err
     try {
@@ -38,8 +38,8 @@ trait FileDiffSuite extends Suite {
     fis.close()
     new String(buf)
   }
-  def assertFileEqualsCheck(name: String): Unit = {
-    expect(readFile(name+".check")){readFile(name)}
+  def assertFileEqualsCheck(name: String) {
+    expectResult(readFile(name+".check")){readFile(name)}
     new File(name) delete ()
   }
 }

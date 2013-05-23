@@ -13,7 +13,7 @@ trait DynamicProg { this: DynamicBase =>
 
 trait AllocProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {
-    val f = fun { (y : Rep[Any]) => new Record { val a = 42/*newDynamic("Foo")()*/ } }
+    val f = fun { (y : Rep[Any]) => new Record { val a = (newDynamic("Foo")(): Rep[Any]) } }
     f.apply(x)
   }
 }

@@ -3,6 +3,7 @@ package scala.js
 import scala.virtualization.lms.common._
 import scala.reflect.SourceContext
 
+// TODO Get rid of this trait
 trait InScala extends Base {
   type Rep[+T] = T
 

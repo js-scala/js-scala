@@ -4,6 +4,7 @@ import scala.virtualization.lms.common._
 
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import org.scalatest.Ignore
 
 trait TraitsProg { this: JS with JSTraits =>
   trait Foo {
@@ -90,11 +91,12 @@ class TestTraits extends FileDiffSuite {
     assertFileEqualsCheck(prefix+"traits-double-extends")
   }
 
-  def testTraitsInScala = {
+  // VariablesInScala is not implemented, so this test should be ignored
+  @Ignore def testTraitsInScala = {
     new TraitsProgInScala { self =>
-      expect(9){test(3)}
-      expect(10){testExtends(3)}
-      expect(3){testDoubleExtends(0)}
+      expectResult(9){test(3)}
+      expectResult(10){testExtends(3)}
+      expectResult(3){testDoubleExtends(0)}
     }
   }
 }
