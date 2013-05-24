@@ -76,9 +76,9 @@ trait JSDom extends Base {
 
   class NodeList[A : Selectable]
   implicit class NodeListOps[A : Manifest](ns: Rep[NodeList[A]]){
-    def size = nodeList_size[A](ns)
-    def filter(f:Rep[A] => Rep[Boolean]) = nodeList_filter[A](ns,f)
-    def foreach(f:Rep[A] => Rep[Unit]) = nodeList_foreach[A](ns,f)
+    def size = nodeList_size(ns)
+    def filter(f:Rep[A] => Rep[Boolean]) = nodeList_filter(ns,f)
+    def foreach(f:Rep[A] => Rep[Unit]) = nodeList_foreach(ns,f)
   }
   def nodeList_size[A : Manifest](s: Rep[NodeList[A]]): Rep[Int]
   def nodeList_filter[A : Manifest](ns: Rep[NodeList[A]],f: Rep[A] => Rep[Boolean]): Rep[List[A]]
@@ -185,7 +185,7 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
   def infix_history(w: Exp[Window]) = WindowHistory
 
   def nodeList_size[A : Manifest](ns: Exp[NodeList[A]]) = {
-    reflectEffect(NodeListSize[A](ns))
+    NodeListSize[A](ns)
   }
   
   def nodeList_filter[A : Manifest](ns: Exp[NodeList[A]],f: Exp[A] => Exp[Boolean]) = {

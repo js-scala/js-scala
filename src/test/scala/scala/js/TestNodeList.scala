@@ -19,21 +19,18 @@ class TestNodeList  extends FileDiffSuite {
       def testFilter(ns: Rep[NodeList[Element]]) = ns.filter(n => n == 2)
       def testForeach(ns: Rep[NodeList[Element]]) = ns.foreach(n => log(n))
   
-      def nodelist() = {
-        val tag = document.findAll(unit("babar"))
-        log(tag)
-        val size = tag.size
-        log(size)
-        val filter = testFilter(tag)
+      def nodelist(ns: Rep[NodeList[Element]]) = {
+        val size = ns.size
+        log(ns.size)
+        val filter = testFilter(ns)
         log(filter)
-        val foreach = testForeach(tag)
-        log(foreach)
+        testForeach(ns)
       }
     }
     withOutFile(prefix+"nodeList") {
       val prog = new Prog with DSLExp
       val codegen = new DSLJSGen { val IR: prog.type = prog }
-      codegen.emitSource0(prog.nodelist _, "nodeList", new PrintWriter(System.out))
+      codegen.emitSource(prog.nodelist _, "nodeList", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"nodeList")
   }
