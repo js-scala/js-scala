@@ -42,9 +42,9 @@
 
 \begin{abstract}
 Writing code partitioned between heterogeneous client-side and server-side makes the engineering process of Web
-applications more tedious. We use a deep embedded DSL to define a common language abstracting over platform
-differences for the developers point of view, but generating efficient code leveraging the target platforms
-characteristics and giving them control on the amount of code produced on client-side.
+applications tedious. We use a deep embedded DSL to define a common language abstracting over platform differences
+for the developers point of view, but generating efficient code leveraging the target platforms characteristics and
+giving them control on the amount of code produced on client-side.
 \end{abstract}
 
 \category{CR-number}{subcategory}{third-level}
@@ -62,22 +62,24 @@ scale collaborative experiences. However, writing large Web applications is know
 difficult~\cite{Mikkonen08_SpaghettiJs,Preciado05_RIAMethodologyNecessity}. One challenge comes from the fact
 that the business logic is scattered into heterogeneous client-side and server-side
 environments~\cite{Echeverria09_RIA,Kuuskeri09_PartitioningClientServer}. This gives less flexibility in the
-engineering process and requires a higher maintenance effort: if a piece of logic was implemented on
-client-side and it turns out that it needs to be implemented on server-side instead, the code can not be reused and
-the feature needs to be completely rewritten (and \emph{vice versa}). Even worse, logic parts that run on both
-client-side and server-side need to be duplicated. For instance, HTML fragments may be built from the server-side
-when a page is requested by a client, but they may also be built from the client-side to perform an incremental
-update subsequent to an user action. How could developers write HTML fragment definitions once and render them on
-both client-side and server-side? The more interactive the application is, the more logic needs to be duplicated
-between the server-side and the client-side (explain why?).
+engineering process and requires a higher maintenance effort: if a piece of logic is implemented on client-side and
+finally needs to be implemented on server-side instead, the code can not be reused and the feature needs to be
+completely rewritten (and \emph{vice versa}). Even worse, logic parts that run on both client-side and server-side
+need to be duplicated. For instance, HTML fragments may be built from the server-side when a page is requested by a
+client, but they may also be built from the client-side to perform an incremental update subsequent to an user
+action. How could developers write HTML fragment definitions once and render them on both client-side and
+server-side?
 
-(Mention the problem of using client-side libraries to get high-level abstractions: double runtime overhead --
-download and execution)
+The more interactive the application is, the more logic needs to be duplicated between the server-side
+and the client-side (explain why?), and the higher is the amount of client-side code. Developers use libraries and
+frameworks to get higher-level abstractions on client-side, making their code easier to reason about and to
+maintain. Unfortunately, JavaScript -- which is currently the most supported the action language on Web clients
+-- has no static linking system allowing to pick just the functions actually used by a program, forcing clients to
+download the whole library even though only a few functions are actually used.
 
 Using the same programming language on both server-side and client-side can improve the software engineering
-process by enabling code reuse between both sides. Incidentally, the JavaScript language -- which is currently the
-action language natively supported by most of Web clients -- can be used on server-side, and an increasing
-number of programming languages or compiler back-ends can generate JavaScript code (\eg
+process by enabling code reuse between both sides. Incidentally, the JavaScript language can be used on server-side,
+and an increasing number of programming languages or compiler back-ends can generate JavaScript code (\eg
 Java/GWT~\cite{Chaganti07_GWT}, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}},
 Dart~\cite{Griffith11_Dart}, Kotlin\footnote{\href{http://kotlin.jetbrains.org/}{http://kotlin.jetbrains.org/}},
 ClojureScript~\cite{McGranaghan11_ClojureScript}, Fay\footnote{\href{http://fay-lang.org/}{http://fay-lang.org/}},
@@ -85,8 +87,8 @@ Haxe~\cite{Cannasse08_HaXe} or Opa\footnote{\href{http://opalang.org/}{http://op
 
 However, using the same programming language is not enough because the client and server programming environments
 are not the same. For instance, DOM fragments can be defined on client-side using the standard DOM API, but this
-API does not exist on server-side. How to define a common vocabulary for such concepts? And how to make it leverage
-the native APIs, when possible, for performance reasons?
+API does not exist on server-side. How to define a common vocabulary for such concepts? And how to make the
+executable code leverage the native APIs, when possible, for performance reasons?
 
 Performance is a primary concern in Web applications, because they are expected to run on a broad range of devices,
 from the powerful desktop personal computer to the less powerful smart phone. “Every 100~ms delay costs 1\% of
@@ -108,10 +110,11 @@ Compiled domain specific embedded languages~\cite{Elliott2003_Compiling} allow t
 languages (DSLs) as libraries on top of a host language, and to compile them to a target platform. The deep embedding
 gives the opportunity to control the code generation scheme for a given abstraction and target platform.
 
-\texttt{js-scala}~\cite{Kossakowski12_JsDESL} is a compiled embedded DSL defined in Scala that generates JavaScript
-code. In this paper we present additional contributions on top of this DSL. We use staging (explain) to generate
-efficient code for typical abstractions used for Web programming and to generate efficient specialized code for both
-client and server sides for shared abstractions. More precisely, we demonstrate the following features:
+\texttt{js-scala}~\cite{Kossakowski12_JsDESL} is such a compiled embedded DSL defined in Scala that generates
+JavaScript code, making it possible to write the client-side code of Web applications using JavaScript. This paper
+enriches js-scala in order to solve the problems described above. We use staging (explain) to generate efficient code
+for typical abstractions used for Web programming and to generate efficient specialized code for both client and
+server sides for shared abstractions. More precisely, we demonstrate the following features:
 
 \begin{itemize}
  \item An API for searching in the DOM, that exposes a single entry point but that generates code potentially using
@@ -119,11 +122,12 @@ more optimized native APIs;
  \item Usage of monads without extra container object creation;
  \item Ability to define DOM fragments using a common language for server-side and client-side, but that generates
 code using standard APIs on both server-side and client-side;
- \item Type-directed ad-hoc polymorphism on client-side without runtime dynamic dispatch logic.
- \item (Modules?)
+ \item Type-directed ad-hoc polymorphism on client-side without runtime dynamic dispatch logic;
+ \item Static linking.
 \end{itemize}
 
-(More on the results metrics)
+Compared to libraries offering the same level of abstraction, we observe that js-scala produces significantly smaller
+executables with better runtime performances.
 
 The remainder of this paper is organized as follows. The next section introduces existing approaches for defining
 cross-compiling languages. Section \ref{contribution} presents our contribution. Section \ref{validation} evaluates
