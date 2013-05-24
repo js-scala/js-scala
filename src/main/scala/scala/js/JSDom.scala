@@ -72,8 +72,20 @@ trait JSDom extends Base {
   }
   // Note that selector_find[A](…)(implicit ev: A <:< Element) was simpler but sometimes didn’t make the type inferencer happy
   def selector_find[A : Selectable : Manifest](s: Rep[SelectorApi], selector: Rep[String]): Rep[Option[A]]
-  def selector_findAll[A : Selectable : Manifest](s: Rep[SelectorApi], selector: Rep[String]): Rep[List[A]]
+  def selector_findAll[A : Selectable : Manifest](s: Rep[SelectorApi], selector: Rep[String]): Rep[NodeList[A]]
 
+  class NodeList[A : Selectable]
+  implicit class NodeListOps[A : Manifest](ns: Rep[NodeList[A]]){
+    def size = nodeList_size[A](ns)
+    def filter(f:Rep[A] => Rep[Boolean]) = nodeList_filter[A](ns,f)
+    def foreach(f:Rep[A] => Rep[Unit]) = nodeList_foreach[A](ns,f)
+  }
+  def nodeList_size[A : Manifest](s: Rep[NodeList[A]]): Rep[Int]
+  def nodeList_filter[A : Manifest](ns: Rep[NodeList[A]],f: Rep[A] => Rep[Boolean]): Rep[List[A]]
+  def nodeList_foreach[A : Manifest](ns: Rep[NodeList[A]],f: Rep[A] => Rep[Unit]) : Rep[Unit]
+  
+
+  
   trait Document extends SelectorApi with EventTarget
 
   trait Element extends EventTarget with SelectorApi
@@ -172,6 +184,22 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
   def infix_document(w: Exp[Window]) = WindowDocument
   def infix_history(w: Exp[Window]) = WindowHistory
 
+  def nodeList_size[A : Manifest](ns: Exp[NodeList[A]]) = {
+    reflectEffect(NodeListSize[A](ns))
+  }
+  
+  def nodeList_filter[A : Manifest](ns: Exp[NodeList[A]],f: Exp[A] => Exp[Boolean]) = {
+    val it = fresh[A]
+    val block = reifyEffects(f(it))
+    reflectEffect(NodeListFilter(ns, it, block), summarizeEffects(block).star)
+  }
+  
+  def nodeList_foreach[A: Manifest](ns:Exp[NodeList[A]],f:Exp[A] => Exp[Unit]) = {
+    val it = fresh[A]
+    val block = reifyEffects(f(it))
+    reflectEffect(NodeListForeach(ns,it,block), summarizeEffects(block).star)
+  }
+  
   def selector_find[A : Selectable : Manifest](s: Exp[SelectorApi], selector: Exp[String]) = {
    
     //the Regex to recover the ID
@@ -202,11 +230,8 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
     //the Regex to recover the tag
     val Tag = "((-?[A-Za-z0-9_]+)+)".r
     
-    //function for transform a nodeList to a list
-    val toArray: Exp[NodeList => List[A]] = NodeListToArray[A]() 
-    
     //pattern matching on the selector
-    val result:Exp[NodeList] = selector match {
+    selector match {
       //if it is a constant 
       case Const(selectorString) => 
         selectorString.trim match {
@@ -223,12 +248,9 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
       //if it's a variable
       case _ => 
          reflectEffect(SelectorFindAll[A](s, selector))
-    }  
-    //we transform the result in a list
-    toArray(result) 
+    }
   }
   
-  trait NodeList
 
   def element_setAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) = reflectEffect(ElementSetAttribute(e, name, value))
   def element_tagName(e: Exp[Element]) = ElementTagName(e)
@@ -288,10 +310,14 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
   
   case class SelectorFind[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[Option[A]]
   case class SelectorGetElementById[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[Option[A]]
-  case class SelectorFindAll[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList]
-  case class SelectorGetElementsByClassName[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList]
-  case class SelectorGetElementsByTagName[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList]
+  case class SelectorFindAll[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList[A]]
+  case class SelectorGetElementsByClassName[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList[A]]
+  case class SelectorGetElementsByTagName[A : Selectable](s: Exp[SelectorApi], selector: Exp[String]) extends Def[NodeList[A]]
 
+  case class NodeListSize[A : Manifest](ns: Exp[NodeList[A]]) extends Def[Int]
+  case class NodeListFilter[A : Manifest](ns: Exp[NodeList[A]], x: Sym[A], block: Block[Boolean]) extends Def[List[A]]
+  case class NodeListForeach[A : Manifest](ns: Exp[NodeList[A]], x: Sym[A], block: Block[Unit]) extends Def[Unit]
+  
   case class ElementSetAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) extends Def[Unit]
   case class ElementTagName(e: Exp[Element]) extends Def[String]
   case class ElementClassName(e: Exp[Element]) extends Def[String]
@@ -319,20 +345,24 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
   case class InputName(input: Exp[Input]) extends Def[String]
   case class InputValue(input: Exp[Input]) extends Def[String]
 
-  case class NodeListToArray[A : Selectable]() extends Def[NodeList => List[A]]
-
   override def syms(e: Any) = e match {
     case EventTargetOn(t, event, capture, _, handler) => List(t, event, capture, handler).flatMap(syms)
+    case NodeListFilter(ns, _, block) => syms(ns):::syms(block)
+    case NodeListForeach(ns, _, block) => syms(ns):::syms(block)
     case _ => super.syms(e)
   }
 
   override def boundSyms(e: Any) = e match {
     case EventTargetOn(_, _, _, e, handler) => e :: effectSyms(handler)
+    case NodeListFilter(_, x, block) =>  x :: effectSyms(block)
+    case NodeListForeach(_, x, block) =>  x :: effectSyms(block)
     case _ => super.boundSyms(e)
   }
 
   override def symsFreq(e: Any) = e match {
     case EventTargetOn(t, event, capture, _, handler) => List(t, event, capture, handler).flatMap(freqNormal)
+    case NodeListFilter(ns, _, block) =>  freqNormal(ns):::freqHot(block)
+    case NodeListForeach(ns, _, block) =>  freqNormal(ns):::freqHot(block)
     case _ => super.symsFreq(e)
   }
 
@@ -350,6 +380,21 @@ trait JSGenDom extends JSGenEffect with JSGenFunctions with JSGenOptionOps with 
   }
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
+    case NodeListSize(ns) =>
+      emitValDef(sym, quote(ns) + ".length")
+    case NodeListFilter(ns,n, block) =>
+      val i,l = fresh[Int]
+      emitValDef(sym, "[]")
+      stream.println("for (var "+ quote(i) +" = 0, "+ quote(l) +" = "+ quote(ns) +".length ; "+ quote(i) +" < "+ quote(l) +" ; "+ quote(i) +"++) {")
+      emitValDef(n, quote(ns) +".item("+ quote(i) +")")
+      emitBlock(block)
+      stream.println("if("+ quote(getBlockResult(block)) +") "+ quote(sym) +".push("+ quote(n) +"); }")
+    case NodeListForeach(ns,n,block) =>
+      val i,l = fresh[Int]      
+      stream.println("for (var "+ quote(i) +" = 0, "+ quote(l) +" = " + quote(ns) + ".length ; "+ quote(i) +" < "+ quote(l) +" ; "+ quote(i) +"++){")
+      emitValDef(n, quote(ns)+".item("+ quote(i) +")")
+      emitBlock(block)
+      stream.println("}")
     case EventTargetOn(t, event, capture, e, handler) =>
       stream.println(quote(t) + ".addEventListener('" + event.name + "', function (" + quote(e) + ") {")
       emitBlock(handler)
@@ -418,8 +463,6 @@ trait JSGenDom extends JSGenEffect with JSGenFunctions with JSGenOptionOps with 
       emitValDef(sym, s"${quote(input)}.name")
     case InputValue(input) =>
       emitValDef(sym, s"${quote(input)}.value")
-    case NodeListToArray() =>
-      emitValDef(sym, "function (ns) { var r = []; for (var i = 0, l = ns.length ; i < l ; i++) r.push(ns.item(i)) ; return r }")
     case _ => super.emitNode(sym, rhs)
   }
 }

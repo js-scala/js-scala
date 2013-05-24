@@ -1,0 +1,17 @@
+function nodeList() {
+var x0 = document.getElementsByTagName("babar");
+var x1 = console.log(x0);
+var x2 = x0.length;
+var x3 = console.log(x2);
+var x6 = [];
+for (var x14 = 0, x15 = x0.length ; x14 < x15 ; x14++) {
+var x4 = x0.item(x14);
+var x5 = x4==2;
+if(x5) x6.push(x4); }
+var x7 = console.log(x6);
+for (var x16 = 0, x17 = x0.length ; x16 < x17 ; x16++){
+var x8 = x0.item(x16);
+var x9 = console.log(x8);
+}
+var x12 = console.log(x11);
+}
