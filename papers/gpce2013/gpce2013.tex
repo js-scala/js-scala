@@ -36,12 +36,15 @@
 
 \authorinfo{Julien Richard-Foy\and Olivier Barais\and Jean-Marc Jézéquel}
            {IRISA, Université de Rennes 1}
-           {\{firstname\}.\{lastname\}@irisa.fr}
+           {\{first\}.\{last\}@irisa.fr}
 
 \maketitle
 
 \begin{abstract}
-This is the text of the abstract.
+Writing code partitioned between heterogeneous client-side and server-side makes the engineering process of Web
+applications more tedious. We use a deep embedded DSL to define a common language abstracting over platform
+differences for the developers point of view, but generating efficient code leveraging the target platforms
+characteristics and giving them control on the amount of code produced on client-side.
 \end{abstract}
 
 \category{CR-number}{subcategory}{third-level}
@@ -131,25 +134,25 @@ our contribution. Section \ref{discussion} concludes.
 Developers express programs using a language that is translated into a form executable on a target platform. This
 section presents different approaches for defining cross-platform languages.
 
+\begin{figure}
+  \centering
+  \includegraphics[width=8cm]{langs.pdf}
+  \caption{Language engineering processes}
+  \label{langs}
+\end{figure}
+
 \subsection{Fat Languages}
 
 One way consists in hard-coding, in the language's compiler, the transformation to each target platform. Figure
-\ref{fat-lang} depicts this process. In order to support a feature related to a specific domain, the whole compiler
-pipeline (parser, code generator, \etc) may have to be adapted. This approach gives \emph{fat} languages because
-a lot of concepts are defined at the language level. Examples of such languages are Links~\cite{Cooper07_Links},
-Opa and Dart~\cite{Griffith11_Dart}. These languages are difficult to extend because each concept is defined in the
-compiler, and modifying a compiler requires a high effort. Furthermore, these languages also require to support
-common abstraction and composition mechanisms, as general purpose languages do, in order to make it easier to write
-real programs. So they need to be at least general purpose languages. It means that for every problem you have to
-rewrite a full-featured programming language before addressing the concepts specific to the problem domain. This
-approach does not scale.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=3cm]{fat.pdf}
-  \caption{Fat language}
-  \label{fat-lang}
-\end{figure}
+\ref{langs} (left) depicts this process. In order to support a feature related to a specific domain, the whole
+compiler pipeline (parser, code generator, \etc) may have to be adapted. This approach gives \emph{fat} languages
+because a lot of concepts are defined at the language level. Examples of such languages are
+Links~\cite{Cooper07_Links}, Opa and Dart~\cite{Griffith11_Dart}. These languages are difficult to extend because
+each concept is defined in the compiler, and modifying a compiler requires a high effort. Furthermore, these
+languages also require to support common abstraction and composition mechanisms, as general purpose languages do, in
+order to make it easier to write real programs. So they need to be at least general purpose languages. It means that
+for every problem you have to rewrite a full-featured programming language before addressing the concepts specific to
+the problem domain. This approach does not scale.
 
 \subsection{Domain Specific Languages}
 
@@ -158,29 +161,15 @@ Problem: interoperability.
 \subsection{Thin Languages}
 
 Alternatively, one can define concepts relative to a specific domain as libraries on top of a thin general purpose
-language. Figure \ref{thin-lang} depicts this approach. The general purpose language is used as a host language that
-does not need to be modified if a new concept is introduced, because concepts are defined as libraries. However,
+language. Figure \ref{langs} (middle) depicts this approach. The general purpose language is used as a host language
+that does not need to be modified if a new concept is introduced, because concepts are defined as libraries. However,
 this approach gives no opportunity to translate a concept efficiently, according to the host platform
 characteristics.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=3cm]{thin.pdf}
-  \caption{Thin language}
-  \label{thin-lang}
-\end{figure}
-
 \subsection{Deeply Embedded Languages}
 
-Figure \ref{dedsl} shows a last approach that tries to get the benefits of the previous two approaches, without
-their shortcomings.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=3cm]{lms.pdf}
-  \caption{Deeply embedded languages}
-  \label{dedsl}
-\end{figure}
+Figure \ref{langs} (right) shows a last approach that tries to get the benefits of the previous two approaches,
+without their shortcomings.
 
 Lightweight Modular Staging~\cite{Rompf12_LMSThesis} is a framework for defining deeply embedded DSLs in Scala. It
 has been used to define high-performance DSLs for parallel computing~\cite{Brown11_Parallel} and can be used to
@@ -411,9 +400,9 @@ def articleUi(article: Article) = {
 }
 \end{lstlisting}
 
-We are able to tackle the code sharing issues described in the introduction because of the embdedded nature
-of our DSLs: dynamic content of templates is written using embedded DSLs too, so their translation into JavaScript
-and Scala is managed by their respective code generators.
+We are able to tackle the code sharing issues described in the introduction (more details?) because of the embdedded
+nature of our DSLs: dynamic content of templates is written using embedded DSLs too, so their translation into
+JavaScript and Scala is managed by their respective code generators.
 
 \subsection{Ad-Hoc Polymorphism}
 
@@ -493,6 +482,37 @@ def find(receiver: Exp[SelectorApi],
 \caption{Selectors optimization}
 \end{figure}
 
+\subsection{Null references}
+
+Code generation consists in traversing the statement nodes produced by the program evaluation according to their
+dependencies and to emit the code corresponding to each statement. LMS already sorts the statements graph so DSL
+authors just need to say how to emit code for each statement node of their DSL. Listing \ref{option-codegen} shows
+such a code generator for the \code{null} reference handling DSL. The \code{emitNode} method handles
+\code{OptionIsEmpty} and \code{OptionForeach} nodes. In the case of the \code{OptionIsEmpty} node, it simply
+generates an expression testing if the value is \code{null}, in the case of the \code{OptionForeach} node, it wraps
+the code block dereferencing the value within a \code{if} checking that the value is not \code{null}.
+
+\begin{figure}
+\begin{lstlisting}[caption=Null reference handling DSL code generator,label=option-codegen]
+trait JSGenOptionOps extends JSGenEffect {
+  val IR: EfffectExp with OptionOpsExp
+  import IR._
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) =
+    rhs match {
+      case OptionIsEmpty(o) =>
+        emitValDef(sym, quote(o) + " === null")
+      case OptionForeach(o, a, b) =>
+        stream.println("if (" + quote(o) + " !== null) {")
+        emitValDef(a, quote(o))
+        emitBlock(b)
+        stream.println("}")
+      case _ =>
+        super.emitNode(sym, rhs)
+    }
+}
+\end{lstlisting}
+\end{figure}
+
 \subsection{DOM Fragments}
 
 \subsection{Ad-Hoc Polymorphism}
@@ -506,21 +526,20 @@ written, the runtime performances and the ability to modularize the code and to 
 
 \subsection{Real World Application}
 
-Chooze.
+Chooze~\footnote{\href{http://chooze.herokuapp.com}{http://chooze.herokuapp.com}} is an existing complete
+application for making polls. It allows users to create a poll, define the choice alternatives, share the poll, vote
+and look at the results. It contains some JavaScript code to handle the dynamic behavior of the application:
+double-posting prevention, dynamic form update and rich interaction with the document.
 
-\subsection{Several Implementations}
-
-\subsubsection{Vanilla JavaScript}
-
-\subsubsection{jQuery}
-
-\subsubsection{GWT}
-
-\subsubsection{SharpKit}
-
-\subsubsection{Js-Scala}
+The application was initially written using jQuery. We rewrote it using several technologies for the client-side
+part: plain JavaScript (without third-party library), js-scala, GWT and SharpKit.
 
 \subsection{Benchmarks, Code Metrics}
+
+Our goal is to evalute the level of abstraction provided by each solution and their performances. We took the
+number of lines of code as a measure of the level of abstraction and we wrote micro-benchmarks to evaluate the
+runtime performances of a solution. We also measured the size of the data sent to the client-side. We also measured
+the ability to share code between client and server sides.
 
 \section{Conclusion, Future Work}
 \label{discussion}
