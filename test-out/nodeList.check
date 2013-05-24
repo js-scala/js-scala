@@ -1,0 +1,14 @@
+function nodeList(x0) {
+var x1 = x0.length;
+var x2 = console.log(x1);
+var x5 = [];
+for (var x12 = 0, x13 = x0.length ; x12 < x13 ; x12++) {
+var x3 = x0.item(x12);
+var x4 = x3==2;
+if(x4) x5.push(x3); }
+var x6 = console.log(x5);
+for (var x14 = 0, x15 = x0.length ; x14 < x15 ; x14++){
+var x7 = x0.item(x14);
+var x8 = console.log(x7);
+}
+}
