@@ -19,6 +19,12 @@ class TestDom extends FileDiffSuite {
           log(e)
         }
       }
+      
+      def testFind(el: Rep[Element]) = {
+    	 el.find(unit("#some-id"))
+    	 document.find(unit("#some-id"))
+      }
+
 
       def selectors() = {
         document.findAll(unit("babar"))
@@ -37,6 +43,7 @@ class TestDom extends FileDiffSuite {
       val codegen = new DSLJSGen { val IR: prog.type = prog }
       codegen.emitSource0(prog.main _, "main", new PrintWriter(System.out))
       codegen.emitSource0(prog.selectors _, "selectors", new PrintWriter(System.out))
+      codegen.emitSource(prog.testFind _, "selectors", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"dom")
   }
