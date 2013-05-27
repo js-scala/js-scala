@@ -201,17 +201,17 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
   }
   
   def selector_find[A : Selectable : Manifest](s: Exp[SelectorApi], selector: Exp[String]) = {
-   
+         
     //the Regex to recover the ID
     val Id = "#((-?[A-Za-z0-9_]+)+)".r
-    
+      
     //pattern matching on the selector
     selector match {
       //if it is a constant
       case Const(selectorString) => 
         selectorString.trim match {
           //if the first charactere is a '#' we are searching a ID
-          case Id(id, _) => 
+          case Id(id, _) if s == document => 
             reflectEffect(SelectorGetElementById[A](s, unit(id)))
           //in other cases
           case _ =>
@@ -221,6 +221,7 @@ trait JSDomExp extends JSDom with EffectExp with JSFunctionsExp with OptionOpsEx
       case _ => 
         reflectEffect(SelectorFind[A](s, selector))
     }  
+    
   }
     
   def selector_findAll[A : Selectable : Manifest](s: Exp[SelectorApi], selector: Exp[String]) = {

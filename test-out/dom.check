@@ -15,3 +15,8 @@ var x12 = document.getElementById("bbaa");
 var x13 = document.querySelector("input");
 return x13
 }
+function selectors(x15) {
+var x16 = x15.querySelector("#some-id");
+var x17 = document.getElementById("some-id");
+return x17
+}
