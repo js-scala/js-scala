@@ -20,11 +20,12 @@ class TestNodeList  extends FileDiffSuite {
       def testForeach(ns: Rep[NodeList[Element]]) = ns.foreach(n => log(n))
   
       def nodelist(ns: Rep[NodeList[Element]]) = {
-        val size = ns.size
         log(ns.size)
-        val filter = testFilter(ns)
-        log(filter)
+        log(testFilter(ns))
         testForeach(ns)
+        ns.foreachWithIndex { (n, i) =>
+          log(i)
+        }
       }
     }
     withOutFile(prefix+"nodeList") {

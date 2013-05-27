@@ -2,13 +2,18 @@ function nodeList(x0) {
 var x1 = x0.length;
 var x2 = console.log(x1);
 var x5 = [];
-for (var x12 = 0, x13 = x0.length ; x12 < x13 ; x12++) {
-var x3 = x0.item(x12);
+for (var x17 = 0, x18 = x0.length ; x17 < x18 ; x17++) {
+var x3 = x0.item(x17);
 var x4 = x3==2;
-if(x4) x5.push(x3); }
+if (x4) x5.push(x3);
+}
 var x6 = console.log(x5);
-for (var x14 = 0, x15 = x0.length ; x14 < x15 ; x14++){
-var x7 = x0.item(x14);
+for (var x19 = 0, x20 = x0.length ; x19 < x20 ; x19++) {
+var x7 = x0.item(x19);
 var x8 = console.log(x7);
+}
+for (var x12 = 0, x21 = x0.length ; x12 < x21 ; x12++) {
+var x11 = x0.item(x12);
+var x13 = console.log(x12);
 }
 }
