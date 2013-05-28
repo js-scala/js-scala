@@ -2,7 +2,7 @@ name := "js-scala"
 
 organization := "EPFL"
 
-version := "0.3-SNAPSHOT"
+version := "0.4-SNAPSHOT"
 
 scalaOrganization := "org.scala-lang.virtualized"
 

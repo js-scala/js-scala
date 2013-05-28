@@ -1,9 +1,11 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import scala.js.language.JS
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJSOpt
 
 trait OptProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {
@@ -26,7 +28,7 @@ class TestOpt extends FileDiffSuite {
   def testOpt = {
     withOutFile(prefix+"opt") {
       new OptProg with JSExp { self =>
-        val codegen = new JSGenOpt { val IR: self.type = self }
+        val codegen = new GenJSOpt { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }

@@ -3,13 +3,21 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import scala.xml.Document
+import scala.js.language.Debug
+import scala.js.exp.DebugExp
+import scala.js.gen.js.GenEqual
+import scala.js.gen.js.GenDebug
+import scala.js.gen.js.GenEffect
+import scala.js.language.dom.Dom
+import scala.js.exp.dom.DomExp
+import scala.js.gen.js.dom.GenDom
 
 class TestNodeList  extends FileDiffSuite {
   val prefix = "test-out/"
   
-  trait DSL extends Base with JSDom with JSDebug with Equal
-  trait DSLExp extends DSL with JSDomExp with JSDebugExp with EqualExp 
-  trait DSLJSGen extends JSGenEffect with JSGenDom with JSGenDebug with JSGenEqual { val IR: DSLExp }
+  trait DSL extends Base with Dom with Debug with Equal
+  trait DSLExp extends DSL with DomExp with DebugExp with EqualExp
+  trait DSLJSGen extends GenEffect with GenDom with GenDebug with GenEqual { val IR: DSLExp }
 
   def testOn() {
 

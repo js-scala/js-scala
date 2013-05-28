@@ -1,12 +1,17 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
 import org.scalatest.Ignore
+import scala.js.language.JS
+import scala.js.language.Traits
+import scala.js.exp.TraitsExp
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJS
+import scala.js.gen.js.GenTraits
 
-trait TraitsProg { this: JS with JSTraits =>
+trait TraitsProg { this: JS with Traits =>
   trait Foo {
     var someVar : Rep[Int] = 1
     def someMethod() : Rep[Int] = 1
@@ -63,8 +68,8 @@ class TestTraits extends FileDiffSuite {
   
   def testTraits = {
     withOutFile(prefix+"traits") {
-      new TraitsProg with JSExp with JSTraitsExp { self =>
-        val codegen = new JSGen with JSGenTraits { val IR: self.type = self }
+      new TraitsProg with JSExp with TraitsExp { self =>
+        val codegen = new GenJS with GenTraits { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
@@ -73,8 +78,8 @@ class TestTraits extends FileDiffSuite {
 
   def testTraitsExtends = {
     withOutFile(prefix+"traits-extends") {
-      new TraitsProg with JSExp with JSTraitsExp { self =>
-        val codegen = new JSGen with JSGenTraits { val IR: self.type = self }
+      new TraitsProg with JSExp with TraitsExp { self =>
+        val codegen = new GenJS with GenTraits { val IR: self.type = self }
         codegen.emitSource(testExtends _, "main", new PrintWriter(System.out))
       }
     }
@@ -83,8 +88,8 @@ class TestTraits extends FileDiffSuite {
 
   def testTraitsDoubleExtends = {
     withOutFile(prefix+"traits-double-extends") {
-      new TraitsProg with JSExp with JSTraitsExp { self =>
-        val codegen = new JSGen with JSGenTraits { val IR: self.type = self }
+      new TraitsProg with JSExp with TraitsExp { self =>
+        val codegen = new GenJS with GenTraits { val IR: self.type = self }
         codegen.emitSource(testDoubleExtends _, "main", new PrintWriter(System.out))
       }
     }

@@ -1,9 +1,10 @@
 package scala.js
 
-import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
-import java.io.FileOutputStream
+
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJS
+import scala.js.language.JS
 
 trait UnitProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {
@@ -17,7 +18,7 @@ class TestUnit extends FileDiffSuite {
   def testUnit = {
     withOutFile(prefix+"unit") {
       new UnitProg with JSExp { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }

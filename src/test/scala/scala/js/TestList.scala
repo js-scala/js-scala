@@ -2,6 +2,9 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
+import scala.js.gen.js.GenNumericOps
+import scala.js.gen.js.GenListOps
+import scala.js.gen.js.GenEffect
 
 class TestList extends FileDiffSuite {
 
@@ -34,7 +37,7 @@ class TestList extends FileDiffSuite {
   def testMapAndFlatMap() {
     withOutFile(prefix+"map-flatmap") {
       val prog = new MapAndFlatMap with ListOpsExp with NumericOpsExp
-      val codegen = new JSGenEffect with JSGenListOps with JSGenNumericOps { val IR: prog.type = prog }
+      val codegen = new GenEffect with GenListOps with GenNumericOps { val IR: prog.type = prog }
       codegen.emitSource(prog.test, "MapAndFlatMap", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"map-flatmap")
@@ -43,7 +46,7 @@ class TestList extends FileDiffSuite {
   def testConcat() {
     withOutFile(prefix+"concat") {
       val prog = new Concat with ListOpsExp
-      val codegen = new JSGenEffect with JSGenListOps { val IR: prog.type = prog }
+      val codegen = new GenEffect with GenListOps { val IR: prog.type = prog }
       codegen.emitSource(prog.test, "Concat", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"concat")
@@ -52,7 +55,7 @@ class TestList extends FileDiffSuite {
   def testMkString() {
     withOutFile(prefix+"mkstring") {
       val prog = new MkString with ListOpsExp
-      val codegen = new JSGenEffect with JSGenListOps { val IR: prog.type = prog }
+      val codegen = new GenEffect with GenListOps { val IR: prog.type = prog }
       codegen.emitSource(prog.test, "MkString", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"mkstring")
@@ -61,7 +64,7 @@ class TestList extends FileDiffSuite {
   def testPrepend() {
     withOutFile(prefix+"prepend") {
       val prog = new Prepend with ListOpsExp
-      val codegen = new JSGenEffect with JSGenListOps { val IR: prog.type = prog }
+      val codegen = new GenEffect with GenListOps { val IR: prog.type = prog }
       codegen.emitSource(prog.test, "Prepend", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"prepend")

@@ -1,10 +1,15 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
 import org.scalatest.Ignore
+import scala.js.language.JS
+import scala.js.gen.js.NestedCodegen
+import scala.js.gen.js.GenStruct
+import scala.js.gen.js.GenNumericOps
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJS
 
 trait LiteralProg { this: Structs with LiftNumeric with NumericOps =>
   def test(x: Rep[Double]): Rep[Double] = {
@@ -37,7 +42,7 @@ class TestLiteral extends FileDiffSuite {
   @Ignore def testLiteral = {
     withOutFile(prefix+"literal") {
       new LiteralProg with StructExp with LiftNumeric with NumericOpsExpOpt { self =>
-        val codegen = new JSNestedCodegen with JSGenStruct with JSGenNumericOps { val IR: self.type = self }
+        val codegen = new NestedCodegen with GenStruct with GenNumericOps { val IR: self.type = self }
         codegen.emitSource(test _, "test", new PrintWriter(System.out))
       }
     }
@@ -47,7 +52,7 @@ class TestLiteral extends FileDiffSuite {
   @Ignore def testLiteralFun = {
     withOutFile(prefix+"literalfun") {
       new LiteralFunProg with JSExp { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(test _, "test", new PrintWriter(System.out))
       }
     }

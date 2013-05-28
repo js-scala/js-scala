@@ -2,13 +2,18 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
+import scala.js.language.OptionOps
+import scala.js.exp.OptionOpsExp
+import scala.js.gen.js.GenEffect
+import scala.js.gen.js.GenNumericOps
+import scala.js.gen.js.GenOptionOps
 
 class TestOptionOps extends FileDiffSuite {
   val prefix = "test-out/"
 
   trait DSL extends Base with OptionOps with NumericOps
   trait DSLExp extends DSL with OptionOpsExp with NumericOpsExp
-  trait DSLJSGen extends JSGenEffect with JSGenOptionOps with JSGenNumericOps { val IR: DSLExp }
+  trait DSLJSGen extends GenEffect with GenOptionOps with GenNumericOps { val IR: DSLExp }
 
   def testMapFlatMap() {
 

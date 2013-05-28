@@ -1,11 +1,16 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import scala.js.language.Dynamics
+import scala.js.language.JS
+import scala.js.exp.DynamicsExp
+import scala.js.gen.js.GenDynamics
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJS
 
-trait DynamicProg { this: DynamicBase =>
+trait DynamicProg { this: Dynamics =>
   def test(x: Rep[Any]): Rep[Any] = {
     dynamic(x).foo.bar(x).baz()
   }
@@ -25,7 +30,7 @@ trait NewDynamicInFunProg { this: JS =>
   }
 }
 
-trait DynamicUpdateProg { this: DynamicBase =>
+trait DynamicUpdateProg { this: Dynamics =>
   def test(x: Rep[Any]): Rep[Any] = {
     val x_ = dynamic(x)
     x_.foo = x
@@ -33,7 +38,7 @@ trait DynamicUpdateProg { this: DynamicBase =>
   }
 }
 
-trait DynamicInlineProg { this: DynamicBase =>
+trait DynamicInlineProg { this: Dynamics =>
   def test(x: Rep[Any]): Rep[Any] = {
     val self = inlineDynamic("this")
     val obj = inlineDynamic("foo.bar")
@@ -47,8 +52,8 @@ class TestDynamic extends FileDiffSuite {
   
   def testDynamic = {
     withOutFile(prefix+"dynamic") {
-      new DynamicProg with DynamicExp { self =>
-        val codegen = new JSGenDynamic { val IR: self.type = self }
+      new DynamicProg with DynamicsExp { self =>
+        val codegen = new GenDynamics { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
@@ -58,7 +63,7 @@ class TestDynamic extends FileDiffSuite {
   def testAlloc = {
     withOutFile(prefix+"dynamic_alloc") {
       new AllocProg with JSExp { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
@@ -68,7 +73,7 @@ class TestDynamic extends FileDiffSuite {
   def testNewDynamicInFun = {
     withOutFile(prefix+"dynamic_newinfun") {
       new NewDynamicInFunProg with JSExp { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
@@ -77,8 +82,8 @@ class TestDynamic extends FileDiffSuite {
 
   def testDynamicUpdate = {
     withOutFile(prefix+"dynamicupdate") {
-      new DynamicUpdateProg with DynamicExp { self =>
-        val codegen = new JSGenDynamic { val IR: self.type = self }
+      new DynamicUpdateProg with DynamicsExp { self =>
+        val codegen = new GenDynamics { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
@@ -87,8 +92,8 @@ class TestDynamic extends FileDiffSuite {
 
   def testDynamicInline = {
     withOutFile(prefix+"dynamicinline") {
-      new DynamicInlineProg with DynamicExp { self =>
-        val codegen = new JSGenDynamic { val IR: self.type = self }
+      new DynamicInlineProg with DynamicsExp { self =>
+        val codegen = new GenDynamics { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }

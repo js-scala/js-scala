@@ -1,9 +1,12 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import scala.js.gen.js.GenEffect
+import scala.js.gen.js.GenNumericOps
+import scala.js.gen.js.GenEqual
+import scala.js.gen.js.GenIfThenElse
 
 trait Print extends Base {
   implicit def unit(s: String): Rep[String]
@@ -26,7 +29,7 @@ trait ScalaGenPrint extends ScalaGenEffect {
   }
 }
 
-trait JSGenPrint extends JSGenEffect {
+trait JSGenPrint extends GenEffect {
   val IR: PrintExp
   import IR._
   
@@ -79,7 +82,7 @@ class TestConditional extends FileDiffSuite {
       }
     
       new ConditionalProg with LiftNumeric with NumericOpsExpOpt with EqualExp with PrintExp with IfThenElseExp { self =>
-        val codegen = new JSGenIfThenElse with JSGenNumericOps with JSGenEqual with JSGenPrint { val IR: self.type = self }
+        val codegen = new GenIfThenElse with GenNumericOps with GenEqual with JSGenPrint { val IR: self.type = self }
         val f = (x: Rep[Double]) => test(x)
         codegen.emitSource(f, "main", new PrintWriter(System.out))
         codegen.emitHTMLPage(() => f(7.0), new PrintWriter(new FileOutputStream(prefix+"conditional.html")))

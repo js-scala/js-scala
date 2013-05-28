@@ -1,7 +1,9 @@
 package scala.js.examples
 
-import scala.js._
 import java.io.PrintWriter
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJSOpt
+import scala.js.language.JS
 
 object Birds {
 
@@ -42,7 +44,7 @@ object Birds {
 
   def codegen(pw: PrintWriter) {
     new BirdProg with JSExp { self =>
-      val codegen = new JSGenOpt { val IR: self.type = self }
+      val codegen = new GenJSOpt { val IR: self.type = self }
       codegen.emitSource0(Bird _, "Bird", pw)
     }
   }

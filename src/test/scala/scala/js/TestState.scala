@@ -2,13 +2,15 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
+import scala.js.language.{StateOps, Debug}
+import scala.js.exp.{StateOpsExp, DebugExp}
 
 class TestState extends FileDiffSuite {
   val prefix = "test-out/"
 
-  trait DSL extends Base with StateOps with NumericOps with LiftNumeric with JSDebug
-  trait DSLExp extends DSL with StateOpsExp with VariablesExp with TupleOpsExp with NumericOpsExp with JSDebugExp
-  trait DSLJSGen extends JSGenVariables with JSGenTupleOps with JSGenStateOps with JSGenNumericOps with JSGenDebug { val IR: DSLExp }
+  trait DSL extends Base with StateOps with NumericOps with LiftNumeric with Debug
+  trait DSLExp extends DSL with StateOpsExp with VariablesExp with TupleOpsExp with NumericOpsExp with DebugExp
+  trait DSLGen extends gen.js.GenVariables with gen.js.GenTupleOps with gen.js.GenStateOps with gen.js.GenNumericOps with gen.js.GenDebug { val IR: DSLExp }
 
   def testModify() {
 
@@ -27,7 +29,7 @@ class TestState extends FileDiffSuite {
     }
     withOutFile(prefix+"state-modify") {
       val prog = new Prog with DSLExp
-      val codegen = new DSLJSGen { val IR: prog.type = prog }
+      val codegen = new DSLGen { val IR: prog.type = prog }
       codegen.emitSource(prog.main, "test", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"state-modify")
@@ -56,7 +58,7 @@ class TestState extends FileDiffSuite {
     }
     withOutFile(prefix+"state-put-get") {
       val prog = new Prog with DSLExp
-      val codegen = new DSLJSGen { val IR: prog.type = prog }
+      val codegen = new DSLGen { val IR: prog.type = prog }
       val out = new PrintWriter(System.out)
 
       println("// TODO Still too much aliases")
@@ -84,10 +86,10 @@ class TestState extends FileDiffSuite {
     }
     withOutFile(prefix+"state-eval-exec") {
       val prog = new Prog with DSLExp
-      import prog._
-      val codegen = new DSLJSGen { val IR: prog.type = prog }
+      val codegen = new DSLGen { val IR: prog.type = prog }
       val out = new PrintWriter(System.out)
 
+      import prog.StateMToOps
       println("// TODO Still too much aliases")
       codegen.emitSource(prog.noState.eval, "noState_eval", out)
 
@@ -103,6 +105,8 @@ class TestState extends FileDiffSuite {
   }
 
   def testHeterogeneousTypes() {
+    import scala.js.gen.scala.GenStateOps
+
     trait Prog { this: Base with StateOps with StringOps =>
       import State._
       val p = for {
@@ -113,7 +117,7 @@ class TestState extends FileDiffSuite {
     }
     withOutFile(prefix+"state-heterogeneous-types") {
       val prog = new Prog with StateOpsExp with VariablesExp with TupleOpsExp with StringOpsExp
-      val codegen = new ScalaGenStateOps with ScalaGenVariables with ScalaGenTupleOps with ScalaGenStringOps { val IR: prog.type = prog }
+      val codegen = new GenStateOps with ScalaGenVariables with ScalaGenTupleOps with ScalaGenStringOps { val IR: prog.type = prog }
       codegen.emitSource(prog.main, "main", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"state-heterogeneous-types")

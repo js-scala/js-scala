@@ -1,24 +1,23 @@
 package scala.js.examples
 
-import scala.js._
-import scala.virtualization.lms.common._
 import scala.util.continuations._
-
 import java.io.PrintWriter
-
 import Predef.{any2stringadd => _, _}
+import scala.js.language.{Debug, CPS, Ajax, JS, JSLib, Casts}
+import scala.js.exp.{JSLibExp, CPSExp, AjaxExp, JSExp, DebugExp}
+import scala.js.gen.js.{GenJS, GenJSLib, GenDebug, GenAjax, GenCPS}
 
-trait TwitterApi extends JS with JSLib with CPS with Ajax with JSDebug {
+trait TwitterApi extends JS with JSLib with CPS with Ajax with Debug {
   def append(loc: Rep[String], html: Rep[String]): Rep[Unit]
 }
 
-trait TwitterApiExp extends TwitterApi with JSExp with JSLibExp with CPSExp with AjaxExp with JSDebugExp {
+trait TwitterApiExp extends TwitterApi with JSExp with JSLibExp with CPSExp with AjaxExp with DebugExp {
   case class Append(loc: Exp[String], html: Exp[String]) extends Def[Unit]
   override def append(loc: Exp[String], html: Exp[String]): Exp[Unit] =
     reflectEffect(Append(loc, html))
 }
 
-trait JSGenTwitterApi extends JSGen with JSGenLib with GenCPS with GenAjax with JSGenDebug {
+trait GenTwitterApi extends GenJS with GenJSLib with GenCPS with GenAjax with GenDebug {
   val IR: TwitterApiExp
   import IR._
 
@@ -60,7 +59,7 @@ object Twitter {
 
   def codegen(pw: PrintWriter) {
     new TwitterProg with TwitterApiExp with Casts { self =>
-      val codegen = new JSGenTwitterApi { val IR: self.type = self }
+      val codegen = new GenTwitterApi { val IR: self.type = self }
       codegen.emitSource0(loadTweets _, "loadTweets", pw)
     }
   }

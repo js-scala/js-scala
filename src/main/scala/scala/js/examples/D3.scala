@@ -1,18 +1,20 @@
 package scala.js.examples
 
-import scala.js._
+import scala.js.language.{JS, Dynamics}
+import scala.js.exp.{JSExp, DynamicsExp}
+import scala.js.gen.js.{GenJSOpt, GenDynamics}
 import java.io.PrintWriter
 
 object D3 {
 
-  trait D3API extends DynamicBase {
+  trait D3API extends Dynamics {
     def d3 = inlineDynamic("d3")
     def js_this = inlineDynamic("this")
   }
 
-  trait D3APIExp extends D3API with DynamicExp
+  trait D3APIExp extends D3API with DynamicsExp
 
-  trait JSGenD3API extends JSGenDynamic {
+  trait JSGenD3API extends GenDynamics {
     val IR: D3APIExp
     import IR._
   }
@@ -38,7 +40,7 @@ object D3 {
 
   def codegen(pw: PrintWriter) {
     new SimpleExample with JSExp with D3APIExp { self =>
-      val codegen = new JSGenOpt with JSGenD3API { val IR: self.type = self }
+      val codegen = new GenJSOpt with JSGenD3API { val IR: self.type = self }
       codegen.emitExecution(draw(), pw)
     }
   }
