@@ -3,10 +3,7 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
-import scala.js.gen.js.GenEffect
-import scala.js.gen.js.GenNumericOps
-import scala.js.gen.js.GenEqual
-import scala.js.gen.js.GenIfThenElse
+import gen.js.{GenEffect, GenNumericOps, GenEqual, GenIfThenElse}
 
 trait Print extends Base {
   implicit def unit(s: String): Rep[String]

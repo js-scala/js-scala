@@ -4,12 +4,9 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 import org.scalatest.Ignore
-import scala.js.language.JS
-import scala.js.gen.js.NestedCodegen
-import scala.js.gen.js.GenStruct
-import scala.js.gen.js.GenNumericOps
-import scala.js.exp.JSExp
-import scala.js.gen.js.GenJS
+import language.JS
+import exp.JSExp
+import gen.js.{NestedCodegen, GenStruct, GenNumericOps, GenJS}
 
 trait LiteralProg { this: Structs with LiftNumeric with NumericOps =>
   def test(x: Rep[Double]): Rep[Double] = {

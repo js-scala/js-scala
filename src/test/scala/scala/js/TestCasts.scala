@@ -3,11 +3,9 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
-import scala.js.language.Casts
-import scala.js.language.JS
-import scala.js.exp.CastsCheckedExp
-import scala.js.gen.js.GenCastChecked
-import scala.js.exp.JSExp
+import language.{JS, Casts}
+import exp.{JSExp, CastsCheckedExp}
+import gen.js.GenCastChecked
 
 trait RefinementCastProg { this: Casts =>
   def test(x: Rep[Any]): Rep[Any] = {

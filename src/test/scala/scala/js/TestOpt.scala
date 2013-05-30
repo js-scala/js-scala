@@ -3,9 +3,9 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
-import scala.js.language.JS
-import scala.js.exp.JSExp
-import scala.js.gen.js.GenJSOpt
+import language.JS
+import exp.JSExp
+import gen.js.GenJSOpt
 
 trait OptProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {

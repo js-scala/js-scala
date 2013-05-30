@@ -4,12 +4,9 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
 import org.scalatest.Ignore
-import scala.js.language.JS
-import scala.js.language.Traits
-import scala.js.exp.TraitsExp
-import scala.js.exp.JSExp
-import scala.js.gen.js.GenJS
-import scala.js.gen.js.GenTraits
+import language.{JS, Traits}
+import exp.{JSExp, TraitsExp}
+import gen.js.{GenJS, GenTraits}
 
 trait TraitsProg { this: JS with Traits =>
   trait Foo {

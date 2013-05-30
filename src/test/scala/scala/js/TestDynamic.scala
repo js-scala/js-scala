@@ -3,12 +3,9 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
-import scala.js.language.Dynamics
-import scala.js.language.JS
-import scala.js.exp.DynamicsExp
-import scala.js.gen.js.GenDynamics
-import scala.js.exp.JSExp
-import scala.js.gen.js.GenJS
+import language.{JS, Dynamics}
+import exp.{JSExp, DynamicsExp}
+import gen.js.{GenJS, GenDynamics}
 
 trait DynamicProg { this: Dynamics =>
   def test(x: Rep[Any]): Rep[Any] = {

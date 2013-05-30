@@ -3,14 +3,12 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import scala.xml.Document
-import scala.js.language.Debug
-import scala.js.exp.DebugExp
-import scala.js.gen.js.GenEqual
-import scala.js.gen.js.GenDebug
-import scala.js.gen.js.GenEffect
-import scala.js.language.dom.Dom
-import scala.js.exp.dom.DomExp
-import scala.js.gen.js.dom.GenDom
+import language.Debug
+import language.dom.Dom
+import exp.DebugExp
+import exp.dom.DomExp
+import gen.js.{GenEqual, GenDebug, GenEffect}
+import gen.js.dom.GenDom
 
 class TestNodeList  extends FileDiffSuite {
   val prefix = "test-out/"

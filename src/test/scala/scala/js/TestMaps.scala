@@ -3,12 +3,9 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
-import scala.js.language.JSMaps
-import scala.js.language.JS
-import scala.js.exp.JSExp
-import scala.js.gen.js.GenJSMaps
-import scala.js.exp.JSMapsExp
-import scala.js.gen.js.GenJS
+import language.{JS, JSMaps}
+import exp.{JSExp, JSMapsExp}
+import gen.js.{GenJS, GenJSMaps}
 
 trait MapsProg { this: JS with JSMaps =>
   def test1(): Rep[Map[String, Int]] = {

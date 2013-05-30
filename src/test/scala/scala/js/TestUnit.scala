@@ -2,9 +2,9 @@ package scala.js
 
 import java.io.PrintWriter
 
-import scala.js.exp.JSExp
-import scala.js.gen.js.GenJS
-import scala.js.language.JS
+import language.JS
+import exp.JSExp
+import gen.js.GenJS
 
 trait UnitProg { this: JS =>
   def test(x: Rep[Any]): Rep[Any] = {

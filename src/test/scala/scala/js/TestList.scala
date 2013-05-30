@@ -2,9 +2,7 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
-import scala.js.gen.js.GenNumericOps
-import scala.js.gen.js.GenListOps
-import scala.js.gen.js.GenEffect
+import gen.js.{GenNumericOps, GenListOps, GenEffect}
 
 class TestList extends FileDiffSuite {
 

@@ -3,12 +3,9 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
-import scala.js.language.Proxy
-import scala.js.exp.ProxyExp
-import scala.js.language.JS
-import scala.js.exp.JSExp
-import scala.js.gen.js.GenJS
-import scala.js.gen.js.GenProxy
+import language.{JS, Proxy}
+import exp.{JSExp, ProxyExp}
+import gen.js.{GenJS, GenProxy}
 
 trait TestProxyDummy extends Proxy {
   trait Dummy {

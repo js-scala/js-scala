@@ -3,12 +3,9 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import java.io.FileOutputStream
-import scala.js.language.Arrays
-import scala.js.exp.ArraysExp
-import scala.js.gen.js.GenArrays
-import scala.js.gen.js.GenNumericOps
-import scala.js.gen.js.GenEqual
-import scala.js.gen.js.GenArraysLegacy
+import language.Arrays
+import exp.ArraysExp
+import gen.js.{GenArrays, GenNumericOps, GenEqual, GenArraysLegacy}
 
 trait ArraysProg { this: LiftNumeric with NumericOps with Equal with Arrays =>
   def test1(x: Rep[Int]): Rep[Int] = {

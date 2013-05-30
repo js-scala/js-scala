@@ -2,11 +2,9 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
-import scala.js.language.OptionOps
-import scala.js.exp.OptionOpsExp
-import scala.js.gen.js.GenEffect
-import scala.js.gen.js.GenNumericOps
-import scala.js.gen.js.GenOptionOps
+import language.OptionOps
+import exp.OptionOpsExp
+import gen.js.{GenEffect, GenNumericOps, GenOptionOps}
 
 class TestOptionOps extends FileDiffSuite {
   val prefix = "test-out/"

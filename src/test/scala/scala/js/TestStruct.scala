@@ -2,10 +2,8 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
-import scala.js.exp.JSLiteralExp
-import scala.js.gen.js.GenJSLiteral
-import scala.js.gen.js.NestedCodegen
-import scala.js.gen.js.GenStruct
+import exp.JSLiteralExp
+import gen.js.{GenJSLiteral, NestedCodegen, GenStruct}
 
 trait PersonDSL extends Base {
   type Person
