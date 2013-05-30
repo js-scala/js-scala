@@ -41,10 +41,15 @@
 \maketitle
 
 \begin{abstract}
-Writing code partitioned between heterogeneous client-side and server-side makes the engineering process of Web
-applications tedious. We use a deep embedded DSL to define a common language abstracting over platform differences
-for the developers point of view, but generating efficient code leveraging the target platforms characteristics and
-giving them control on the amount of code produced on client-side.
+Writing large Web applications is known to be difficult. One challenge comes from the fact that the application's
+logic is scattered into heterogeneous clients and servers, making it difficult to share code between both sides or to
+move code from one side to the other. Another challenge is performance: while Web applications rely on ever more
+code on the client-side, they may run on smart phones with little hardware capabilities. These two challenges raise
+the following problem: how to benefit from high-level languages and libraries making code complexity easier to manage
+and abstracting over the clients and servers differences without trading this engineering comfort for performance?
+This article presents high-level abstractions defined as deep embedded DSLs in Scala, that can (1) generate efficient
+code leveraging the target platform characteristics, (2) be shared between client and server code. Our DSL gives a
+performance / expressiveness ratio about two times higher than other approaches.
 \end{abstract}
 
 \category{CR-number}{subcategory}{third-level}
@@ -72,7 +77,7 @@ server-side?
 
 The more interactive the application is, the more logic needs to be duplicated between the server-side
 and the client-side (explain why?), and the higher is the amount of client-side code. Developers use libraries and
-frameworks to get higher-level abstractions on client-side, making their code easier to reason about and to
+frameworks to get high-level abstractions on client-side, making their code easier to reason about and to
 maintain. Unfortunately, JavaScript -- which is currently the most supported the action language on Web clients
 -- has no static linking system allowing to pick just the functions actually used by a program, forcing clients to
 download the whole library even though only a few functions are actually used.
@@ -123,7 +128,7 @@ more optimized native APIs;
  \item Ability to define DOM fragments using a common language for server-side and client-side, but that generates
 code using standard APIs on both server-side and client-side;
  \item Type-directed ad-hoc polymorphism on client-side without runtime dynamic dispatch logic;
- \item Static linking.
+ \item Static linking?
 \end{itemize}
 
 Compared to libraries offering the same level of abstraction, we observe that js-scala produces significantly smaller
@@ -160,7 +165,9 @@ the problem domain. This approach does not scale.
 
 \subsection{Domain Specific Languages}
 
-Problem: interoperability.
+Another approach consists in defining several small languages, each one being specific to a given set of concerns,
+and then to combine all the source artifacts written with these language into one executable program. This approach
+makes it difficult to make the separate languages inter-operate with each other.
 
 \subsection{Thin Languages}
 
@@ -536,14 +543,38 @@ and look at the results. It contains some JavaScript code to handle the dynamic 
 double-posting prevention, dynamic form update and rich interaction with the document.
 
 The application was initially written using jQuery. We rewrote it using several technologies for the client-side
-part: plain JavaScript (without third-party library), js-scala, GWT and SharpKit.
+part: plain JavaScript (without third-party library), js-scala, GWT and HaXe.
+
+\paragraph*{Vanilla JavaScript} Low-level code.
+
+\paragraph*{jQuery} High-level code.
+
+\paragraph*{js-scala} High-level code. HTML fragment definition reused between server and client sides.
+
+\paragraph*{HaXe} Low-level code.
+
+\paragraph*{GWT} High-level code?
 
 \subsection{Benchmarks, Code Metrics}
 
 Our goal is to evalute the level of abstraction provided by each solution and their performances. We took the
-number of lines of code as a measure of the level of abstraction and we wrote micro-benchmarks to evaluate the
-runtime performances of a solution. We also measured the size of the data sent to the client-side. We also measured
-the ability to share code between client and server sides.
+number of lines of code as a measure of the level of abstraction. We also measured the size of the data sent to the
+client-side. We also measured the ability to share code between client and server sides.
+
+Rather than doing a micro-benchmark focusing on just one abstraction, we performed a global benchmark that is more
+likely to reflect the real performances of the application: we simulated user actions on a Web page (2000 clicks on
+buttons, triggering a dynamic update of the page and involving the use of the Option monad, the selectors API and
+the HTML fragment definition API) and measured the time it took complete them. We only measured the execution time of
+client-side code execution. The tests were run on a DELL Latitude E6430 laptop with 8 GB of RAM, on the Google
+Chrome v27 Web browser.
+
+\begin{figure}
+\label{benchmark}
+\centering
+\includegraphics[width=8cm]{chooze.png}
+\caption{Benchmarks on a real application}
+\end{figure}
+
 
 \section{Conclusion, Future Work}
 \label{discussion}
