@@ -78,15 +78,14 @@ server-side?
 The more interactive the application is, the more logic needs to be duplicated between the server-side
 and the client-side (explain why?), and the higher is the amount of client-side code. Developers use libraries and
 frameworks to get high-level abstractions on client-side, making their code easier to reason about and to
-maintain. Unfortunately, JavaScript -- which is currently the most supported the action language on Web clients
--- has no static linking system allowing to pick just the functions actually used by a program, forcing clients to
-download the whole library even though only a few functions are actually used.
+maintain, but also making their code run less efficiently (abstraction penalty).
 
-Using the same programming language on both server-side and client-side can improve the software engineering
-process by enabling code reuse between both sides. Incidentally, the JavaScript language can be used on server-side,
-and an increasing number of programming languages or compiler back-ends can generate JavaScript code (\eg
-Java/GWT~\cite{Chaganti07_GWT}, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}},
-Dart~\cite{Griffith11_Dart}, Kotlin\footnote{\href{http://kotlin.jetbrains.org/}{http://kotlin.jetbrains.org/}},
+Using the same programming language on both server-side and client-side could improve the software engineering
+process by enabling code reuse between both sides. Incidentally, the JavaScript language -- which is currently the
+most supported the action language on Web clients -- can be used on server-side, and an increasing number of
+programming languages or compiler back-ends can generate JavaScript code (\eg Java/GWT~\cite{Chaganti07_GWT},
+SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Dart~\cite{Griffith11_Dart},
+Kotlin\footnote{\href{http://kotlin.jetbrains.org/}{http://kotlin.jetbrains.org/}},
 ClojureScript~\cite{McGranaghan11_ClojureScript}, Fay\footnote{\href{http://fay-lang.org/}{http://fay-lang.org/}},
 Haxe~\cite{Cannasse08_HaXe} or Opa\footnote{\href{http://opalang.org/}{http://opalang.org/}}).
 
@@ -99,26 +98,24 @@ Performance is a primary concern in Web applications, because they are expected 
 from the powerful desktop personal computer to the less powerful smart phone. “Every 100~ms delay costs 1\% of
 sales”, said Amazon in 2006.
 
-For instance, because the boundaries of the code sent to the client are less visible when you share code between
-client-side and server-side, transitive dependencies may pull a lot of code on the client, causing a high download
-overhead. Moreover, generating efficient code for heterogeneous platforms is hard to achieve in an extensible way:
-the translation of common abstractions like collections into their native counterpart (JavaScript arrays on
-client-side and standard library's collections on server-side) may be hard coded in the compiler, but that would not
-scale to handle all the abstractions a complete application may use (\eg HTML fragment definitions, form validation
-rules, or even some business data type that may be represented differently for performance reasons).
+Generating efficient code for heterogeneous platforms is hard to achieve in an extensible way: the translation of
+common abstractions like collections into their native counterpart (JavaScript arrays on client-side and standard
+library's collections on server-side) may be hard coded in the compiler, but that would not scale to handle all the
+abstractions a complete application may use (\eg HTML fragment definitions, form validation rules, or even some
+business data type that may be represented differently for performance reasons).
 
-On one hand, for engineering reasons, developers want to write Web applications using a single language, abstracting
-over the target platforms differences. But on the other hand, for performance reasons, they want to keep
+On one hand, for engineering reasons, developers want to write Web applications using a single high-level language,
+abstracting over the target platforms differences. But on the other hand, for performance reasons, they want to keep
 control on the way their code is compiled to each target platform. How to solve this dilemma?
 
 Compiled domain specific embedded languages~\cite{Elliott2003_Compiling} allow the definition of domain specific
 languages (DSLs) as libraries on top of a host language, and to compile them to a target platform. The deep embedding
 gives the opportunity to control the code generation scheme for a given abstraction and target platform.
 
-\texttt{js-scala}~\cite{Kossakowski12_JsDESL} is such a compiled embedded DSL defined in Scala that generates
-JavaScript code, making it possible to write the client-side code of Web applications using JavaScript. This paper
-enriches js-scala in order to solve the problems described above. We use staging (explain) to generate efficient code
-for typical abstractions used for Web programming and to generate efficient specialized code for both client and
+\texttt{js-scala} is such a compiled embedded DSL defined in Scala that generates JavaScript code, making it possible
+to write the client-side code of Web applications using JavaScript~\cite{Kossakowski12_JsDESL}. This paper
+enriches js-scala in order to solve the problems described above. We use staging (explain?) to generate efficient
+code for typical abstractions used for Web programming and to generate efficient specialized code for both client and
 server sides for shared abstractions. More precisely, we demonstrate the following features:
 
 \begin{itemize}
@@ -127,8 +124,7 @@ more optimized native APIs;
  \item Usage of monads without extra container object creation;
  \item Ability to define DOM fragments using a common language for server-side and client-side, but that generates
 code using standard APIs on both server-side and client-side;
- \item Type-directed ad-hoc polymorphism on client-side without runtime dynamic dispatch logic;
- \item Static linking?
+ \item Type-directed ad-hoc polymorphism on client-side without runtime dynamic dispatch logic.
 \end{itemize}
 
 Compared to libraries offering the same level of abstraction, we observe that js-scala produces significantly smaller
@@ -138,67 +134,73 @@ The remainder of this paper is organized as follows. The next section introduces
 cross-compiling languages. Section \ref{contribution} presents our contribution. Section \ref{validation} evaluates
 our contribution. Section \ref{discussion} concludes.
 
-\section{Related Work}
+\section{Related Work (?)}
 
-Developers express programs using a language that is translated into a form executable on a target platform. This
-section presents different approaches for defining cross-platform languages.
+This section presents different approaches for defining cross-platform programming languages.
 
 \begin{figure}
-  \centering
-  \includegraphics[width=8cm]{langs.pdf}
-  \caption{Language engineering processes}
-  \label{langs}
+\begin{center}
+\includegraphics[width=6cm]{langs.pdf}
+\end{center}
+\caption{Language engineering processes}
+\label{langs}
 \end{figure}
 
-\subsection{Fat Languages}
+\paragraph{Fat Languages}
 
-One way consists in hard-coding, in the language's compiler, the transformation to each target platform. Figure
-\ref{langs} (left) depicts this process. In order to support a feature related to a specific domain, the whole
-compiler pipeline (parser, code generator, \etc) may have to be adapted. This approach gives \emph{fat} languages
-because a lot of concepts are defined at the language level. Examples of such languages are
-Links~\cite{Cooper07_Links}, Opa and Dart~\cite{Griffith11_Dart}. These languages are difficult to extend because
-each concept is defined in the compiler, and modifying a compiler requires a high effort. Furthermore, these
-languages also require to support common abstraction and composition mechanisms, as general purpose languages do, in
-order to make it easier to write real programs. So they need to be at least general purpose languages. It means that
-for every problem you have to rewrite a full-featured programming language before addressing the concepts specific to
-the problem domain. This approach does not scale.
+The first approach for defining a cross-platform language consists in hard-coding, in the compiler, the
+code generation scheme of each language feature to each target platform. Figure \ref{langs} (a) depicts this
+process. In order to support a feature related to a specific domain, the whole compiler pipeline (parser, code
+generator, \etc) may have to be adapted. This approach gives \emph{fat} languages because a lot of concepts are
+defined at the language level: general programming concepts such as naming, functions, classes, and more specific
+concepts such as HTML fragment definition. Examples of such languages are Links~\cite{Cooper07_Links}, Opa and
+Dart~\cite{Griffith11_Dart}. These languages are difficult to extend because each concept is defined in the compiler,
+and modifying a compiler requires a high effort. Furthermore, these languages also require to support common
+programming abstraction and composition mechanisms, as general purpose languages do. So they usually try to re-invent
+the features of general purpose languages. We argue that this approach for defining programming languages is
+difficult to scale: for every problem you have to rewrite a full-featured programming language before addressing the
+concepts specific to the problem domain.
 
-\subsection{Domain Specific Languages}
+\paragraph{Domain Specific Languages}
 
-Another approach consists in defining several small languages, each one being specific to a given set of concerns,
-and then to combine all the source artifacts written with these language into one executable program. This approach
-makes it difficult to make the separate languages inter-operate with each other.
+Another approach consists in defining several small independent languages, each one focusing on concerns specific to
+a given problem domain, and then to combine all the source artifacts written with these language into one executable
+program (ref), as shown in figure~\ref{langs} (b). Defining such a language requires a minimal effort compared to the
+previous approach. On the other hand, it is difficult to have interoperability between different DSLs (ref).
+(add refs to DSL-based approaches to define Web programming environments)
 
-\subsection{Thin Languages}
+\paragraph{Thin Languages}
 
 Alternatively, one can define concepts relative to a specific domain as libraries on top of a thin general purpose
-language. Figure \ref{langs} (middle) depicts this approach. The general purpose language is used as a host language
-that does not need to be modified if a new concept is introduced, because concepts are defined as libraries. However,
-this approach gives no opportunity to translate a concept efficiently, according to the host platform
-characteristics.
+language (this is also referred to as \emph{embedded} domain specific languages). Figure \ref{langs} (c) depicts this
+approach. The general purpose language is used as a host language and does not need to be modified if a new concept
+is introduced, because concepts are defined as pure libraries. However, this approach gives no opportunity to
+translate a concept efficiently according to the host platform characteristics. Examples of languages following this
+approach are Java/GWT, Kotlin, HaXe and SharpKit.
 
-\subsection{Deeply Embedded Languages}
+\paragraph{Deeply Embedded Languages}
 
-Figure \ref{langs} (right) shows a last approach that tries to get the benefits of the previous two approaches,
-without their shortcomings.
+The last approach, shown in figure \ref{langs} (d), can be seen as a middle-ground between the two previous
+approaches: DSLs are embedded in a host language but use a code generation process. (benefits and limitations of
+this approach)
 
 Lightweight Modular Staging~\cite{Rompf12_LMSThesis} is a framework for defining deeply embedded DSLs in Scala. It
 has been used to define high-performance DSLs for parallel computing~\cite{Brown11_Parallel} and can be used to
 generate JavaScript code~\cite{Kossakowski12_JsDESL}.
 
-\section{High-Level Abstractions Generating Efficient (and Heterogeneous) Code}
+\section{High-Level Abstractions For Client-Side Code}
 \label{contribution}
 
 \subsection{Selectors}
 
-In a Web application, the user interface is defined by a HTML document which can be manipulated by the JavaScript
-code to be updated. One typical operation consists in searching some “interesting” element in the document, in order
-to extract its content, replace it or listen to user events fired on this element. The standard API provides several
-function to search elements in a Web document according to their characteristics such as their attribute values.
-Figure~\ref{selectors-api} (wrong reference number) summarizes the available functions and their differences.
+In a Web application, the user interface is defined by a HTML document that can be updated by the JavaScript code.
+A typical operation consists in searching some “interesting” element in the document, in order to extract its
+content, replace it or listen to user events triggered on it. The standard API provides several functions to search
+elements in a HTML document according to their name or attribute values. Figure~\ref{selectors-api} summarizes the
+available functions and their differences.
 
 \begin{figure}
-\label{selectors-api}
+\begin{center}
 \begin{tabular}{| l | p{3cm} |}
 \hline
 Function & Description \\
@@ -207,24 +209,29 @@ Function & Description \\
 \hline
 \code{getElementById(i)} & Element which attribute \code{id} equals to \code{i} \\
 \hline
-\code{querySelectorAll(s)} & All nodes matching the CSS selector \code{s} \\
+\code{querySelectorAll(s)} & All elements matching the CSS selector \code{s} \\
 \hline
 \code{getElementsByTagName(n)} & All elements of type \code{n} \\
 \hline
-\code{getElementsByClassName(c)} & All elements which \code{class} attribute equals to \code{c} \\
+\code{getElementsByClassName(c)} & All elements which \code{class} attribute contains \code{c} \\
 \hline
 \end{tabular}
+\end{center}
 \caption{Standard selectors API}
+\label{selectors-api}
 \end{figure}
 
 The \code{querySelector} and \code{querySelectorAll} are the most general functions, the others handle special
 cases. For the developer it is not convenient to have to master several functions performing similar tasks. In fact,
-most JavaScript developers use the jQuery library (ref and stats) that provides just one function to search for
-elements. Listing~\ref{jquery-vanilla-api} shows two equivalent snippets of code, the first one using the native
-APIs (a) and the second one using jQuery (b).
+most JavaScript developers use the jQuery
+library~\cite{Bibeault08_jQuery}\footnote{According to the following document:
+\href{http://trends.builtwith.com/javascript}{ http://trends.builtwith.com/javascript}, jQuery is used by more than
+40\% of the top million sites} that provides only one function to search for elements.
+Listings \ref{vanilla-selectors} and \ref{jquery-selectors} show two equivalent JavaScript programs, the first one
+using the native APIs and the second one using jQuery.
 
 \begin{figure}
-\begin{lstlisting}[language=JavaScript]
+\begin{lstlisting}[language=JavaScript,label=vanilla-selectors,caption=Selectors in plain JavaScript]
 function getWords() {
   var form = document.getElementById('add-user');
   var sections =
@@ -238,8 +245,10 @@ function getWords() {
   return results
 }
 \end{lstlisting}
-\caption{(a)}
-\begin{lstlisting}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}[language=JavaScript,label=jquery-selectors,caption=Selectors in jQuery]
 function getWords() {
   var form = $('#add-user');
   var sections = $('fieldset', form);
@@ -248,35 +257,32 @@ function getWords() {
   })
 }
 \end{lstlisting}
-\caption{(b)}
-\label{jquery-vanilla-api}
 \end{figure}
 
 jQuery provides an API that is simpler to master because it has less functions, but by doing so it can not benefit
 from the performance of the browser’s implementation of specialized search functions (\code{getElementById},
 \code{getElementsByTagName} and \code{getElementsByClassName}).
 
-Using LMS we are able to provide a simple API (like jQuery) and to generate code using specialized functions (and
-hence benefit from their performances), by analyzing the staged program. Listing~\ref{js-scala-selectors} shows how
-to implement listing~\ref{jquery-vanilla-api} using js-scala. This listing generates a JavaScript program similar to
-listing~\ref{jquery-vanilla-api} (a).
-
 \begin{figure}
-\label{js-scala-selectors}
-\begin{lstlisting}
+\begin{lstlisting}[label=js-scala-selectors,caption=Selectors in js-scala]
 def getWords() = {
   val form = document.find("#add-user")
   val sections = form.findAll("fieldset")
   sections map (_.findAll(".word"))
 }
 \end{lstlisting}
-\caption{Selectors in Js-Scala}
 \end{figure}
 
-Writing the program with js-scala instead of using a JavaScript library such as jQuery is interesting because the
-abstraction for searching elements exist only in the initial program source code, not in the final JavaScript
-program. It gives two advantages: (1) the execution of the final program is more performant because of the use of
-specialized APIs, (2) the final program’s size is smaller because it does not need to include jQuery.
+Listing~\ref{js-scala-selectors} shows how to implement listing~\ref{jquery-selectors} using js-scala. We provide two
+functions for searching elements: \code{find} to find the first element matching a selector and \code{findAll} to
+find all the matching elements. During staging these functions analyze the selector that is passed as parameter and,
+when possible, produce code using the specialized API, otherwise they produce code using \code{querySelector} and
+\code{querySelectorAll}. Thanks to this optimizations, listing~\ref{js-scala-selectors} generates a JavaScript
+program identical to listing~\ref{vanilla-selectors}. Writing the program with js-scala instead of using a JavaScript
+library such as jQuery is interesting because the abstraction for searching elements exist only in the initial
+program source code, not in the final JavaScript program. It gives two advantages: (1) the execution of the final
+program is more performant because of the use of specialized APIs, (2) the final program’s size is smaller because it
+does not need to include jQuery.
 
 \subsection{Monads Sequencing}
 
@@ -284,9 +290,14 @@ As another illustration of the staging mechanism, we present a simple DSL to han
 provides an abstraction at the stage-level that is removed by optimization during the code generation.
 
 Null references are a known source of problems in programming languages~\cite{Hoare09_Null,Nanda09_Null}. For
-example, consider the following typical JavaScript code finding a particular widget in the page and then a particular
-button in the widget:
+example, consider listing \ref{null-unsafe} finding a particular widget in the page and then a particular
+button in the widget. The native \code{querySelector} method returns \code{null} if no node matched the given
+selector in the document. If we run this code in a page where the widget is not present, it will throw an error
+and stop further JavaScript execution. Listing \ref{null-defensive} shows defensive code to handle \code{null}
+cases, but it leads to very cumbersome code.
 
+
+\begin{figure}
 \begin{lstlisting}[language=JavaScript,label=null-unsafe,caption=Unsafe code]
 var loginWidget =
   document.querySelector("div.login");
@@ -294,11 +305,10 @@ var loginButton =
   loginWidget.querySelector("button.submit");
 loginButton.addEventListener("click", handler);
 \end{lstlisting}
+\end{figure}
 
-The native \code{querySelector} method returns \code{null} if no node matched the given selector in the document. If
-we run the above code in a page where the widget is not present, it will throw an error and stop further JavaScript
-execution. We can write defensive code to handle \code{null} cases, but it leads to very cumbersome code:
 
+\begin{figure}
 \begin{lstlisting}[language=JavaScript,label=null-defensive,caption=Defensive programming to handle null references]
 var loginWidget =
   document.querySelector("div.login");
@@ -311,6 +321,7 @@ if (loginWidget !== null) {
   }
 }
 \end{lstlisting}
+\end{figure}
 
 We want to define a DSL that has both the safety and performance of listing \ref{null-defensive} but the
 expressiveness of listing \ref{null-unsafe}. We can get safety by wrapping potentially null values of type
@@ -318,23 +329,24 @@ expressiveness of listing \ref{null-unsafe}. We can get safety by wrapping poten
 expressiveness by using the Scala \code{for} notation for dereferencing, and finally we can get performance by
 generating code that does not actually wraps values in a container but instead checks if they are \code{null} or not
 when dereferenced. The wrapping container exists only at the stage-level and is removed during the code generation.
-Here is a Scala listing that uses our DSL (implementation details are given in section \ref{implementation}):
+Listing \ref{null-js-scala} shows how to write the same program using our DSL (implementation details are
+given in section \ref{implementation}). The evaluation of this listing produces a graph of statements from which
+JavaScript code equivalent to listing \ref{null-defensive} is generated.
 
-\begin{lstlisting}
+\begin{figure}
+\begin{lstlisting}[label=null-js-scala,caption=Handling null references in js-scala]
 for {
   loginWidget <- document.find("div.login")
   loginButton <- loginWidget.find("submit.button")
 } loginButton.on(Click) { e => ... }
 \end{lstlisting}
+\end{figure}
 
-The evaluation of the above listing produces a graph of statements from which JavaScript code equivalent to
-listing \ref{null-defensive} is generated.
 
-\subsection{DOM Fragments}
+\section{High-Level Abstractions Shared on Clients and Servers}
 
 \begin{figure}
-\label{dom-api}
-\begin{lstlisting}[language=JavaScript]
+\begin{lstlisting}[language=JavaScript,caption=JavaScript DOM API,label=dom-api]
 var articleUi = function (article) {
   var div = document.createElement('div');
   div.setAttribute('class', 'article');
@@ -350,14 +362,15 @@ var articleUi = function (article) {
   return div
 };
 \end{lstlisting}
+\end{figure}
 
-\begin{lstlisting}[language=HTML]
+\begin{figure}
+\begin{lstlisting}[language=HTML,caption=HTML,label=html]
 <div class=article>
   <span>French wine: </span>
   <strong>10</strong>
 </div>
 \end{lstlisting}
-\caption{DOM}
 \end{figure}
 
 In this section we show how we can define a template engine as an embedded DSL with minimal effort. This template
@@ -415,73 +428,72 @@ We are able to tackle the code sharing issues described in the introduction (mor
 nature of our DSLs: dynamic content of templates is written using embedded DSLs too, so their translation into
 JavaScript and Scala is managed by their respective code generators.
 
-\subsection{Ad-Hoc Polymorphism}
-
-Because of the dynamically typed nature of JavaScript, when calling a function there is no proper way to select a
-specialized implementation according to the function’s parameters types. JavaScript is only able to dispatch
-according to a method receiver prototype, \eg{} if one writes \code{foo.bar()} the JavaScript runtime will look into
-the prototype of the \code{foo} object for a property named \code{bar} and will call it. So, the only way to achieve
-\emph{ad hoc} polymorphism on JavaScript objects consists in defining the polymorphic function on the prototypes of
-the objects. However, modifying existing object prototypes is considered bad
-practice~\cite{Zakas12_MaintainableJs}. Another way could consist in manually coding the dispatch logic, by
-registering supported data types at the beginning of the program execution, as described in section 2.4.3
-of~\cite{Abelson83_SICP}, but this solution is painful for developers and incurs a performance overhead.
-
-We propose to achieve \emph{ad hoc} polymorphism using
-typeclasses~\cite{Wadler89_AdhocPolymorphism,Odersky06_Typeclasses,Oliveira10_Typeclasses} so that it supports
-retroactive extension without modifying objects prototypes. The dispatch logic is type-directed and performed by the
-compiler, so there is no runtime overhead.
-
-\begin{figure}
-\begin{lstlisting}[label=polymorphism,caption=Ad hoc polymorphism using typeclasses]
-// Interface
-case class Show[A](show: Rep[A => Node])
-
-// Polymorphic function
-def listWidget[A](items: Rep[List[A]])
-      (implicit A: Show[A]): Rep[Node] =
-  el("ul")(
-    for (item <- items) yield {
-      el("li")(A.show(item))
-    }
-  )
-
-// Type `User`
-type User = Record {
-  val name: String
-  val age: Int
-}
-// Implementation of Show for a User
-implicit val showUser = Show[User] { user =>
-  el("span", "class"->"user")(
-    user.name + "(" + user.age + " years)"
-  )
-}
-
-// Main program
-def main(users: Rep[List[User]]) = {
-  document.body.append(listWidget(users))
-}
-\end{lstlisting}
-\end{figure}
-
-Listing \ref{polymorphism} demonstrates how to define a polymorphic \code{listWidget} function that returns a DOM
-tree containing the representation of a list of items. The \code{Show[A]} typeclass defines how to produce a DOM tree
-for a value of type \code{A}. It is used by the \code{listWidget} function to get the DOM fragments of the list
-items. The listing shows how to reuse the same \code{listWidget} function to show a list of users and a list of
-articles.
+% \subsection{Ad-Hoc Polymorphism}
+% 
+% Because of the dynamically typed nature of JavaScript, when calling a function there is no proper way to select a
+% specialized implementation according to the function’s parameters types. JavaScript is only able to dispatch
+% according to a method receiver prototype, \eg{} if one writes \code{foo.bar()} the JavaScript runtime will look into
+% the prototype of the \code{foo} object for a property named \code{bar} and will call it. So, the only way to achieve
+% \emph{ad hoc} polymorphism on JavaScript objects consists in defining the polymorphic function on the prototypes of
+% the objects. However, modifying existing object prototypes is considered bad
+% practice~\cite{Zakas12_MaintainableJs}. Another way could consist in manually coding the dispatch logic, by
+% registering supported data types at the beginning of the program execution, as described in section 2.4.3
+% of~\cite{Abelson83_SICP}, but this solution is painful for developers and incurs a performance overhead.
+% 
+% We propose to achieve \emph{ad hoc} polymorphism using
+% typeclasses~\cite{Wadler89_AdhocPolymorphism,Odersky06_Typeclasses,Oliveira10_Typeclasses} so that it supports
+% retroactive extension without modifying objects prototypes. The dispatch logic is type-directed and performed by the
+% compiler, so there is no runtime overhead.
+% 
+% \begin{figure}
+% \begin{lstlisting}[label=polymorphism,caption=Ad hoc polymorphism using typeclasses]
+% // Interface
+% case class Show[A](show: Rep[A => Node])
+% 
+% // Polymorphic function
+% def listWidget[A](items: Rep[List[A]])
+%       (implicit A: Show[A]): Rep[Node] =
+%   el("ul")(
+%     for (item <- items) yield {
+%       el("li")(A.show(item))
+%     }
+%   )
+% 
+% // Type `User`
+% type User = Record {
+%   val name: String
+%   val age: Int
+% }
+% // Implementation of Show for a User
+% implicit val showUser = Show[User] { user =>
+%   el("span", "class"->"user")(
+%     user.name + "(" + user.age + " years)"
+%   )
+% }
+% 
+% // Main program
+% def main(users: Rep[List[User]]) = {
+%   document.body.append(listWidget(users))
+% }
+% \end{lstlisting}
+% \end{figure}
+% 
+% Listing \ref{polymorphism} demonstrates how to define a polymorphic \code{listWidget} function that returns a DOM
+% tree containing the representation of a list of items. The \code{Show[A]} typeclass defines how to produce a DOM tree
+% for a value of type \code{A}. It is used by the \code{listWidget} function to get the DOM fragments of the list
+% items. The listing shows how to reuse the same \code{listWidget} function to show a list of users and a list of
+% articles.
 
 \section{Implementation}
 \label{implementation}
 
-See http://github.com/js-scala/js-scala.
+\footnote{The code is available at \href{http://github.com/js-scala}{http://github.com/js-scala}}
 
 \subsection{Selectors}
 
 \begin{figure}
-\label{selector-impl}
-\begin{lstlisting}
-def find(receiver: Exp[SelectorApi],
+\begin{lstlisting}[label=selector-impl,caption=Selectors optimization]
+def find(receiver: Exp[Selector],
          selector: Exp[String]) =
   getConstIdentifier(selector) match {
     case Some(id) if receiver == document =>
@@ -490,8 +502,9 @@ def find(receiver: Exp[SelectorApi],
       SelectorFind(receiver, selector)
   }
 \end{lstlisting}
-\caption{Selectors optimization}
 \end{figure}
+
+Listing \ref{selector-impl}
 
 \subsection{Null references}
 
@@ -506,14 +519,14 @@ the code block dereferencing the value within a \code{if} checking that the valu
 \begin{figure}
 \begin{lstlisting}[caption=Null reference handling DSL code generator,label=option-codegen]
 trait JSGenOptionOps extends JSGenEffect {
-  val IR: EfffectExp with OptionOpsExp
+  val IR: OptionOpsExp
   import IR._
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) =
     rhs match {
       case OptionIsEmpty(o) =>
-        emitValDef(sym, quote(o) + " === null")
+        emitValDef(sym, q" $o === null")
       case OptionForeach(o, a, b) =>
-        stream.println("if (" + quote(o) + " !== null) {")
+        stream.println(q"if ($o !== null) {")
         emitValDef(a, quote(o))
         emitBlock(b)
         stream.println("}")
@@ -526,8 +539,6 @@ trait JSGenOptionOps extends JSGenEffect {
 
 \subsection{DOM Fragments}
 
-\subsection{Ad-Hoc Polymorphism}
-
 \section{Evaluation}
 \label{validation}
 
@@ -539,7 +550,7 @@ written, the runtime performances and the ability to modularize the code and to 
 
 Chooze~\footnote{\href{http://chooze.herokuapp.com}{http://chooze.herokuapp.com}} is an existing complete
 application for making polls. It allows users to create a poll, define the choice alternatives, share the poll, vote
-and look at the results. It contains some JavaScript code to handle the dynamic behavior of the application:
+and look at the results. It contains JavaScript code to handle the dynamic behavior of the application:
 double-posting prevention, dynamic form update and rich interaction with the document.
 
 The application was initially written using jQuery. We rewrote it using several technologies for the client-side
@@ -566,18 +577,20 @@ likely to reflect the real performances of the application: we simulated user ac
 buttons, triggering a dynamic update of the page and involving the use of the Option monad, the selectors API and
 the HTML fragment definition API) and measured the time it took complete them. We only measured the execution time of
 client-side code execution. The tests were run on a DELL Latitude E6430 laptop with 8 GB of RAM, on the Google
-Chrome v27 Web browser.
+Chrome v27 Web browser. Figure \ref{benchmark} shows the benchmark results.
 
 \begin{figure}
-\label{benchmark}
 \centering
 \includegraphics[width=8cm]{chooze.png}
 \caption{Benchmarks on a real application}
+\label{benchmark}
 \end{figure}
 
 
-\section{Conclusion, Future Work}
+\section{Conclusion}
 \label{discussion}
+
+We implemented a high-level language abstracting over client and server heterogeneity but producing efficient code.
 
 %\appendix
 %\section{Appendix Title}
