@@ -2,6 +2,7 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import scala.reflect.SourceContext
+import scala.js.language._
 
 // TODO Get rid of this trait
 trait InScala extends Base {
@@ -12,8 +13,8 @@ trait InScala extends Base {
 
 trait JSInScala extends JS with NumericOpsInScala with OrderingOpsInScala with EqualInScala with IfThenElseInScala
   with WhileInScala with BooleanOpsInScala with StringOpsInScala with VariablesInScala with ListOpsInScala
-  with ObjectOpsInScala with JSFunctionsInScala with StructsInScala with PrimitiveOpsInScala with MiscOpsInScala
-  with DynamicInScala with ArraysInScala with JSRegExpsInScala with TupleOpsInScala with OptionOpsInScala with ListOps2InScala
+  with ObjectOpsInScala with FunctionsInScala with StructsInScala with PrimitiveOpsInScala with MiscOpsInScala
+  with DynamicInScala with ArraysInScala with RegExpsInScala with TupleOpsInScala with OptionOpsInScala with ListOps2InScala
 
 trait VariablesInScala extends Variables with ReadVarImplicit with InScala with ImplicitOpsInScala {
   override implicit def readVar[T:Manifest](v: Var[T])(implicit pos: SourceContext) : T = ???
@@ -148,7 +149,7 @@ trait ObjectOpsInScala extends ObjectOps with InScala {
   override def object_unsafe_mutable[A:Manifest](lhs: A)(implicit pos: SourceContext) = lhs
 }
 
-trait DynamicInScala extends DynamicBase with InScala {
+trait DynamicInScala extends Dynamics with InScala {
   def dynamic(x: Any) = ???
   def newDynamic(constructor: String)(args: Any*) = ???
   def inlineDynamic(code: String) = ???
@@ -171,7 +172,7 @@ trait ArraysInScala extends Arrays with InScala {
   def range_filter(r: Range, block: Int => Boolean): Array[Int] = (r.a to r.b).filter(block).toArray
 }
 
-trait JSFunctionsInScala extends JSFunctions with InScala {
+trait FunctionsInScala extends TupledFunctions with InScala {
   override implicit def doLambda[A:Manifest,B:Manifest](fun: A => B)(implicit pos: SourceContext): A => B = fun
   override def doApply[A:Manifest,B:Manifest](fun: A => B, arg: A)(implicit pos: SourceContext): B = fun(arg)
 }
@@ -181,7 +182,7 @@ trait JSLiteralInScala extends JSLiteral with InScala {
   implicit def jsLiteralOps(receiver: JSLiteral): JSLiteralOps = ???
 }
 
-trait JSRegExpsInScala extends JSRegExps with InScala {
+trait RegExpsInScala extends RegExps with InScala {
   import scala.util.matching.Regex
 
   override def string_regexp(r: String): Regex =
@@ -217,11 +218,11 @@ trait TupleOpsInScala extends TupleOps with InScala {
   override def tuple5_get5[E:Manifest](t: (_,_,_,_,E))(implicit pos: SourceContext) : E = t._5
 }
 
-trait JSProxyInScala extends JSProxyBase with InScala {
+trait JSProxyInScala extends Proxy with InScala {
   def repProxy[T<:AnyRef](x: Rep[T])(implicit m: Manifest[T]): T = x
 }
 
-trait JSTraitsInScala extends JSTraits with JSProxyInScala {
+trait JSTraitsInScala extends Traits with JSProxyInScala {
   def create[T<:AnyRef:Manifest](): T =
     throw new RuntimeException("don't know how to create " + implicitly[Manifest[T]].erasure.getName)
   def register[T<:AnyRef:Manifest](outer: AnyRef): Factory[T] =

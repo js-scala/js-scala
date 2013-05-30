@@ -1,7 +1,10 @@
 package scala.js.examples
 
-import scala.js._
 import java.io.PrintWriter
+import scala.js.language.{JS, Casts, Doms}
+import scala.js.exp.{JSExp, DomsExp}
+import scala.js.gen.js.{GenJSOpt, GenDoms}
+import scala.js.{DomsInScala, JSInScala}
 
 object Koch {
 
@@ -58,7 +61,7 @@ object Koch {
 
   def codegen(pw: PrintWriter) {
     new KochProg with JSExp with DomsExp with Casts { self =>
-      val codegen = new JSGenOpt with GenDoms { val IR: self.type = self }
+      val codegen = new GenJSOpt with GenDoms { val IR: self.type = self }
       codegen.emitSource0(draw _, "draw", pw)
     }
   }

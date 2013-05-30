@@ -1,9 +1,14 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import scala.js.language.Arrays
+import scala.js.exp.ArraysExp
+import scala.js.gen.js.GenArrays
+import scala.js.gen.js.GenNumericOps
+import scala.js.gen.js.GenEqual
+import scala.js.gen.js.GenArraysLegacy
 
 trait ArraysProg { this: LiftNumeric with NumericOps with Equal with Arrays =>
   def test1(x: Rep[Int]): Rep[Int] = {
@@ -73,7 +78,7 @@ class TestArrays extends FileDiffSuite {
     withOutFile(prefix+"arrays") {
     
       new ArraysProg with LiftNumeric with NumericOpsExpOpt with EqualExp with ArraysExp { self =>
-        val codegen = new JSGenNumericOps with JSGenEqual with JSGenArrays { val IR: self.type = self }
+        val codegen = new GenNumericOps with GenEqual with GenArrays { val IR: self.type = self }
         codegen.emitSource(test1 _, "test1", new PrintWriter(System.out))
         codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))
         codegen.emitSource(test3 _, "test3", new PrintWriter(System.out))
@@ -84,7 +89,7 @@ class TestArrays extends FileDiffSuite {
         codegen.emitSource(test8 _, "test8", new PrintWriter(System.out))
         codegen.emitSource(test9 _, "test9", new PrintWriter(System.out))
         codegen.emitSource(test10 _, "test10", new PrintWriter(System.out))
-        val genLegacy = new JSGenNumericOps with JSGenEqual with JSGenArraysLegacy { val IR: self.type = self }
+        val genLegacy = new GenNumericOps with GenEqual with GenArraysLegacy { val IR: self.type = self }
         genLegacy.emitSource(test2 _, "test2Legacy", new PrintWriter(System.out))
         genLegacy.emitSource(test3 _, "test3Legacy", new PrintWriter(System.out))
         genLegacy.emitSource(test5 _, "test5Legacy", new PrintWriter(System.out))

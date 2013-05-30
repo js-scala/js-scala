@@ -1,9 +1,11 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import scala.js.gen.js.{GenTupleOps, GenNumericOps, NestedCodegen, GenFunctions, GenJS}
+import scala.js.exp.JSExp
+import scala.js.language.JS
 
 trait TwoArgsProg { this: NumericOps =>
   def test(x: Rep[Double], y: Rep[Double]): Rep[Double] = {
@@ -11,7 +13,7 @@ trait TwoArgsProg { this: NumericOps =>
   }
 }
 
-trait TwoArgsFunProg { this: JSFunctions with NumericOps =>
+trait TwoArgsFunProg { this: TupledFunctions with NumericOps =>
   def test(x: Rep[Int]): Rep[Int] = {
     val f = fun { (a : Rep[Int], b : Rep[Int]) => a + b }
     f(x, x)
@@ -39,7 +41,7 @@ class TestTuple extends FileDiffSuite {
   def testTwoArgs = {
     withOutFile(prefix+"tuple") {
       new TwoArgsProg with TupleOpsExp with NumericOpsExpOpt { self =>
-        val codegen = new JSNestedCodegen with JSGenTupleOps with JSGenNumericOps { val IR: self.type = self }
+        val codegen = new NestedCodegen with GenTupleOps with GenNumericOps { val IR: self.type = self }
         codegen.emitSource2(test, "main", new PrintWriter(System.out))
       }
     }
@@ -48,8 +50,8 @@ class TestTuple extends FileDiffSuite {
 
   def testTwoArgsFun = {
     withOutFile(prefix+"tuplefun") {
-      new TwoArgsFunProg with JSFunctionsExp with NumericOpsExpOpt { self =>
-        val codegen = new JSGenFunctions with JSGenNumericOps with JSGenTupleOps with GenericGenUnboxedTupleAccess { val IR: self.type = self }
+      new TwoArgsFunProg with TupledFunctionsRecursiveExp with NumericOpsExpOpt { self =>
+        val codegen = new GenFunctions with GenNumericOps with GenTupleOps with GenericGenUnboxedTupleAccess { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
@@ -59,7 +61,7 @@ class TestTuple extends FileDiffSuite {
   def testNoBadUnboxing = {
     withOutFile(prefix+"nobadunboxing") {
       new NoBadUnboxingProg with JSExp { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
@@ -69,7 +71,7 @@ class TestTuple extends FileDiffSuite {
   def testUnboxedQuote = {
     withOutFile(prefix+"unboxedquote") {
       new UnboxedQuoteProg with JSExp { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }

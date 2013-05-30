@@ -2,11 +2,26 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import scala.util.continuations._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import scala.js.language.JSLib
+import scala.js.language.JS
+import scala.js.language.CPS
+import scala.js.language.Casts
+import scala.js.language.Ajax
+import scala.js.language.Debug
+import scala.js.exp.AjaxExp
+import scala.js.exp.CPSExp
+import scala.js.exp.DebugExp
+import scala.js.exp.JSLibExp
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJSLib
+import scala.js.gen.js.GenAjax
+import scala.js.gen.js.GenCPS
+import scala.js.gen.js.GenJS
+import scala.js.gen.js.GenDebug
 
-trait CPSProg { this: JS with JSDebug with JSLib with CPS with Ajax with Casts =>
+trait CPSProg { this: JS with Debug with JSLib with CPS with Ajax with Casts =>
 
   def sleep(delay: Rep[Int]) = shift { retrn: (Rep[Unit]=>Rep[Unit]) =>
     log("sleeping for " + delay)
@@ -91,8 +106,8 @@ class TestCPS extends FileDiffSuite {
   def testArrays = {
     withOutFile(prefix+"cps") {
 
-      new CPSProg with JSExp with JSDebugExp with JSLibExp with CPSExp with AjaxExp with Casts { self =>
-        val codegen = new JSGen with JSGenDebug with JSGenLib with GenCPS with GenAjax { val IR: self.type = self }
+      new CPSProg with JSExp with DebugExp with JSLibExp with CPSExp with AjaxExp with Casts { self =>
+        val codegen = new GenJS with GenDebug with GenJSLib with GenCPS with GenAjax { val IR: self.type = self }
         codegen.emitSource(test1 _, "test1", new PrintWriter(System.out))
         codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))
         codegen.emitSource(test3 _, "test3", new PrintWriter(System.out))

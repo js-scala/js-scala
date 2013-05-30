@@ -1,9 +1,14 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import scala.js.language.JSMaps
+import scala.js.language.JS
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJSMaps
+import scala.js.exp.JSMapsExp
+import scala.js.gen.js.GenJS
 
 trait MapsProg { this: JS with JSMaps =>
   def test1(): Rep[Map[String, Int]] = {
@@ -93,7 +98,7 @@ class TestMaps extends FileDiffSuite {
   def testCreateMap = {
     withOutFile(prefix+"create") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource0(test1 _, "test1", new PrintWriter(System.out))
       }
 
@@ -104,7 +109,7 @@ class TestMaps extends FileDiffSuite {
   def testFieldAccess = {
     withOutFile(prefix+"access") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))
         codegen.emitSource(test3 _, "test3", new PrintWriter(System.out))
       }
@@ -116,7 +121,7 @@ class TestMaps extends FileDiffSuite {
   def testFieldAccessOpt = {
     withOutFile(prefix+"access-opt") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test2 _, "test2b", new PrintWriter(System.out))
         codegen.emitSource(test3 _, "test3b", new PrintWriter(System.out))
       }
@@ -128,7 +133,7 @@ class TestMaps extends FileDiffSuite {
   def testFieldUpdate = {
     withOutFile(prefix+"update") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test4 _, "test4", new PrintWriter(System.out))
         codegen.emitSource(test5 _, "test5", new PrintWriter(System.out))
       }
@@ -140,7 +145,7 @@ class TestMaps extends FileDiffSuite {
   def testContainsField = {
     withOutFile(prefix+"contains") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test6 _, "test6", new PrintWriter(System.out))
         codegen.emitSource(test7 _, "test7", new PrintWriter(System.out))
       }
@@ -152,7 +157,7 @@ class TestMaps extends FileDiffSuite {
   def testSize = {
     withOutFile(prefix+"size") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test8 _, "test8", new PrintWriter(System.out))
       }
 
@@ -163,7 +168,7 @@ class TestMaps extends FileDiffSuite {
   def testValues = {
     withOutFile(prefix+"values") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test9 _, "test9", new PrintWriter(System.out))
       }
 
@@ -174,7 +179,7 @@ class TestMaps extends FileDiffSuite {
   def testClear = {
     withOutFile(prefix+"clear") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test10 _, "test10", new PrintWriter(System.out))
       }
 
@@ -185,7 +190,7 @@ class TestMaps extends FileDiffSuite {
   def testKeys = {
     withOutFile(prefix+"keys") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test11 _, "test11", new PrintWriter(System.out))
       }
 
@@ -196,7 +201,7 @@ class TestMaps extends FileDiffSuite {
   def testForeach = {
     withOutFile(prefix+"foreach") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test12 _, "test12", new PrintWriter(System.out))
       }
 
@@ -207,7 +212,7 @@ class TestMaps extends FileDiffSuite {
   def testMapValues = {
     withOutFile(prefix+"mapValues") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test13 _, "test13", new PrintWriter(System.out))
       }
 
@@ -218,7 +223,7 @@ class TestMaps extends FileDiffSuite {
   def testFilter = {
     withOutFile(prefix+"filter") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test14 _, "test14", new PrintWriter(System.out))
       }
 
@@ -229,7 +234,7 @@ class TestMaps extends FileDiffSuite {
   def testFilterForeach = {
     withOutFile(prefix+"filter-foreach") {
       new MapsProg with JSExp with JSMapsExp { self =>
-        val codegen = new JSGen with JSGenMaps { val IR: self.type = self }
+        val codegen = new GenJS with GenJSMaps { val IR: self.type = self }
         codegen.emitSource(test15 _, "test15", new PrintWriter(System.out))
       }
 

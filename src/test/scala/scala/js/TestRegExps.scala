@@ -1,9 +1,11 @@
 package scala.js
 
-import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
-import java.io.FileOutputStream
+
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJS
+import scala.js.language.JS
+import scala.virtualization.lms.common._
 
 trait RegExpsProg { this: JS =>
   def testTest(str: Rep[String]): Rep[Boolean] = {
@@ -34,7 +36,7 @@ class TestRegExps extends FileDiffSuite {
   def testJS = {
     withOutFile(prefix+"regexps") {
       new RegExpsProg with JSExp { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(testTest _, "mainTest", new PrintWriter(System.out))
         codegen.emitSource(testTestWhole _, "mainTestWhole", new PrintWriter(System.out))
         codegen.emitSource(testSearch _, "mainSearch", new PrintWriter(System.out))

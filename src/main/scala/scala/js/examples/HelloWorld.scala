@@ -1,9 +1,14 @@
 package scala.js
 package examples
 
+import scala.js.language.JsScala
+import scala.js.exp.JsScalaExp
+import scala.js.gen.js.{GenJsScala => JSGenJsScala}
+import scala.js.gen.scala.{GenJsScala => ScalaGenJsScala}
+
 object HelloWorld {
 
-  trait Prog { this: JsScala =>
+  trait Prog extends JsScala {
     def main(name: Rep[String]): Rep[Unit] = {
       println("Hello, " + name + "!")
     }

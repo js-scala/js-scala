@@ -1,9 +1,11 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import scala.js.language.JS
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJS
 
 trait WhileProg { this: JS with LiftVariables =>
   def test(n: Rep[Int]): Rep[Int] = {
@@ -29,7 +31,7 @@ class TestCompile extends FileDiffSuite {
   def testWhile = {
     withOutFile(prefix+"while") {
       new WhileProg with JSExp with LiftVariables { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
@@ -39,7 +41,7 @@ class TestCompile extends FileDiffSuite {
   def testSplitJoin = {
     withOutFile(prefix+"splitjoin") {
       new SplitJoinProg with JSExp { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
@@ -49,7 +51,7 @@ class TestCompile extends FileDiffSuite {
   def testObject = {
     withOutFile(prefix+"object") {
       new ObjectProg with JSExp { self =>
-        val codegen = new JSGen { val IR: self.type = self }
+        val codegen = new GenJS { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }

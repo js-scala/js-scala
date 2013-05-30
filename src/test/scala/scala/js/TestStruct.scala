@@ -2,6 +2,10 @@ package scala.js
 
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
+import scala.js.exp.JSLiteralExp
+import scala.js.gen.js.GenJSLiteral
+import scala.js.gen.js.NestedCodegen
+import scala.js.gen.js.GenStruct
 
 trait PersonDSL extends Base {
   type Person
@@ -28,7 +32,7 @@ class TestStruct extends FileDiffSuite {
   def testStruct() {
     withOutFile(prefix+"struct") {
       val prog = new StructProg with PersonExp with StructExp with JSLiteralExp
-      val codegen = new JSNestedCodegen with JSGenStruct with JSGenLiteral { val IR: prog.type = prog }
+      val codegen = new NestedCodegen with GenStruct with GenJSLiteral { val IR: prog.type = prog }
       codegen.emitSource(prog.test, "test", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"struct")

@@ -1,11 +1,16 @@
 package scala.js
 
 import scala.virtualization.lms.common._
-
 import java.io.PrintWriter
 import java.io.FileOutputStream
+import scala.js.language.Proxy
+import scala.js.exp.ProxyExp
+import scala.js.language.JS
+import scala.js.exp.JSExp
+import scala.js.gen.js.GenJS
+import scala.js.gen.js.GenProxy
 
-trait TestProxyDummy extends JSProxyBase {
+trait TestProxyDummy extends Proxy {
   trait Dummy {
     var someVar: Rep[Int]
     def someMethod(n: Rep[Int]): Rep[Int]
@@ -14,7 +19,7 @@ trait TestProxyDummy extends JSProxyBase {
   implicit def repToDummy(x: Rep[Dummy]): Dummy = repProxy[Dummy](x)
 }
 
-trait TestProxyDummyExp extends TestProxyDummy with JSProxyExp
+trait TestProxyDummyExp extends TestProxyDummy with ProxyExp
 
 trait ProxyProg { this: JS with TestProxyDummy =>
   def test(x: Rep[Dummy]): Rep[Int] = {
@@ -29,7 +34,7 @@ class TestProxy extends FileDiffSuite {
   def testProxy = {
     withOutFile(prefix+"proxy") {
       new ProxyProg with JSExp with TestProxyDummyExp { self =>
-        val codegen = new JSGen with JSGenProxy { val IR: self.type = self }
+        val codegen = new GenJS with GenProxy { val IR: self.type = self }
         codegen.emitSource(test _, "main", new PrintWriter(System.out))
       }
     }
