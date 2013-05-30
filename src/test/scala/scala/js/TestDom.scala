@@ -3,18 +3,17 @@ package scala.js
 import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import language.Debug
-import scala.js.exp.DebugExp
-import scala.js.gen.js.GenEffect
-import scala.js.gen.js.GenDebug
-import scala.js.language.dom.Dom
-import scala.js.exp.dom.DomExp
-import scala.js.gen.js.dom.GenDom
+import language.dom.Dom
+import exp.DebugExp
+import exp.dom.DomExpOpt
+import gen.js.{GenEffect, GenDebug}
+import gen.js.dom.GenDom
 
 class TestDom extends FileDiffSuite {
   val prefix = "test-out/"
 
   trait DSL extends Base with Dom with Debug
-  trait DSLExp extends DSL with DomExp with DebugExp
+  trait DSLExp extends DSL with DomExpOpt with DebugExp
   trait DSLJSGen extends GenEffect with GenDom with GenDebug { val IR: DSLExp }
 
   def testOn() {
