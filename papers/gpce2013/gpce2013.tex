@@ -48,17 +48,15 @@ code on the client-side, they may run on smart phones with little hardware capab
 the following problem: how to benefit from high-level languages and libraries making code complexity easier to manage
 and abstracting over the clients and servers differences without trading this engineering comfort for performance?
 This article presents high-level abstractions defined as deep embedded DSLs in Scala, that can (1) generate efficient
-code leveraging the target platform characteristics, (2) be shared between client and server code. Our DSL gives a
+code leveraging the target platform characteristics, (2) be shared between client and server code. Our DSLs have a
 performance / expressiveness ratio about two times higher than other approaches.
 \end{abstract}
 
-\category{CR-number}{subcategory}{third-level}
+\category{D.3.3}{Programming Languages}{Language Constructs and Features}
 
-\terms
-term1, term2
+\terms Languages, Software Engineering
 
-\keywords
-keyword1, keyword2
+\keywords Heterogeneous Code Generation, Domain-specific languages
 
 \section{Introduction}
 
@@ -76,9 +74,9 @@ action. How could developers write HTML fragment definitions once and render the
 server-side?
 
 The more interactive the application is, the more logic needs to be duplicated between the server-side
-and the client-side (explain why?), and the higher is the amount of client-side code. Developers use libraries and
-frameworks to get high-level abstractions on client-side, making their code easier to reason about and to
-maintain, but also making their code run less efficiently (abstraction penalty).
+and the client-side, and the higher is the amount of client-side code. Developers use libraries and frameworks to get
+high-level abstractions on client-side, making their code easier to reason about and to maintain, but also making
+their code run less efficiently (abstraction penalty).
 
 Using the same programming language on both server-side and client-side could improve the software engineering
 process by enabling code reuse between both sides. Incidentally, the JavaScript language -- which is currently the
@@ -114,27 +112,24 @@ gives the opportunity to control the code generation scheme for a given abstract
 
 \texttt{js-scala} is such a compiled embedded DSL defined in Scala that generates JavaScript code, making it possible
 to write the client-side code of Web applications using JavaScript~\cite{Kossakowski12_JsDESL}. This paper
-enriches js-scala in order to solve the problems described above. We use staging (explain?) to generate efficient
-code for typical abstractions used for Web programming and to generate efficient specialized code for both client and
-server sides for shared abstractions. More precisely, we demonstrate the following features:
+enriches \texttt{js-scala} in order to solve the problem described above. We use staging~\cite{Jorring1986_Staging}
+to:
 
 \begin{itemize}
- \item An API for searching in the DOM, that exposes a single entry point but that generates code potentially using
-more optimized native APIs;
- \item Usage of monads without extra container object creation;
- \item Ability to define DOM fragments using a common language for server-side and client-side, but that generates
-code using standard APIs on both server-side and client-side;
- \item Type-directed ad-hoc polymorphism on client-side without runtime dynamic dispatch logic.
+ \item generate efficient code for typical abstractions used in Web programming;
+ \item generate specialized code for both client and server sides for shared abstractions.
 \end{itemize}
 
-Compared to libraries offering the same level of abstraction, we observe that js-scala produces significantly smaller
-executables with better runtime performances.
+Though the code written in \texttt{js-scala} is high-level and can be shared between clients and
+servers, it has the same runtime performances as hand-tune low-level JavaScript code. We observed a performance /
+expressiveness ratio two times higher than using other approaches.
 
 The remainder of this paper is organized as follows. The next section introduces existing approaches for defining
-cross-compiling languages. Section \ref{contribution} presents our contribution. Section \ref{validation} evaluates
-our contribution. Section \ref{discussion} concludes.
+cross-compiling languages. Sections \ref{contribution} and \ref{contribution-shared} present our contribution.
+Section \ref{implementation} gives implementation details. Section \ref{validation} evaluates the contribution.
+Section \ref{discussion} concludes.
 
-\section{Related Work (?)}
+\section{Background}
 
 This section presents different approaches for defining cross-platform programming languages.
 
@@ -175,8 +170,8 @@ Alternatively, one can define concepts relative to a specific domain as librarie
 language (this is also referred to as \emph{embedded} domain specific languages). Figure \ref{langs} (c) depicts this
 approach. The general purpose language is used as a host language and does not need to be modified if a new concept
 is introduced, because concepts are defined as pure libraries. However, this approach gives no opportunity to
-translate a concept efficiently according to the host platform characteristics. Examples of languages following this
-approach are Java/GWT, Kotlin, HaXe and SharpKit.
+translate a concept efficiently according to the target platform characteristics. Examples of languages following
+this approach are Java/GWT, Kotlin, HaXe and SharpKit.
 
 \paragraph{Deeply Embedded Languages}
 
@@ -188,7 +183,7 @@ Lightweight Modular Staging~\cite{Rompf12_LMSThesis} is a framework for defining
 has been used to define high-performance DSLs for parallel computing~\cite{Brown11_Parallel} and can be used to
 generate JavaScript code~\cite{Kossakowski12_JsDESL}.
 
-\section{High-Level Abstractions For Client-Side Code}
+\section{High-Level Abstractions for Client-Side Code}
 \label{contribution}
 
 \subsection{Selectors}
@@ -344,6 +339,7 @@ for {
 
 
 \section{High-Level Abstractions Shared on Clients and Servers}
+\label{contribution-shared}
 
 \begin{figure}
 \begin{lstlisting}[language=JavaScript,caption=JavaScript DOM API,label=dom-api]
