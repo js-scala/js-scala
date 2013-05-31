@@ -11,6 +11,7 @@
 \newcommand{\keywords}[1]{\par\addvspace\baselineskip
 \noindent\keywordname\enspace\ignorespaces#1}
 
+\include{macros}
 
 \newcommand{\ie}{\emph{i.e.}}
 \newcommand{\eg}{\emph{e.g.}}
@@ -24,7 +25,7 @@
 
 \mainmatter
 
-\title{FFI Is Not Enough. Need Dependent Types}
+\title{FFI Is Not Enough. We Need Dependent Types}
 \titlerunning{Dependent Types Rock}
 
 \author{Julien Richard-Foy \and Olivier Barais\and Jean-Marc Jézéquel}
@@ -38,11 +39,13 @@
 
 
 \begin{abstract}
-The abstract should summarize the contents of the paper and should
-contain at least 70 and at most 150 words. It should be written using the
-\emph{abstract} environment.
-\keywords{We would like to encourage you to list your keywords within
-the abstract section}
+JavaScript sucks. It is a known fact. Several other programming languages can target JavaScript as a back-end,
+alleviating developers from the burden of writing and maintaining JavaScript code. The Web browser APIs,
+which are needed to interact with a Web page, are designed for JavaScript, making it challenging to expose them in a
+statically typed language. Indeed, existing statically typed languages either loose control or loose type safety.
+How to give users the same level of control as if they were using the native Web APIs, but in a statically typed and
+convenient way? This article shows how dependent type systems can help.
+\keywords{Dependent Types}
 \end{abstract}
 
 
@@ -54,9 +57,10 @@ difficult~\cite{Mikkonen08_SpaghettiJs,Preciado05_RIAMethodologyNecessity}. One 
 the JavaScript programming language -- which is currently the only action language natively supported by almost all
 Web clients -- lacks of constructs making large code bases maintainable (\eg static typing, first-class modules).
 
-One solution consists in considering JavaScript as an assembly language and generating JavaScript from compilers
-of full-featured and cutting-edge programming languages. Incidentally, an increasing number of programming languages
-or compiler backends can generate JavaScript code (\eg Java/GWT~\cite{Chaganti07_GWT},
+One solution consists in considering JavaScript as an assembly language\footnote{\cf
+\href{http://asmjs.org/}{http://asmjs.org/}} and generating JavaScript from compilers of full-featured and
+cutting-edge programming languages. Incidentally, an increasing number of programming languages or compiler backends
+can generate JavaScript code (\eg Java/GWT~\cite{Chaganti07_GWT},
 SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Dart~\cite{Griffith11_Dart},
 Kotlin\footnote{\href{http://kotlin.jetbrains.org/}{http://kotlin.jetbrains.org/}},
 ClojureScript~\cite{McGranaghan11_ClojureScript}, Fay\footnote{\href{http://fay-lang.org/}{http://fay-lang.org/}},
@@ -66,13 +70,25 @@ However, compiling to JavaScript is not enough. Developers also need the Web bro
 need to interact with the Web page, to build DOM fragments, to listen to user events, \etc. A Foreign Function
 Interface mechanism could be used to make browser’s APIs available to the developers. However, JavaScript APIs are
 not statically typed and make a heavy use of overloading, making them hard to expose in a statically typed language.
-Indeed, most of the existing statically typed languages compiling to JavaScript either lose control or type safety
-when they expose Web browser’s APIs. How to give developers the same level of control as if they were using the
-native Web APIs, but in a statically typed and convenient way?
+
+Indeed, existing statically typed languages compiling to JavaScript often expose weaker types than they should. For
+instance, the function \code{createElement} is polymorphic in its return type: it can return a \code{DivElement} as
+well as an \code{InputElement}, among others, but the Dart, Fay, SharpKit and Kotlin APIs return the super-type of
+all the possible values, namely the \code{Element} type. As a consequence, developers need to explicitly down-cast
+the value they get, which is a tedious and error prone task.
+
+Some other languages try to workaround this problem by using overloading instead of polymorphism. For instance, HaXe
+provides functions \code{createDivElement}, \code{createInputElement}, which return a \code{DivElement} and an
+\code{InputElement}, respectively. Besides requiring a higher effort to implement, this solution also reduces the
+control level of users: by being statically resolved, the element type can not anymore be passed as a parameter.
+
+It turns out that most of the existing statically typed languages compiling to JavaScript either loose control or
+loose type safety when they expose Web browser’s APIs. How to give developers the same level of control as if they
+were using the native Web APIs, but in a statically typed and convenient way?
 
 In this paper we present several ways to integrate Web browser’s APIs as statically typed APIs that are safe and
-give developers the same control level as if they were using the native APIs. We could achieve this
-by using advanced features of type systems like dependent types and functional dependencies.
+give developers the same control level as if they were using the native APIs. We can achieve this by using advanced
+features of type systems like dependent types and functional dependencies.
 
 \section{Motivating Example}
 
@@ -103,7 +119,7 @@ Path-dependent types to abstract over an event name and its data type.
 
 \subsection{Events}
 
-Other languages either provide lose information about the data type of the listened event (Dart) or give no way to
+Other languages either provide loose information about the data type of the listened event (Dart) or give no way to
 abstract over an event (GWT, Kotlin).
 
 \section{Conclusion and Perspectives}
