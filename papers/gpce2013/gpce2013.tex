@@ -153,16 +153,16 @@ Dart~\cite{Griffith11_Dart}. These languages are difficult to extend because eac
 and modifying a compiler requires a high effort. Furthermore, these languages also require to support common
 programming abstraction and composition mechanisms, as general purpose languages do. So they usually try to re-invent
 the features of general purpose languages. We argue that this approach for defining programming languages is
-difficult to scale: for every problem you have to rewrite a full-featured programming language before addressing the
+difficult to scale: for every problem you have to rewrite a full-featured programming language besides addressing the
 concepts specific to the problem domain.
 
-\paragraph{Domain Specific Languages}
+\paragraph{Domain-Specific Languages}
 
-Another approach consists in defining several small independent languages, each one focusing on concerns specific to
-a given problem domain, and then to combine all the source artifacts written with these language into one executable
-program (ref), as shown in figure~\ref{langs} (b). Defining such a language requires a minimal effort compared to the
-previous approach. On the other hand, it is difficult to have interoperability between different DSLs (ref).
-(add refs to DSL-based approaches to define Web programming environments)
+Another approach consists in defining several independent domain-specific languages~\cite{Van00_DSL}, each one
+focusing on concerns specific to a given problem domain, and then to combine all the source artifacts written with
+these language into one executable program, as shown in figure~\ref{langs} (b). Defining such a language requires a
+minimal effort compared to the previous approach. On the other hand, it is difficult to have interoperability between
+DSLs (ref). \cite{Groenewegen08_WebDSL} shows such a domain-specific lanugage for defining Web applications.
 
 \paragraph{Thin Languages}
 
@@ -281,9 +281,6 @@ does not need to include jQuery.
 
 \subsection{Monads Sequencing}
 
-As another illustration of the staging mechanism, we present a simple DSL to handle null references. This DSL
-provides an abstraction at the stage-level that is removed by optimization during the code generation.
-
 Null references are a known source of problems in programming languages~\cite{Hoare09_Null,Nanda09_Null}. For
 example, consider listing \ref{null-unsafe} finding a particular widget in the page and then a particular
 button in the widget. The native \code{querySelector} method returns \code{null} if no node matched the given
@@ -333,7 +330,7 @@ JavaScript code equivalent to listing \ref{null-defensive} is generated.
 for {
   loginWidget <- document.find("div.login")
   loginButton <- loginWidget.find("submit.button")
-} loginButton.on(Click) { e => ... }
+} loginButton.on(Click)(handler)
 \end{lstlisting}
 \end{figure}
 
