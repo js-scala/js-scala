@@ -1,11 +1,10 @@
 function test(x0) {
-var x3 = undefined;
-var x1 = x0;
-if (x1 !== null) {
-var x2 = x1 + 1;
-x3 = x2;
+var x2 = undefined;
+if (x0 !== null) {
+var x1 = x0 + 1;
+x2 = x1;
 } else {
-x3 = 0;
+x2 = 0;
 }
-return x3
+return x2
 }

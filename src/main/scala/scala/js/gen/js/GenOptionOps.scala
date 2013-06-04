@@ -1,38 +1,39 @@
 package scala.js.gen.js
 
 import scala.js.exp.OptionOpsExp
+import scala.js.gen.QuoteGen
 
-trait GenOptionOps extends GenEffect {
+trait GenOptionOps extends GenEffect with QuoteGen {
   val IR: OptionOpsExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
-    case OptionForeach(o, a, block) =>
+    case OptionForeach(o, a, block, bound) =>
       stream.println("if (" + quote(o) + " !== null) {")
-      emitValDef(a, quote(o)) // Ouin
+      if (bound) emitValDef(a, quote(o))
       emitBlock(block)
       stream.println("}")
       emitValDef(sym, "undefined")
-    case OptionMap(o, a, block) =>
-      emitValDef(a, quote(o))
-      stream.println("if (" + quote(a) + " !== null) {")
+    case OptionMap(o, a, block, bound) =>
+      emitValDef(sym, "null")
+      stream.println(q"if ($o !== null) {")
+      if (bound) emitValDef(a, quote(o))
       emitBlock(block)
-      stream.println(quote(a) + " = " + quote(getBlockResult(block)) + ";")
+      emitAssignment(quote(sym), quote(getBlockResult(block)))
       stream.println("}")
-      emitValDef(sym, quote(a))
-    case OptionFlatMap(o, a, block) =>
-      emitValDef(a, quote(o))
-      stream.println("if (" + quote(a) + " !== null) {")
+    case OptionFlatMap(o, a, block, bound) =>
+      emitValDef(sym, "null")
+      stream.println(q"if ($o !== null) {")
+      if (bound) emitValDef(a, quote(o))
       emitBlock(block)
-      stream.println(quote(a) + " = " + quote(getBlockResult(block)) + ";")
+      emitAssignment(quote(sym), quote(getBlockResult(block)))
       stream.println("}")
-      emitValDef(sym, quote(a))
     case OptionIsEmpty(o) =>
       emitValDef(sym, quote(o) + " === null")
-    case OptionFold(o, a, n, s) =>
+    case OptionFold(o, a, n, s, bound) =>
       emitValDef(sym, "undefined")
-      emitValDef(a, quote(o))
-      stream.println("if (" + quote(a) + " !== null) {")
+      stream.println(q"if ($o !== null) {")
+      if (bound) emitValDef(a, quote(o))
       emitBlock(s)
       emitAssignment(quote(sym), quote(getBlockResult(s)))
       stream.println("} else {")
