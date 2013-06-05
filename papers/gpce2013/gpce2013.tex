@@ -48,15 +48,15 @@ code on the client-side, they may run on smart phones with little hardware capab
 the following problem: how to benefit from high-level languages and libraries making code complexity easier to manage
 and abstracting over the clients and servers differences without trading this engineering comfort for performance?
 This article presents high-level abstractions defined as deep embedded DSLs in Scala, that can (1) generate efficient
-code leveraging the target platform characteristics, (2) be shared between client and server code. Our DSLs have a
-performance / expressiveness ratio about two times higher than other approaches.
+code leveraging the target platform characteristics, (2) be shared between client and server code. Code written with
+our DSL has a high level of abstraction but runs as fast as hand tuned low-level JavaScript code.
 \end{abstract}
 
 \category{D.3.3}{Programming Languages}{Language Constructs and Features}
 
 \terms Languages, Software Engineering
 
-\keywords Heterogeneous Code Generation, Domain-specific languages
+\keywords Heterogeneous code generation, Domain-specific languages
 
 \section{Introduction}
 
@@ -74,9 +74,13 @@ action. How could developers write HTML fragment definitions once and render the
 server-side?
 
 The more interactive the application is, the more logic needs to be duplicated between the server-side
-and the client-side, and the higher is the amount of client-side code. Developers use libraries and frameworks to get
-high-level abstractions on client-side, making their code easier to reason about and to maintain, but also making
-their code run less efficiently (abstraction penalty).
+and the client-side, and the higher is the complexity of the client-side code. Developers use libraries and
+frameworks to get high-level abstractions on client-side, making their code easier to reason about and to maintain,
+but also making their code run less efficiently (due to \emph{abstraction penalty}).
+
+Performance is a primary concern in Web applications, because they are expected to run on a broad range of devices,
+from the powerful desktop personal computer to the less powerful smart phone. “Every 100~ms delay costs 1\% of
+sales”, said Amazon in 2006.
 
 Using the same programming language on both server-side and client-side could improve the software engineering
 process by enabling code reuse between both sides. Incidentally, the JavaScript language -- which is currently the
@@ -92,37 +96,36 @@ are not the same. For instance, DOM fragments can be defined on client-side usin
 API does not exist on server-side. How to define a common vocabulary for such concepts? And how to make the
 executable code leverage the native APIs, when possible, for performance reasons?
 
-Performance is a primary concern in Web applications, because they are expected to run on a broad range of devices,
-from the powerful desktop personal computer to the less powerful smart phone. “Every 100~ms delay costs 1\% of
-sales”, said Amazon in 2006.
-
 Generating efficient code for heterogeneous platforms is hard to achieve in an extensible way: the translation of
 common abstractions like collections into their native counterpart (JavaScript arrays on client-side and standard
 library's collections on server-side) may be hard coded in the compiler, but that would not scale to handle all the
 abstractions a complete application may use (\eg HTML fragment definitions, form validation rules, or even some
-business data type that may be represented differently for performance reasons).
+business data type that may be represented differently).
 
 On one hand, for engineering reasons, developers want to write Web applications using a single high-level language,
-abstracting over the target platforms differences. But on the other hand, for performance reasons, they want to keep
-control on the way their code is compiled to each target platform. How to solve this dilemma?
+abstracting over the target platforms differences and reducing code complexity. But on the other hand, for
+performance reasons, they want to keep control on the way their code is compiled to each target platform. How to
+solve this dilemma?
 
-Compiled domain specific embedded languages~\cite{Elliott2003_Compiling} allow the definition of domain specific
+Compiled domain-specific embedded languages~\cite{Elliott2003_Compiling} allow the definition of domain-specific
 languages (DSLs) as libraries on top of a host language, and to compile them to a target platform. The deep embedding
 gives the opportunity to control the code generation scheme for a given abstraction and target platform.
 
-\texttt{js-scala} is such a compiled embedded DSL defined in Scala that generates JavaScript code, making it possible
-to write the client-side code of Web applications using JavaScript~\cite{Kossakowski12_JsDESL}. This paper
-enriches \texttt{js-scala} in order to solve the problem described above. We use staging~\cite{Jorring1986_Staging}
-to:
+Kossakowski \etal introduced \emph{js-scala}, a compiled embedded DSL defined in Scala that generates JavaScript
+code, making it possible to write the client-side code of Web applications using
+JavaScript~\cite{Kossakowski12_JsDESL}. However, Kossakowski \etal did not address the engineering dilemma described
+above. This paper enriches \emph{js-scala} with the following contributions:
 
 \begin{itemize}
- \item generate efficient code for typical abstractions used in Web programming;
- \item generate specialized code for both client and server sides for shared abstractions.
+ \item we define high-level abstractions typically used in Web programming generating low-level code leveraging
+native Web browsers APIs;
+ \item in the case of abstractions shared between servers and clients, we specialize the code generation in order to
+leverage the target platform native environments.
 \end{itemize}
 
-Though the code written in \texttt{js-scala} is high-level and can be shared between clients and
-servers, it has the same runtime performances as hand-tune low-level JavaScript code. We observed a performance /
-expressiveness ratio two times higher than using other approaches.
+We validate our approach with a case study implemented with various candidate technologies and discuss the relative
+pro and cons of them. Though the code written in our DSL is high-level and can be shared between clients and servers,
+it has the same runtime performances as hand-tune low-level JavaScript code.
 
 The remainder of this paper is organized as follows. The next section introduces existing approaches for defining
 cross-compiling languages. Sections \ref{contribution} and \ref{contribution-shared} present our contribution.
@@ -162,7 +165,7 @@ Another approach consists in defining several independent domain-specific langua
 focusing on concerns specific to a given problem domain, and then to combine all the source artifacts written with
 these language into one executable program, as shown in figure~\ref{langs} (b). Defining such a language requires a
 minimal effort compared to the previous approach. On the other hand, it is difficult to have interoperability between
-DSLs (ref). \cite{Groenewegen08_WebDSL} shows such a domain-specific lanugage for defining Web applications.
+DSLs (ref). \cite{Groenewegen08_WebDSL} shows such a domain-specific language for defining Web applications.
 
 \paragraph{Thin Languages}
 
@@ -179,20 +182,18 @@ The last approach, shown in figure \ref{langs} (d), can be seen as a middle-grou
 approaches: DSLs are embedded in a host language but use a code generation process. (benefits and limitations of
 this approach)
 
-Lightweight Modular Staging~\cite{Rompf12_LMSThesis} is a framework for defining deeply embedded DSLs in Scala. It
-has been used to define high-performance DSLs for parallel computing~\cite{Brown11_Parallel} and can be used to
-generate JavaScript code~\cite{Kossakowski12_JsDESL}.
+Lightweight Modular Staging~\cite{Rompf12_LMSThesis} is a framework for defining deeply embedded DSLs in Scala using
+staging~\cite{Jorring1986_Staging}. It has been used to define high-performance DSLs for parallel
+computing~\cite{Brown11_Parallel}.
 
-\section{High-Level Abstractions for Client-Side Code}
+\section{High-Level Abstraction for Client-Side Code: Selectors}
 \label{contribution}
-
-\subsection{Selectors}
 
 In a Web application, the user interface is defined by a HTML document that can be updated by the JavaScript code.
 A typical operation consists in searching some “interesting” element in the document, in order to extract its
-content, replace it or listen to user events triggered on it. The standard API provides several functions to search
-elements in a HTML document according to their name or attribute values. Figure~\ref{selectors-api} summarizes the
-available functions and their differences.
+content, replace it or listen to user events triggered on it (such as a mouse click). The standard API provides
+several functions to search elements in a HTML document according to their name or attribute values.
+Figure~\ref{selectors-api} summarizes the available functions and their differences.
 
 \begin{figure}
 \begin{center}
@@ -216,14 +217,14 @@ Function & Description \\
 \label{selectors-api}
 \end{figure}
 
-The \code{querySelector} and \code{querySelectorAll} are the most general functions, the others handle special
+The \code{querySelector} and \code{querySelectorAll} are the most general functions while the others handle special
 cases. For the developer it is not convenient to have to master several functions performing similar tasks. In fact,
 most JavaScript developers use the jQuery
 library~\cite{Bibeault08_jQuery}\footnote{According to the following document:
 \href{http://trends.builtwith.com/javascript}{ http://trends.builtwith.com/javascript}, jQuery is used by more than
-40\% of the top million sites} that provides only one function to search for elements.
-Listings \ref{vanilla-selectors} and \ref{jquery-selectors} show two equivalent JavaScript programs, the first one
-using the native APIs and the second one using jQuery.
+40\% of the top million sites} that provides only one high-level function to search for elements.
+Listings \ref{vanilla-selectors} and \ref{jquery-selectors} show two equivalent JavaScript programs performing
+element searches, the first one using the native APIs and the second one using jQuery.
 
 \begin{figure}
 \begin{lstlisting}[language=JavaScript,label=vanilla-selectors,caption=Selectors in plain JavaScript]
@@ -268,16 +269,20 @@ def getWords() = {
 \end{lstlisting}
 \end{figure}
 
-Listing~\ref{js-scala-selectors} shows how to implement listing~\ref{jquery-selectors} using js-scala. We provide two
-functions for searching elements: \code{find} to find the first element matching a selector and \code{findAll} to
-find all the matching elements. During staging these functions analyze the selector that is passed as parameter and,
-when possible, produce code using the specialized API, otherwise they produce code using \code{querySelector} and
-\code{querySelectorAll}. Thanks to this optimizations, listing~\ref{js-scala-selectors} generates a JavaScript
-program identical to listing~\ref{vanilla-selectors}. Writing the program with js-scala instead of using a JavaScript
-library such as jQuery is interesting because the abstraction for searching elements exist only in the initial
-program source code, not in the final JavaScript program. It gives two advantages: (1) the execution of the final
-program is more performant because of the use of specialized APIs, (2) the final program’s size is smaller because it
-does not need to include jQuery.
+Listing~\ref{js-scala-selectors} shows how to implement listing~\ref{jquery-selectors} using \emph{js-scala}. We
+provide two functions for searching elements: \code{find} to find the first element matching a selector and
+\code{findAll} to find all the matching elements. During staging these functions try to analyze the selector that is
+passed as parameter and, when appropriate, produce code using the specialized API, otherwise they produce code using
+\code{querySelector} and \code{querySelectorAll}. As a result, listing~\ref{js-scala-selectors} generates a
+JavaScript program identical to listing~\ref{vanilla-selectors}: the high-level abstraction (the \code{find} and
+\code{findAll} functions) exist only in the initial program, not in the final JavaScript program. It gives two
+advantages: (1) the execution of the final program is more performant because of the use of specialized APIs, (2) the
+final program’s size is smaller because it does not need to include jQuery. (Move this last sentence in the
+discussion)
+
+
+\section{High-Level Abstractions Shared on Clients and Servers}
+\label{contribution-shared}
 
 \subsection{Monads Sequencing}
 
@@ -285,9 +290,8 @@ Null references are a known source of problems in programming languages~\cite{Ho
 example, consider listing \ref{null-unsafe} finding a particular widget in the page and then a particular
 button in the widget. The native \code{querySelector} method returns \code{null} if no node matched the given
 selector in the document. If we run this code in a page where the widget is not present, it will throw an error
-and stop further JavaScript execution. Listing \ref{null-defensive} shows defensive code to handle \code{null}
-cases, but it leads to very cumbersome code.
-
+and stop further JavaScript execution. Defensive code can handle \code{null} reference, but leads to very cumbersome
+code, as shown in listing \ref{null-defensive}.
 
 \begin{figure}
 \begin{lstlisting}[language=JavaScript,label=null-unsafe,caption=Unsafe code]
@@ -315,6 +319,15 @@ if (loginWidget !== null) {
 \end{lstlisting}
 \end{figure}
 
+Some programming languages encode optional values with a monad (\eg \code{Maybe} in Haskell and \code{Option} in
+Scala). In that case, sequencing over the monad encodes optional value dereferencing. If the language supports a
+convenient syntax for monad sequencing, it brings a convenient syntax for optional value dereferencing, alleviating
+developers from the burden of defensive programming.
+
+Listing \ref{null-js-scala} implements in \emph{js-scala} a program equivalent to listing \ref{null-defensive}. The
+\code{for} notation is used to sequence computations over optional values encoded with a monad, allowing a high
+level of expressiveness. (To be continued, mention \code{Rep[Option[A]]}, \code{Rep[Some[A]]}, \code{Rep[None.type]})
+
 We want to define a DSL that has both the safety and performance of listing \ref{null-defensive} but the
 expressiveness of listing \ref{null-unsafe}. We can get safety by wrapping potentially null values of type
 \code{Rep[A]} in a container of type \code{Rep[Option[A]]} requiring explicit dereferencing, we can get
@@ -334,9 +347,7 @@ for {
 \end{lstlisting}
 \end{figure}
 
-
-\section{High-Level Abstractions Shared on Clients and Servers}
-\label{contribution-shared}
+\subsection{DOM Fragments Definition}
 
 \begin{figure}
 \begin{lstlisting}[language=JavaScript,caption=JavaScript DOM API,label=dom-api]
