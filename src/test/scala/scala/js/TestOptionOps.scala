@@ -45,5 +45,16 @@ class TestOptionOps extends FileDiffSuite {
     }
     assertFileEqualsCheck(prefix+"option-fold")
   }
-
+  
+  def testGetOrElse() {
+    trait Prog { this: DSL =>
+      def main(maybeX: Rep[Option[Int]]): Rep[Int] = maybeX getOrElse unit(0)
+    }
+    withOutFile(prefix+"option-getorelse") {
+      val prog = new Prog with DSLExp
+      val codegen = new DSLJSGen { val IR: prog.type = prog }
+      codegen.emitSource(prog.main, "test", new PrintWriter(System.out))
+    }
+    assertFileEqualsCheck(prefix+"option-getorelse")
+  }
 }

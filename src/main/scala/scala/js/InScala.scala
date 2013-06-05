@@ -400,5 +400,6 @@ trait OptionOpsInScala extends OptionOps with InScala {
     def flatMap[B : Manifest](f: A => Option[B]) = o.flatMap(f)
     def isEmpty = o.isEmpty
     def fold[B: Manifest](none: => B, some: A => B) = o.fold(none)(some)
+    def getOrElse[B >: A : Manifest](default: => Rep[B]) = fold(default, identity)
   }
 }

@@ -32,6 +32,7 @@ trait OptionOpsExp extends OptionOps with EffectExp {
       val someBlock = reifyEffects(some(a))
       reflectEffect(OptionFold(o, a, noneBlock, someBlock), summarizeEffects(noneBlock) orElse summarizeEffects(someBlock))
     }
+    def getOrElse[B >: A : Manifest](default: => Rep[B]) = fold(default, identity)
   }
 
   case class OptionForeach[A](o: Exp[Option[A]], a: Sym[A], block: Block[Unit]) extends Def[Unit]
