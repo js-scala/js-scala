@@ -25,7 +25,7 @@
 
 \mainmatter
 
-\title{FFI Is Not Enough. We Need Dependent Types}
+\title{FFI Is Not Enough. We Need Dependent Types.}
 \titlerunning{Dependent Types Rock}
 
 \author{Julien Richard-Foy \and Olivier Barais\and Jean-Marc Jézéquel}
@@ -39,12 +39,13 @@
 
 
 \begin{abstract}
-JavaScript sucks. It is a known fact. Several other programming languages can target JavaScript as a back-end,
-alleviating developers from the burden of writing and maintaining JavaScript code. The Web browser APIs,
-which are needed to interact with a Web page, are designed for JavaScript, making it challenging to expose them in a
-statically typed language. Indeed, existing statically typed languages either loose control or loose type safety.
-How to give users the same level of control as if they were using the native Web APIs, but in a statically typed and
-convenient way? This article shows how dependent type systems can help.
+Several programming languages can target JavaScript as a back-end, giving developers programming language features
+that are absent from JavaScript, such as static typing. However, the Web browser APIs, which are needed to interact
+with a Web page, are designed for JavaScript, making it challenging to expose them in a statically typed language.
+Indeed, existing statically typed languages exposing Web browser APIs either break type safety or give developers
+less control than if they were using JavaScript. This article shows how to expose Web browser APIs in Scala in a
+type safe way while keeping the same level of control as with native APIs. We use advanced type system features such
+as dependent types and functional dependencies.
 \keywords{Dependent Types}
 \end{abstract}
 
