@@ -1,10 +1,9 @@
 function test(x0) {
-var x2 = undefined;
-var x1 = x0;
-if (x1 !== null) {
-x2 = x1;
+var x1 = undefined;
+if (x0 !== null) {
+x1 = x0;
 } else {
-x2 = 0;
+x1 = 0;
 }
-return x2
+return x1
 }
