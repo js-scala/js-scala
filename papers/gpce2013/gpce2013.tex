@@ -117,7 +117,7 @@ JavaScript~\cite{Kossakowski12_JsDESL}. However, Kossakowski \etal did not addre
 above. This paper enriches \emph{js-scala} with the following contributions:
 
 \begin{itemize}
- \item we define high-level abstractions typically used in Web programming generating low-level code leveraging
+ \item we define high-level abstractions typically used in Web programming, that generate low-level code leveraging
 native Web browsers APIs;
  \item in the case of abstractions shared between servers and clients, we specialize the code generation in order to
 leverage the target platform native environments.
@@ -125,7 +125,7 @@ leverage the target platform native environments.
 
 We validate our approach with a case study implemented with various candidate technologies and discuss the relative
 pro and cons of them. Though the code written in our DSL is high-level and can be shared between clients and servers,
-it has the same runtime performances as hand-tune low-level JavaScript code.
+it has the same runtime performances as hand-tuned low-level JavaScript code.
 
 The remainder of this paper is organized as follows. The next section introduces existing approaches for defining
 cross-compiling languages. Sections \ref{contribution} and \ref{contribution-shared} present our contribution.
@@ -182,9 +182,9 @@ The last approach, shown in figure \ref{langs} (d), can be seen as a middle-grou
 approaches: DSLs are embedded in a host language but use a code generation process. (benefits and limitations of
 this approach)
 
-Lightweight Modular Staging~\cite{Rompf12_LMSThesis} is a framework for defining deeply embedded DSLs in Scala using
-staging~\cite{Jorring1986_Staging}. It has been used to define high-performance DSLs for parallel
-computing~\cite{Brown11_Parallel}.
+Lightweight Modular Staging~\cite{Rompf12_LMSThesis} (LMS) is a framework for defining deeply embedded DSLs in Scala
+using staging~\cite{Jorring1986_Staging}. It has been used to define high-performance DSLs for parallel
+computing~\cite{Brown11_Parallel}. (Todo. Mention \code{Rep[_]})
 
 \section{High-Level Abstraction for Client-Side Code: Selectors}
 \label{contribution}
@@ -290,8 +290,8 @@ Null references are a known source of problems in programming languages~\cite{Ho
 example, consider listing \ref{null-unsafe} finding a particular widget in the page and then a particular
 button in the widget. The native \code{querySelector} method returns \code{null} if no node matched the given
 selector in the document. If we run this code in a page where the widget is not present, it will throw an error
-and stop further JavaScript execution. Defensive code can handle \code{null} reference, but leads to very cumbersome
-code, as shown in listing \ref{null-defensive}.
+and stop further JavaScript execution. Defensive code can be written to handle \code{null} references, but leads to
+very cumbersome code, as shown in listing \ref{null-defensive}.
 
 \begin{figure}
 \begin{lstlisting}[language=JavaScript,label=null-unsafe,caption=Unsafe code]
@@ -325,18 +325,11 @@ convenient syntax for monad sequencing, it brings a convenient syntax for option
 developers from the burden of defensive programming.
 
 Listing \ref{null-js-scala} implements in \emph{js-scala} a program equivalent to listing \ref{null-defensive}. The
-\code{for} notation is used to sequence computations over optional values encoded with a monad, allowing a high
-level of expressiveness. (To be continued, mention \code{Rep[Option[A]]}, \code{Rep[Some[A]]}, \code{Rep[None.type]})
-
-We want to define a DSL that has both the safety and performance of listing \ref{null-defensive} but the
-expressiveness of listing \ref{null-unsafe}. We can get safety by wrapping potentially null values of type
-\code{Rep[A]} in a container of type \code{Rep[Option[A]]} requiring explicit dereferencing, we can get
-expressiveness by using the Scala \code{for} notation for dereferencing, and finally we can get performance by
-generating code that does not actually wraps values in a container but instead checks if they are \code{null} or not
-when dereferenced. The wrapping container exists only at the stage-level and is removed during the code generation.
-Listing \ref{null-js-scala} shows how to write the same program using our DSL (implementation details are
-given in section \ref{implementation}). The evaluation of this listing produces a graph of statements from which
-JavaScript code equivalent to listing \ref{null-defensive} is generated.
+\code{for} notation is used to sequence computations over optional values encoded with a monad. The \code{find}
+function returns a \code{Rep[Option[Element]]} value, that can either be a \code{Rep[Some[Element]]} (if an element
+was found) or a \code{Rep[None.type]} (if no element was found). The \code{for} expression contains a sequence
+of statements that are executed in order, as long as the previous statement returned a \code{Rep[Some[Element]]}
+value.
 
 \begin{figure}
 \begin{lstlisting}[label=null-js-scala,caption=Handling null references in js-scala]
@@ -347,7 +340,22 @@ for {
 \end{lstlisting}
 \end{figure}
 
+Such a monadic API brings both safety and expressiveness to developers manipulating optional values but usually
+involves the creation of an extra container object holding the optional value. In our case, we expose
+the monadic API at the first stage but we generate code that does not wrap values in a container object but instead
+checks if they are \code{null} or not when dereferenced. So the extra container object exists only at the
+stage-level and is removed during code generation: listing \ref{null-js-scala} produces a code equivalent to listing
+\ref{null-defensive}.
+
+Last but not least, we leverage the modular architecture of LMS to define two code generators for this API: one
+targeting JavaScript and the other targeting Scala. So the same abstraction is efficiently translated on both server
+and client sides.
+
 \subsection{DOM Fragments Definition}
+
+This section shows how we define an abstraction shared between clients and servers, as in the previous section, but
+that has different native counterparts on client and server sides. The challenge is to define an API providing a
+common vocabulary that generates code using the target platform native APIs.
 
 \begin{figure}
 \begin{lstlisting}[language=JavaScript,caption=JavaScript DOM API,label=dom-api]
@@ -369,30 +377,27 @@ var articleUi = function (article) {
 \end{figure}
 
 \begin{figure}
-\begin{lstlisting}[language=HTML,caption=HTML,label=html]
-<div class=article>
-  <span>French wine: </span>
-  <strong>10</strong>
-</div>
+\begin{lstlisting}[caption=Scala XML API,label=scala-xml-api]
+def articleUi(article: Article) =
+  <div class="article">
+    <span>{ article.name + ": " }</span>
+    <strong>{ article.price }</strong>
+  </div>
 \end{lstlisting}
 \end{figure}
 
-In this section we show how we can define a template engine as an embedded DSL with minimal effort. This template
-engine is statically typed and able to insert dynamic content in a safe way. It provides a powerful expression
-language, requires no extra compilation step and can be used on both client-side and server-side.
+A common task in Web applications consists in computing HTML fragments representing a part of the page content. This
+task can be performed either from the server-side (to initially respond to a request) or from the client-side (to
+update the current page). As an example, listing \ref{dom-api} defines a JavaScript function \code{articleUi} that
+builds a DOM tree containing an article description, and listing \ref{scala-xml-api} shows how one could implement
+a similar function on server-side using the standard Scala XML library. The reader may notice that the client-side
+and server-side API are very different and that the client-side API is very low-level and inconvenient to use.
 
-Because the template engine is defined as en embedded DSL, we can reuse Scala’s constructs:
-
-\begin{itemize}
-\item a function taking some parameters and returning a DOM fragment directly models a template taking parameters and
-returning a DOM fragment~;
-\item the type system type-checks template definitions and template calls~;
-\item the Scala language itself is the expression language~;
-\item compiling a template is the same as compiling user code.
-\end{itemize}
-
-So the only remaining work consists in defining the DSL vocabulary to define DOM nodes. We provide a \code{el}
-function to define a tag and any \code{String} value is considered to be a text node.
+Instead, we provide a common high-level DSL for defining HTML fragments and we make this DSL generate code leveraging
+native environments. Listing \ref{forest} shows how to implement our example with our DSL. The \code{el} function
+defines an HTML element, eventually containing attributes and children elements. Any children of an element that is
+not an element itself is converted into a text node. The children elements of an element can also be obtained
+dynamically from a collection, as shown in listing \ref{forest-loops}.
 
 \begin{figure}
 \begin{lstlisting}[label=forest,caption=DOM definition DSL]
@@ -404,33 +409,23 @@ def articleUi(article: Rep[Article]) =
 \end{lstlisting}
 \end{figure}
 
-Listing \ref{forest} uses our DSL and generates a code equivalent to listing \ref{dom-api}. The readability has
-been highly improved: nesting tags is just like nesting code blocks, HTML entities are
-automatically escaped in text nodes, developers have the full computational power of Scala to inject dynamic data and
-DOM fragments definitions are written using functions so they compose just as functions compose. These benefits come
-with no performance loss because the DSL generates code building DOM fragments by using the native JavaScript API.
-
-Our DSL is equivalent to a template engine with Scala as the expression language. Making it usable on both server and
-client sides was surprisingly as simple as defining another code generator for the DSL, producing Scala code.
-
-For instance, the template written in listing \ref{forest} produces the following Scala code usable on
-server-side:
-
-\begin{lstlisting}
-def articleUi(article: Article) = {
-  val x0 = <span>{ article.name + ": " }</span>
-  val x1 = <strong>{ article.price }</strong>
-  val x2 =
-    <div class="article">
-      {List(x0, x1)}
-    </div>
-  x2
-}
+\begin{figure}
+\begin{lstlisting}[label=forest-loops,caption=Using loops]
+def articlesUi(articles: Rep[Seq[Article]]) =
+    el('ul)(
+        for (article <- articles)
+        yield el('li)(articleUi(article))
+    )
 \end{lstlisting}
+\end{figure}
 
-We are able to tackle the code sharing issues described in the introduction (more details?) because of the embdedded
-nature of our DSLs: dynamic content of templates is written using embedded DSLs too, so their translation into
-JavaScript and Scala is managed by their respective code generators.
+The \code{el} function returns an \code{Element} IR node that is a tree composed of other \code{Element} nodes and
+\code{Text} nodes. This tree is traversed by the code generators to produce code building an equivalent DOM tree on
+client-side and code building an equivalent XML fragment on server-side. When the children elements of an element are
+constant values (as in listing \ref{forest}) rather than dynamically obtained (as in listing \ref{forest-loops}), the
+code generators inline the loop that adds children to their parent, for better performance. As a result, listing
+\ref{forest} generates a code equivalent to listing \ref{dom-api} on client-side and equivalent to
+\ref{scala-xml-api} on server-side.
 
 % \subsection{Ad-Hoc Polymorphism}
 % 
