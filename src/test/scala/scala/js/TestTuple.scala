@@ -34,6 +34,12 @@ trait UnboxedQuoteProg { this: JS =>
   }
 }
 
+trait SimpleTupleProg { this: JS =>
+  def test(x: Rep[Any]): (Rep[Int], Rep[String], Rep[Boolean]) = {
+    (1, "2", true)
+  }
+}
+
 class TestTuple extends FileDiffSuite {
 
   val prefix = "test-out/"
@@ -76,6 +82,29 @@ class TestTuple extends FileDiffSuite {
       }
     }
     assertFileEqualsCheck(prefix+"unboxedquote")
+  }
+
+  def testObjectTranslation = {
+    withOutFile(prefix+"tuple-as-object") {
+      new SimpleTupleProg with JSExp { self =>
+        val codegen = new GenJS { val IR: self.type = self }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"tuple-as-object")
+  }
+
+  def testArrayTranslation = {
+    withOutFile(prefix+"tuple-as-array") {
+      new SimpleTupleProg with JSExp { self =>
+        val codegen = new GenJS {
+          val IR: self.type = self
+          override def tupleAsArrays = true
+        }
+        codegen.emitSource(test _, "main", new PrintWriter(System.out))
+      }
+    }
+    assertFileEqualsCheck(prefix+"tuple-as-array")
   }
 
 }
