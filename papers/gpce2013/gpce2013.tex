@@ -48,7 +48,7 @@ code on the client-side, they may run on smart phones with little hardware capab
 the following problem: how to benefit from high-level languages and libraries making code complexity easier to manage
 and abstracting over the clients and servers differences without trading this engineering comfort for performance?
 This article presents high-level abstractions defined as deep embedded DSLs in Scala, that can (1) generate efficient
-code leveraging the target platform characteristics, (2) be shared between client and server code. Code written with
+code leveraging the target platform characteristics, (2) be shared between clients and servers. Code written with
 our DSL has a high level of abstraction but runs as fast as hand tuned low-level JavaScript code.
 \end{abstract}
 
@@ -114,10 +114,11 @@ gives the opportunity to control the code generation scheme for a given abstract
 Kossakowski \etal introduced \emph{js-scala}, a compiled embedded DSL defined in Scala that generates JavaScript
 code, making it possible to write the client-side code of Web applications using
 JavaScript~\cite{Kossakowski12_JsDESL}. However, Kossakowski \etal did not address the engineering dilemma described
-above. This paper enriches \emph{js-scala} with the following contributions:
+above. This paper enriches \emph{js-scala} with the following contributions\footnote{The code is available at
+\href{http://github.com/js-scala}{http://github.com/js-scala}}:
 
 \begin{itemize}
- \item we define high-level abstractions typically used in Web programming, that generate low-level code leveraging
+ \item we define high-level abstractions, typically used in Web programming, that generate low-level code leveraging
 native Web browsers APIs;
  \item in the case of abstractions shared between servers and clients, we specialize the code generation in order to
 leverage the target platform native environments.
@@ -129,8 +130,7 @@ it has the same runtime performances as hand-tuned low-level JavaScript code.
 
 The remainder of this paper is organized as follows. The next section introduces existing approaches for defining
 cross-compiling languages. Sections \ref{contribution} and \ref{contribution-shared} present our contribution.
-Section \ref{implementation} gives implementation details. Section \ref{validation} evaluates the contribution.
-Section \ref{discussion} concludes.
+Section \ref{validation} compares our solution to common approaches. Section \ref{discussion} concludes.
 
 \section{Background}
 
@@ -170,7 +170,7 @@ DSLs (ref). \cite{Groenewegen08_WebDSL} shows such a domain-specific language fo
 \paragraph{Thin Languages}
 
 Alternatively, one can define concepts relative to a specific domain as libraries on top of a thin general purpose
-language (this is also referred to as \emph{embedded} domain specific languages). Figure \ref{langs} (c) depicts this
+language (this is also referred to as \emph{embedded} domain-specific languages). Figure \ref{langs} (c) depicts this
 approach. The general purpose language is used as a host language and does not need to be modified if a new concept
 is introduced, because concepts are defined as pure libraries. However, this approach gives no opportunity to
 translate a concept efficiently according to the target platform characteristics. Examples of languages following
@@ -186,12 +186,16 @@ Lightweight Modular Staging~\cite{Rompf12_LMSThesis} (LMS) is a framework for de
 using staging~\cite{Jorring1986_Staging}. It has been used to define high-performance DSLs for parallel
 computing~\cite{Brown11_Parallel}. (Todo. Mention \code{Rep[_]})
 
+Code generation consists in traversing the statement nodes produced by the program evaluation according to their
+dependencies and to emit the code corresponding to each statement. LMS already sorts the statements graph so DSL
+authors just need to say how to emit code for each statement node of their DSL.
+
 \section{High-Level Abstraction for Client-Side Code: Selectors}
 \label{contribution}
 
 In a Web application, the user interface is defined by a HTML document that can be updated by the JavaScript code.
 A typical operation consists in searching some “interesting” element in the document, in order to extract its
-content, replace it or listen to user events triggered on it (such as a mouse click). The standard API provides
+content, replace it or listen to user events triggered on it (such as mouse clicks). The standard API provides
 several functions to search elements in a HTML document according to their name or attribute values.
 Figure~\ref{selectors-api} summarizes the available functions and their differences.
 
@@ -220,14 +224,14 @@ Function & Description \\
 The \code{querySelector} and \code{querySelectorAll} are the most general functions while the others handle special
 cases. For the developer it is not convenient to have to master several functions performing similar tasks. In fact,
 most JavaScript developers use the jQuery
-library~\cite{Bibeault08_jQuery}\footnote{According to the following document:
-\href{http://trends.builtwith.com/javascript}{ http://trends.builtwith.com/javascript}, jQuery is used by more than
+library~\cite{Bibeault08_jQuery}\footnote{According to \href{http://trends.builtwith.com/javascript}{
+http://trends.builtwith.com/javascript}, jQuery is used by more than
 40\% of the top million sites} that provides only one high-level function to search for elements.
 Listings \ref{vanilla-selectors} and \ref{jquery-selectors} show two equivalent JavaScript programs performing
 element searches, the first one using the native APIs and the second one using jQuery.
 
 \begin{figure}
-\begin{lstlisting}[language=JavaScript,label=vanilla-selectors,caption=Selectors in plain JavaScript]
+\begin{lstlisting}[language=JavaScript,label=vanilla-selectors,caption=Searching elements in plain JavaScript]
 function getWords() {
   var form = document.getElementById('add-user');
   var sections =
@@ -244,7 +248,7 @@ function getWords() {
 \end{figure}
 
 \begin{figure}
-\begin{lstlisting}[language=JavaScript,label=jquery-selectors,caption=Selectors in jQuery]
+\begin{lstlisting}[language=JavaScript,label=jquery-selectors,caption=Searching elements in jQuery]
 function getWords() {
   var form = $('#add-user');
   var sections = $('fieldset', form);
@@ -260,7 +264,7 @@ from the performance of the browser’s implementation of specialized search fun
 \code{getElementsByTagName} and \code{getElementsByClassName}).
 
 \begin{figure}
-\begin{lstlisting}[label=js-scala-selectors,caption=Selectors in js-scala]
+\begin{lstlisting}[label=js-scala-selectors,caption=Searching elements in js-scala]
 def getWords() = {
   val form = document.find("#add-user")
   val sections = form.findAll("fieldset")
@@ -277,8 +281,33 @@ passed as parameter and, when appropriate, produce code using the specialized AP
 JavaScript program identical to listing~\ref{vanilla-selectors}: the high-level abstraction (the \code{find} and
 \code{findAll} functions) exist only in the initial program, not in the final JavaScript program. It gives two
 advantages: (1) the execution of the final program is more performant because of the use of specialized APIs, (2) the
-final program’s size is smaller because it does not need to include jQuery. (Move this last sentence in the
+final program’s size is smaller because it does not need to include jQuery. (Todo. Move this last sentence in the
 discussion)
+
+\begin{figure}
+\begin{lstlisting}[label=selector-impl,caption=Selectors optimization]
+def find(receiver: Exp[Selector],
+         selector: Exp[String]) =
+  getConstIdCss(selector) match {
+    case Some(id) if receiver == document =>
+      DocumentGetElementById(Const(id))
+    case _ =>
+      SelectorFind(receiver, selector)
+  }
+\end{lstlisting}
+\end{figure}
+
+Listing \ref{selector-impl} shows the implementation of the \code{find} function producing different IR node
+according to the selector passed as parameter. The \code{getConstIdCss} function analyzes the selector: if it
+is a constant \code{String} value containing a CSS ID selector, it returns the value of the identifier. If the
+\code{find} function is applied to the \code{document} and to an ID selector, it returns a
+\code{DocumentGetElementById} IR node (that is translated to a \code{document.getElementById} call by the code
+generator), otherwise it returns a \code{SelectorFind} IR node (that is translated to a \code{querySelector}
+call). (FIXME Add a ref to the spec of CSS selectors?)
+
+The same applies to the implementation of \code{findAll}: the selector passed as parameter is analyzed and the
+function returns a \code{SelectorGetElementsByClassName} in case of a CSS class name selector, a
+\code{SelectorGetElementsByTagName} in case of a CSS tag name selector, and a \code{SelectorFindAll} otherwise.
 
 
 \section{High-Level Abstractions Shared on Clients and Servers}
@@ -341,11 +370,34 @@ for {
 \end{figure}
 
 Such a monadic API brings both safety and expressiveness to developers manipulating optional values but usually
-involves the creation of an extra container object holding the optional value. In our case, we expose
-the monadic API at the first stage but we generate code that does not wrap values in a container object but instead
-checks if they are \code{null} or not when dereferenced. So the extra container object exists only at the
-stage-level and is removed during code generation: listing \ref{null-js-scala} produces a code equivalent to listing
-\ref{null-defensive}.
+involves the creation of an extra container object holding the optional value. In our case, we expose the monadic API
+at the first stage but we generate code that does not wrap values in container objects but instead checks if they are
+\code{null} or not when dereferenced. So the extra container object exists only at the stage-level and is removed
+during code generation: listing \ref{null-js-scala} produces a code equivalent to listing \ref{null-defensive}.
+
+\begin{figure}
+\begin{lstlisting}[caption=JavaScript code generator for null references handling DSL,label=option-codegen]
+override def emitNode(sym: Sym[Any], rhs: Def[Any]) =
+  rhs match {
+    case OptionIsEmpty(o) =>
+      emitValDef(sym, q" $o === null")
+    case OptionForeach(o, b) =>
+      stream.println(q"if ($o !== null) {")
+      emitBlock(b)
+      stream.println("}")
+    case _ =>
+      super.emitNode(sym, rhs)
+  }
+\end{lstlisting}
+\end{figure}
+
+Listing \ref{option-codegen} shows the JavaScript code generator for methods \code{isEmpty} (that checks if the
+optional value contains a value) and \code{foreach} (that is called when the \code{for} notation is used, as in
+listing \ref{null-js-scala}). The \code{emitNode} method handles \code{OptionIsEmpty} and \code{OptionForeach} nodes
+returned by the implementations of \code{isEmpty} and \code{foreach}, respectively. In the case of the
+\code{OptionIsEmpty} node, it simply generates an expression testing if the value is \code{null}. In the case of the
+\code{OptionForeach} node, it wraps the code block dereferencing the value within a \code{if} checking that the value
+is not \code{null}.
 
 Last but not least, we leverage the modular architecture of LMS to define two code generators for this API: one
 targeting JavaScript and the other targeting Scala. So the same abstraction is efficiently translated on both server
@@ -391,7 +443,7 @@ task can be performed either from the server-side (to initially respond to a req
 update the current page). As an example, listing \ref{dom-api} defines a JavaScript function \code{articleUi} that
 builds a DOM tree containing an article description, and listing \ref{scala-xml-api} shows how one could implement
 a similar function on server-side using the standard Scala XML library. The reader may notice that the client-side
-and server-side API are very different and that the client-side API is very low-level and inconvenient to use.
+and server-side APIs are very different and that the client-side API is very low-level and inconvenient to use.
 
 Instead, we provide a common high-level DSL for defining HTML fragments and we make this DSL generate code leveraging
 native environments. Listing \ref{forest} shows how to implement our example with our DSL. The \code{el} function
@@ -421,11 +473,62 @@ def articlesUi(articles: Rep[Seq[Article]]) =
 
 The \code{el} function returns an \code{Element} IR node that is a tree composed of other \code{Element} nodes and
 \code{Text} nodes. This tree is traversed by the code generators to produce code building an equivalent DOM tree on
-client-side and code building an equivalent XML fragment on server-side. When the children elements of an element are
-constant values (as in listing \ref{forest}) rather than dynamically obtained (as in listing \ref{forest-loops}), the
-code generators inline the loop that adds children to their parent, for better performance. As a result, listing
+client-side and code building an equivalent XML fragment on server-side. When the children of an element are constant
+values (as in listing \ref{forest}) rather than dynamically computed (as in listing \ref{forest-loops}), the code
+generators inline the loop that adds children to their parent, for better performance. As a result, listing
 \ref{forest} generates a code equivalent to listing \ref{dom-api} on client-side and equivalent to
 \ref{scala-xml-api} on server-side.
+
+\begin{figure}
+\begin{lstlisting}[language=JavaScript,label=js-gen-forest,caption=JavaScript code generator for the DOM fragment
+definition DSL]
+case Tag(name, children, attrs) =>
+  emitValDef(sym, q"document.createElement('$name')")
+  for ((n, v) <- attrs) {
+    stream.println(q"$sym.setAttribute('$n', $v);")
+  }
+  children match {
+    case Left(children) =>
+      for (child <- children) {
+        stream.println(q"$sym.appendChild($child);")
+      }
+    case Right(children) =>
+      val x = fresh[Int]
+      stream.println(q"for (var $x = 0; $x < $children.length; $x++) {")
+      stream.println(q"$sym.appendChild($children[$x]);")
+      stream.println("}")
+  }
+case Text(content) =>
+  emitValDef(sym, q"document.createTextNode($content)")
+\end{lstlisting}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}[label=scala-gen-forest,caption=Scala code generator for the DOM fragment definition DSL]
+case Tag(name, children, attrs) =>
+  val attrsFormatted =
+    (for ((name, value) <- attrs)
+     yield q" $name={ $value }").mkString
+  children match {
+    case Left(children) =>
+      if (children.isEmpty) {
+        emitValDef(sym, q"<$name$attrsFormatted />")
+      } else {
+        emitValDef(sym,
+          q"<name$attrsFormatted>{ ${children.map(quote)} }</$name>"
+        )
+      }
+    case Right(children) =>
+      emitValDef(sym, q"<$name$attrsFormatted>{ $children }</$name>")
+  }
+case Text(content) =>
+  emitValDef(sym, q"{xml.Text(content)}")
+\end{lstlisting}
+\end{figure}
+
+Listings \ref{js-gen-forest} and \ref{scala-gen-forest} show the relevant parts of the code generators for this DSL.
+They basically follow the same pattern: they visit \code{Tag} and \code{Text} IR nodes and produce the corresponding
+elements in the target language. (TODO More details)
 
 % \subsection{Ad-Hoc Polymorphism}
 % 
@@ -483,67 +586,18 @@ code generators inline the loop that adds children to their parent, for better p
 % items. The listing shows how to reuse the same \code{listWidget} function to show a list of users and a list of
 % articles.
 
-\section{Implementation}
-\label{implementation}
-
-\footnote{The code is available at \href{http://github.com/js-scala}{http://github.com/js-scala}}
-
-\subsection{Selectors}
-
-\begin{figure}
-\begin{lstlisting}[label=selector-impl,caption=Selectors optimization]
-def find(receiver: Exp[Selector],
-         selector: Exp[String]) =
-  getConstIdentifier(selector) match {
-    case Some(id) if receiver == document =>
-      DocumentGetElementById(Const(id))
-    case _ =>
-      SelectorFind(receiver, selector)
-  }
-\end{lstlisting}
-\end{figure}
-
-Listing \ref{selector-impl}
-
-\subsection{Null references}
-
-Code generation consists in traversing the statement nodes produced by the program evaluation according to their
-dependencies and to emit the code corresponding to each statement. LMS already sorts the statements graph so DSL
-authors just need to say how to emit code for each statement node of their DSL. Listing \ref{option-codegen} shows
-such a code generator for the \code{null} reference handling DSL. The \code{emitNode} method handles
-\code{OptionIsEmpty} and \code{OptionForeach} nodes. In the case of the \code{OptionIsEmpty} node, it simply
-generates an expression testing if the value is \code{null}, in the case of the \code{OptionForeach} node, it wraps
-the code block dereferencing the value within a \code{if} checking that the value is not \code{null}.
-
-\begin{figure}
-\begin{lstlisting}[caption=Null reference handling DSL code generator,label=option-codegen]
-trait JSGenOptionOps extends JSGenEffect {
-  val IR: OptionOpsExp
-  import IR._
-  override def emitNode(sym: Sym[Any], rhs: Def[Any]) =
-    rhs match {
-      case OptionIsEmpty(o) =>
-        emitValDef(sym, q" $o === null")
-      case OptionForeach(o, a, b) =>
-        stream.println(q"if ($o !== null) {")
-        emitValDef(a, quote(o))
-        emitBlock(b)
-        stream.println("}")
-      case _ =>
-        super.emitNode(sym, rhs)
-    }
-}
-\end{lstlisting}
-\end{figure}
-
-\subsection{DOM Fragments}
-
 \section{Evaluation}
 \label{validation}
 
-We implemented several applications using js-scala. We also have written several implementations of a complete
-application, using different approaches to write the client and server sides, and compared the amount of code
-written, the runtime performances and the ability to modularize the code and to maintain it.
+We measured the runtime performances of the DSL for optional values using a micro-benchmark.
+
+We also have written several implementations of a complete application using different approaches for the client and
+server sides, and compared the amount of code written, the runtime performances and the ability to modularize the
+code and to maintain it.
+
+\subsection{Micro-Benchmark}
+
+
 
 \subsection{Real World Application}
 

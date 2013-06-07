@@ -25,7 +25,7 @@
 
 \mainmatter
 
-\title{FFI Is Not Enough. We Need Dependent Types.}
+\title{Using Dependent Types to Build Safe and Concise JavaScript Foreign Function Interfaces}
 \titlerunning{Dependent Types Rock}
 
 \author{Julien Richard-Foy \and Olivier Barais\and Jean-Marc Jézéquel}
@@ -44,9 +44,11 @@ that are absent from JavaScript, such as static typing. However, the Web browser
 with a Web page, are designed for JavaScript, making it challenging to expose them in a statically typed language.
 Indeed, existing statically typed languages exposing Web browser APIs either break type safety or give developers
 less control than if they were using JavaScript. This article shows how to expose Web browser APIs in Scala in a
-type safe way while keeping the same level of control as with native APIs. We use advanced type system features such
-as dependent types and functional dependencies.
-\keywords{Dependent Types}
+type safe way while keeping the same level of control as with native APIs by using dependent types and functional
+dependencies. We validate this approach in designing safe and concise foreign function interfaces between Scala and
+JavaScript for DOM events handling and DOM manipulation. We compared this approach to common frameworks such as GWT,
+Fay, Kotlin, Dart and SharpKit.
+\keywords{Dependent Types, JavaScript, Scala, Foreign Function Interface}
 \end{abstract}
 
 
