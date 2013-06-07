@@ -93,11 +93,101 @@ In this paper we present several ways to integrate Web browser’s APIs as stati
 give developers the same control level as if they were using the native APIs. We can achieve this by using advanced
 features of type systems like dependent types and functional dependencies.
 
-\section{Motivating Example}
-
-Typical tasks involved in Web applications.
+\section{Background Material}
 
 Why is it difficult to type Web browser’s APIs?
+
+\subsection{DOM Creation}
+
+\begin{lstlisting}[language=JavaScript]
+var div = document.createElement('div');
+var input = document.createElement('input');
+\end{lstlisting}
+
+\code{div} has type \code{DivElement} while \code{input} has type \code{InputElement}. These types have different
+methods. As stated in the introduction, most statically typed language have an API that returns an \code{Element},
+which is the least upper bound of the possible types returned by \code{createElement}, forcing users to explicitly
+down-cast the result to the expected type, thus loosing type safety.
+
+Alternatively, some languages use overloading.
+
+Consider the following function creating an element and giving it a class name:
+
+\begin{lstlisting}[language=JavaScript]
+var create = function (elementType, className) {
+  val el = document.createElement(elementType);
+  el.className = className;
+  return el
+};
+create('input', 'field').focus();
+create('img', 'figure').src = 'http://google.com/logo.png';
+\end{lstlisting}
+
+How to type check the above code? The problem is that the return type of the \code{create} function depends on its
+first parameter.
+
+Note that a possible solution in Java could be the following:
+
+\begin{lstlisting}[language=Java]
+class ElementName<E> {}
+ElementName<InputElement> Input = new ElementName<InputElement>();
+ElementName<ImageElement> Img = new ElementName<ImageElement>();
+
+<E> E create(ElementName<E> type, String className) {
+  ...
+}
+
+create(Input, "field").focus();
+create(Img, "figure").setSrc("http://google.com/logo.png");
+\end{lstlisting}
+
+However, the type parameter \code{E} has to be filled at usage site. If the compiler can infer it, that’s fine.
+
+\subsection{DOM Events}
+
+A similar issue applies to the DOM events API.
+
+\begin{lstlisting}[language=Java]
+class EventName<E> {}
+EventName<ClickEvent> Click = new EventName<ClickEvent>();
+
+<E> Stream<E> on(EventName<E> type, Callback<E>) {
+  ...
+}
+
+Callback<ClickEvent> incrementCounter = new Callback<ClickEvent>() {
+  @Override
+  void execute(ClickEvent event) {
+    ...
+  }
+}
+
+on(Click, incrementCounter);
+\end{lstlisting}
+
+Again, the type parameter \code{E} has to be filled at usage site.
+
+\subsection{Selectors}
+
+The problem with selectors is slightly different.
+
+\begin{lstlisting}[language=JavaScript]
+var input = document.querySelector('input');
+var el = document.querySelector('#content');
+\end{lstlisting}
+
+\code{input} can not have another type than \code{InputElement}, but \code{el} can be an element of any type (depending
+on which element has the id \code{content}). Return type can not \emph{always} be inferred from the parameters.
+In this case, down-casting is impossible to avoid, but how to make it optional, and how to make it less risky?
+
+We want to be able to write the following code:
+
+\begin{lstlisting}
+val input = document.find(Input) // input has type InputElement
+val el = document.querySelector("#content") // el has type Element
+val img = document.querySelector[Img](".figure") // note that the type Img is explicitly applied in this case but was automatically inferred in previous cases
+val error = document.querySelector[Int]("div") // Does not compile: querySelector can not return a number
+\end{lstlisting}
 
 \section{Lightweight Modular Staging}
 
