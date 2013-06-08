@@ -151,9 +151,7 @@ A similar issue applies to the DOM events API.
 class EventName<E> {}
 EventName<ClickEvent> Click = new EventName<ClickEvent>();
 
-<E> Stream<E> on(EventName<E> type, Callback<E>) {
-  ...
-}
+void on(EventName<E> type, Callback<E> callback) { … }
 
 Callback<ClickEvent> incrementCounter = new Callback<ClickEvent>() {
   @Override
@@ -163,6 +161,21 @@ Callback<ClickEvent> incrementCounter = new Callback<ClickEvent>() {
 }
 
 on(Click, incrementCounter);
+
+<E> Stream<E> stream(EventName<E> type) {
+  return new Stream<E>() {
+    @Override
+    void subscribe(Observer<E> observer) {
+      on(type, new Callback<E> {
+        @Override
+        void execute(E event) {
+          observer.publish(event);
+        }
+      });
+    }
+  }
+}
+
 \end{lstlisting}
 
 Again, the type parameter \code{E} has to be filled at usage site.
