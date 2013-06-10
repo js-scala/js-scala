@@ -20,12 +20,18 @@ trait ElementOpsExp extends ElementOps with EffectExp with TupledFunctionsExp wi
   def element_focus(e: Exp[Element]) = reflectEffect(ElementFocus(e))
   def element_closest_reified: Exp[((Element, Element => Boolean)) => Option[Element]] =
     fun { (e: Exp[Element], p: Exp[Element => Boolean]) =>
-      e.parentNode.fold(none, parent => if (p(parent)) some(parent) else element_closest_reified(parent, p))
+      for {
+        parent <- e.parentNode
+        closest <- if (p(parent)) some(parent) else element_closest_reified(parent, p)
+      } yield closest
     }
   def element_closest(e: Exp[Element], p: Exp[Element] => Exp[Boolean]) = element_closest_reified(e, p)
   def element_prev_reified: Exp[((Element, Element => Boolean)) => Option[Element]] =
     fun { (e: Exp[Element], p: Exp[Element => Boolean]) =>
-      e.previousSibling.fold(none, sib => if (p(sib)) some(sib) else element_prev_reified(sib, p))
+      for {
+        sib <- e.previousSibling
+        prev <- if (p(sib)) some(sib) else element_prev_reified(sib, p)
+      } yield prev
     }
   def element_prev(e: Exp[Element], p: Exp[Element] => Exp[Boolean]) = element_prev_reified(e, p)
   def element_remove(e: Exp[Element]) = fun { e: Exp[Element] =>
