@@ -1,12 +1,14 @@
 function test(x0, x1) {
-var x4 = null;
+var x6 = null;
 if (x0 !== null) {
-var x3 = null;
+var x2 = x0;
+var x5 = null;
 if (x1 !== null) {
-var x2 = x0 + x1;
-x3 = x2;
+var x3 = x1;
+var x4 = x2 + x3;
+x5 = x4;
 }
-x4 = x3;
+x6 = x5;
 }
-return x4
+return x6
 }

@@ -4,7 +4,7 @@ import scala.virtualization.lms.common._
 import java.io.PrintWriter
 import language.OptionOps
 import exp.OptionOpsExp
-import gen.js.{GenEffect, GenNumericOps, GenOptionOps}
+import gen.js.{GenEffect, GenNumericOps, GenOptionOps, GenEqual, GenIfThenElse, GenPrimitiveOps}
 
 class TestOptionOps extends FileDiffSuite {
   val prefix = "test-out/"
@@ -56,5 +56,24 @@ class TestOptionOps extends FileDiffSuite {
       codegen.emitSource(prog.main, "test", new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix+"option-getorelse")
+  }
+
+  def testDependencies() {
+    trait Prog extends DSL with TupledFunctions with IfThenElse {
+      lazy val rec: Rep[((Int => Option[Int], Int => Boolean, Int)) => Option[Int]] = fun { (f: Rep[Int => Option[Int]], p: Rep[Int => Boolean], x: Rep[Int]) =>
+        for {
+          y <- f(x)
+          z <- if (p(y)) some(y) else rec(f, p, y)
+        } yield z
+        //if (p(x)) some(x) else rec(f, p, x)
+      }
+      def main(f: Rep[Int => Option[Int]], p: Rep[Int => Boolean], x: Rep[Int]) = rec(f, p, x)
+    }
+    withOutFile(prefix + "option-deps") {
+      val prog = new Prog with DSLExp with TupledFunctionsRecursiveExp with IfThenElseExp
+      val codegen = new DSLJSGen with gen.js.GenFunctions with GenericGenUnboxedTupleAccess with GenIfThenElse { val IR: prog.type = prog }
+      codegen.emitSource3(prog.main, "test", new PrintWriter(System.out))
+    }
+    assertFileEqualsCheck(prefix + "option-deps")
   }
 }

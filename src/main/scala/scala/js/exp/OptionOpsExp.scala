@@ -12,7 +12,7 @@ trait OptionOpsExp extends OptionOps with EffectExp {
   implicit class OptionOpsCls[+A : Manifest](o: Exp[Option[A]]) extends OptionOpsBase[A] {
 
     private def sym = o match {
-      case Sym(n) => (Sym[A](n), false)
+      //case Sym(n) => (Sym[A](n), false)
       case _ => (fresh[A], true)
     }
 
@@ -48,10 +48,10 @@ trait OptionOpsExp extends OptionOps with EffectExp {
   case class OptionFold[A, B](o: Exp[Option[A]], a: Sym[A], noneBlock: Block[B], someBlock: Block[B], bound: Boolean) extends Def[B]
 
   override def syms(e: Any) = e match {
-    case OptionForeach(o, _, block, _) => syms(o) ++ syms(block)
-    case OptionMap(o, _, block, _) => syms(o) ++ syms(block)
-    case OptionFlatMap(o, _, block, _) => syms(o) ++ syms(block)
-    case OptionFold(o, _, b1, b2, _) => syms(o) ++ syms(b1) ++ syms(b2)
+    case OptionForeach(o, a, block, b) => (if (!b) syms(a) else Nil) ++ syms(o) ++ syms(block)
+    case OptionMap(o, a, block, b) => (if (!b) syms(a) else Nil) ++ syms(o) ++ syms(block)
+    case OptionFlatMap(o, a, block, b) => (if (!b) syms(a) else Nil) ++ syms(o) ++ syms(block)
+    case OptionFold(o, a, b1, b2, b) => (if (!b) syms(a) else Nil) ++ syms(o) ++ syms(b1) ++ syms(b2)
     case _ => super.syms(e)
   }
 
@@ -64,10 +64,10 @@ trait OptionOpsExp extends OptionOps with EffectExp {
   }
 
   override def symsFreq(e: Any) = e match {
-    case OptionForeach(o, _, block, _) => freqNormal(o) ++ freqCold(block)
-    case OptionMap(o, _, block, _) => freqNormal(o) ++ freqCold(block)
-    case OptionFlatMap(o, _, block, _) => freqNormal(o) ++ freqCold(block)
-    case OptionFold(o, _, b1, b2, _) => freqNormal(o) ++ freqCold(b1) ++ freqCold(b2)
+    case OptionForeach(o, a, block, b) => (if (!b) freqNormal(a) else Nil) ++ freqNormal(o) ++ freqCold(block)
+    case OptionMap(o, a, block, b) => (if (!b) freqNormal(a) else Nil) ++ freqNormal(o) ++ freqCold(block)
+    case OptionFlatMap(o, a, block, b) => (if (!b) freqNormal(a) else Nil) ++ freqNormal(o) ++ freqCold(block)
+    case OptionFold(o, a, b1, b2, b) => (if (!b) freqNormal(a) else Nil) ++ freqNormal(o) ++ freqCold(b1) ++ freqCold(b2)
     case _ => super.symsFreq(e)
   }
 
