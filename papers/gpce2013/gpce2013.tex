@@ -134,6 +134,8 @@ Section \ref{validation} compares our solution to common approaches. Section \re
 
 \section{Background}
 
+\subsection{Language Engineering Processes}
+
 This section presents different approaches for defining cross-platform programming languages.
 
 \begin{figure}
@@ -179,16 +181,33 @@ this approach are Java/GWT, Kotlin, HaXe and SharpKit.
 \paragraph{Deeply Embedded Languages}
 
 The last approach, shown in figure \ref{langs} (d), can be seen as a middle-ground between the two previous
-approaches: DSLs are embedded in a host language but use a code generation process. (benefits and limitations of
-this approach)
+approaches: DSLs are embedded in a host language but use a code generation process. The embedding makes it easy to
+combine several DSLs and makes the language implementation easier because the host language infrastructure is
+reused. On the other hand, the syntax of the DSLs is limited by the syntax flexibility of the host language. The code
+generation process is specific to each DSL and gives the opportunity to perform domain-specific optimizations.
 
-Lightweight Modular Staging~\cite{Rompf12_LMSThesis} (LMS) is a framework for defining deeply embedded DSLs in Scala
-using staging~\cite{Jorring1986_Staging}. It has been used to define high-performance DSLs for parallel
-computing~\cite{Brown11_Parallel}. (Todo. Mention \code{Rep[_]})
+(Summary explaining why we choose the deep embedded DSLs approach)
 
-Code generation consists in traversing the statement nodes produced by the program evaluation according to their
-dependencies and to emit the code corresponding to each statement. LMS already sorts the statements graph so DSL
-authors just need to say how to emit code for each statement node of their DSL.
+\subsection{Lightweight Modular Staging}
+
+Lightweight Modular Staging~\cite{Rompf12_LMSThesis, Rompf12_LMS} (LMS) is a framework for defining deeply embedded
+DSLs in Scala. It has been used to define high-performance DSLs for parallel computing~\cite{Brown11_Parallel} and to
+define JavaScript as an embedded DSL in Scala~\cite{Kossakowski12_JsDESL}.
+
+LMS is based on staging~\cite{Jorring1986_Staging}: a program using LMS is a regular Scala program that evaluates
+to an intermediate representation (IR) of a final program. A code generator can traverse this IR to produce the final
+program code. Expressions evaluated in the initial program and those evaluated in the final program are distinguished
+by their type: a \code{Rep[Int]} value in the initial program is a staged computation that generates code evaluating
+to an \code{Int} value in the final program. An \code{Int} computation in the initial program is evaluated during the
+initial program evaluation and becomes a constant in the final program.
+
+Defining a DSL with LMS consists in the following steps:
+
+\begin{itemize}
+ \item writing a Scala module providing the DSL vocabulary as an abstract API,
+ \item implementing the API in terms of IR nodes,
+ \item defining a code generator visiting IR nodes and generating the corresponding code.
+\end{itemize}
 
 \section{High-Level Abstraction for Client-Side Code: Selectors}
 \label{contribution}
@@ -286,8 +305,8 @@ discussion)
 
 \begin{figure}
 \begin{lstlisting}[label=selector-impl,caption=Selectors optimization]
-def find(receiver: Exp[Selector],
-         selector: Exp[String]) =
+def find(receiver: Rep[Selector],
+         selector: Rep[String]) =
   getConstIdCss(selector) match {
     case Some(id) if receiver == document =>
       DocumentGetElementById(Const(id))
@@ -593,7 +612,7 @@ We measured the runtime performances of the DSL for optional values using a micr
 
 We also have written several implementations of a complete application using different approaches for the client and
 server sides, and compared the amount of code written, the runtime performances and the ability to modularize the
-code and to maintain it.
+code.
 
 \subsection{Micro-Benchmark}
 
@@ -606,7 +625,7 @@ code and to maintain it.
 
 Figure \ref{micro-benchmark} shows the micro-benchmark results. We measured the runtime performance, the number of
 lines of code (as an indication of the abstraction level), and finally the ratio of runtime performance and lines of
-code. \emph{js-scala} is between 3 to 100 times faster than other approaches on our benchmark. Combined with that
+code. \emph{js-scala} is between 3 to 100 times faster than other approaches on our benchmark. Combined with the
 fact that it provides high-level abstractions, it has a performance / lines of code ratio more than 4 times higher
 than other approaches.
 
@@ -618,7 +637,8 @@ and look at the results. It contains JavaScript code to handle the dynamic behav
 double-posting prevention, dynamic form update and rich interaction with the document.
 
 The application was initially written using jQuery. We rewrote it using several technologies for the client-side
-part: plain JavaScript (without third-party library), js-scala, GWT and HaXe.
+part: vanilla JavaScript (low-level code without third-party library), js-scala, GWT and HaXe. In each case we tried
+to write the application in an idiomatic way.
 
 \paragraph*{Vanilla JavaScript} Low-level code.
 
@@ -632,16 +652,15 @@ part: plain JavaScript (without third-party library), js-scala, GWT and HaXe.
 
 \subsection{Benchmarks, Code Metrics}
 
-Our goal is to evalute the level of abstraction provided by each solution and their performances. We took the
-number of lines of code as a measure of the level of abstraction. We also measured the size of the data sent to the
-client-side. We also measured the ability to share code between client and server sides.
+Our goal is to evaluate the level of abstraction provided by each solution and their performances. We took the
+number of lines of code as a measure of the level of abstraction. We also measured the ability to share code between
+client and server sides.
 
-Rather than doing a micro-benchmark focusing on just one abstraction, we performed a global benchmark that is more
-likely to reflect the real performances of the application: we simulated user actions on a Web page (2000 clicks on
-buttons, triggering a dynamic update of the page and involving the use of the Option monad, the selectors API and
-the HTML fragment definition API) and measured the time it took complete them. We only measured the execution time of
-client-side code execution. The tests were run on a DELL Latitude E6430 laptop with 8 GB of RAM, on the Google
-Chrome v27 Web browser. Figure \ref{benchmark} shows the benchmark results.
+We simulated user actions on a Web page (2000 clicks on buttons, triggering a dynamic update of the page and
+involving the use of the Option monad, the selectors API and the HTML fragment definition API) and measured the time
+it took complete them. We only measured the execution time of client-side code execution. The tests were run on a
+DELL Latitude E6430 laptop with 8 GB of RAM, on the Google Chrome v27 Web browser. Figure \ref{benchmark} shows the
+benchmark results.
 
 \begin{figure}
 \centering
@@ -650,6 +669,17 @@ Chrome v27 Web browser. Figure \ref{benchmark} shows the benchmark results.
 \label{benchmark}
 \end{figure}
 
+The runtime performances of the vanilla JavaScript, HaXe and \emph{js-scala} versions are similar (though the
+\emph{js-scala} version is slightly slower by 6\%). It is worth noting that the vanilla JavaScript and the HaXe
+versions use low-level code compared to \emph{js-scala}, as shown in the second part of the figure (lines of code):
+the \emph{js-scala} version needs only 74 lines of code while the vanilla JavaScript version needs 116 lines of code
+(57\% bigger) and the HaXe version needs 148 lines of code (100\% bigger). The jQuery JavaScript version, of which
+code is high-level (54 lines of code, 27\% less than \emph{js-scala}) runs 10 times slower than the \emph{js-scala}
+version.
+
+The last part of the figure compares the runtime performance / lines of code ratio. \emph{js-scala} shows the best
+score, being 1.48 times better than the vanilla JavaScript version, 1.88 times better than the HaXe version,
+3.77 times better than the GWT version and 7.82 times better than the jQuery JavaScript version.
 
 \section{Conclusion}
 \label{discussion}

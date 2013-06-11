@@ -467,27 +467,68 @@ language={English}
 	Year = {2007}}
 
 @phdthesis{Rompf12_LMSThesis,
-	Address = {Lausanne},
-	Affiliation = {EPFL},
-	Author = {Rompf, Tiark},
-	Date-Added = {2012-10-15 15:35:45 +0200},
-	Date-Modified = {2012-10-15 15:36:15 +0200},
-	Details = {http://infoscience.epfl.ch/record/180642},
-	Doctoral = {EDIC},
-	Doi = {10.5075/epfl-thesis-5456},
-	Institute = {IIF},
-	Oai-Id = {oai:infoscience.epfl.ch:180642},
-	Oai-Set = {thesis},
-	Original-Unit = {LAMP1},
-	Publisher = {EPFL},
-	School = {IC},
-	Status = {PUBLISHED},
-	Title = {Lightweight {M}odular {S}taging and {E}mbedded {C}ompilers},
-	Unit = {LAMP},
-	Url = {http://library.epfl.ch/theses/?nr=5456},
-	Year = 2012,
-	Bdsk-Url-1 = {http://library.epfl.ch/theses/?nr=5456},
-	Bdsk-Url-2 = {http://dx.doi.org/10.5075/epfl-thesis-5456}}
+  title={Lightweight Modular Staging and Embedded Compilers: Abstraction without Regret for High-Level
+High-Performance Programming},
+  author={Rompf, Tiark},
+  year={2012},
+  school={{\'E}COLE POLYTECHNIQUE F{\'E}D{\'E}RALE DE LAUSANNE}
+}
+
+@TechReport{Rompf12_LMS,
+   abstract    = {High level data structures are a cornerstone of modern
+                 programming and at the same time stand in the way of
+                 compiler optimizations. In order to reason about user or
+                 library defined data structures compilers need to be
+                 extensible. Common mechanisms to extend compilers fall
+                 into two categories. Frontend macros, staging or partial
+                 evaluation systems can be used to programmatically remove
+                 abstraction and specialize programs before they enter the
+                 compiler. Alternatively, some compilers allow extending
+                 the internal workings by adding new transformation passes
+                 at different points in the compile chain or adding new
+                 intermediate representation (IR) types. None of these
+                 mechanisms alone is sufficient to handle the challenges
+                 posed by high level data structures. This paper shows a
+                 novel way to combine them to yield benefits that are
+                 greater than the sum of the parts. Instead of using
+                 staging merely as a front end, we implement internal
+                 compiler passes using staging as well. These internal
+                 passes delegate back to program execution to construct
+                 the transformed IR. Staging is known to simplify program
+                 generation, and in the same way it can simplify program
+                 transformation. Defining a transformation as a staged IR
+                 interpreter is simpler than implementing a low-level IR
+                 to IR transformer. With custom IR nodes, many
+                 optimizations that are expressed as rewritings from IR
+                 nodes to staged program fragments can be combined into a
+                 single pass, mitigating phase ordering problems.
+                 Speculative rewriting can preserve optimistic assumptions
+                 around loops. We demonstrate several powerful program
+                 optimizations using this architecture that are
+                 particularly geared towards data structures: a novel loop
+                 fusion and deforestation algorithm, array of struct to
+                 struct of array conversion, object flattening, and code
+                 generation for heterogeneous parallel devices. We
+                 validate our approach using several non trivial case
+                 studies that exhibit good speedups in experiments.},
+   affiliation = {EPFL},
+   author      = {Rompf, Tiark and Sujeeth, Arvind and Amin, Nada and
+                 Brown, Kevin and Jovanovic, Vojin and Lee, HyoukJoong and
+                 Jonnalagedda, Manohar and Olukotun, Kunle and Odersky,
+                 Martin},
+   details     = {http://infoscience.epfl.ch/record/180458},
+   oai-id      = {oai:infoscience.epfl.ch:180458},
+   oai-set     = {report},
+   pagecount   = {12},
+   status      = {PUBLISHED},
+   submitter   = {185682},
+   title       = {Optimizing {D}ata {S}tructures in {H}igh-{L}evel
+                 {P}rograms: {N}ew {D}irections for {E}xtensible
+                 {C}ompilers based on {S}taging},
+   unit        = {LAMP},
+   year        = 2012
+}
+
 
 @inproceedings{Kossakowski12_JsDESL,
 	Abstract = {Developing rich web applications requires mastering
