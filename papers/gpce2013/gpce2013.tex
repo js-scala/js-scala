@@ -31,8 +31,8 @@
 \titlebanner{banner above paper title}        % These are ignored unless
 \preprintfooter{short description of paper}   % 'preprint' option specified.
 
-\title{How to build an homogeneous language for heterogeneous platforms}
-\subtitle{You don’t have to trade abstraction for control}
+\title{Efficient High-Level Abstractions for Web Programming}
+%\subtitle{You don’t have to trade abstraction for control}
 
 \authorinfo{Julien Richard-Foy\and Olivier Barais\and Jean-Marc Jézéquel}
            {IRISA, Université de Rennes 1}
@@ -48,15 +48,16 @@ code on the client-side, they may run on smart phones with little hardware capab
 the following problem: how to benefit from high-level languages and libraries making code complexity easier to manage
 and abstracting over the clients and servers differences without trading this engineering comfort for performance?
 This article presents high-level abstractions defined as deep embedded DSLs in Scala, that can (1) generate efficient
-code leveraging the target platform characteristics, (2) be shared between clients and servers. Code written with
-our DSL has a high level of abstraction but runs as fast as hand tuned low-level JavaScript code.
+code leveraging the target platform characteristics, (2) be shared between clients and servers. Though code written
+with our DSL has a high level of abstraction our benchmark on a real world application reports that it runs as fast
+as hand tuned low-level JavaScript code.
 \end{abstract}
 
 \category{D.3.3}{Programming Languages}{Language Constructs and Features}
 
 \terms Languages, Software Engineering
 
-\keywords Heterogeneous code generation, Domain-specific languages
+\keywords Heterogeneous code generation, Domain-specific languages, Scala, Web
 
 \section{Introduction}
 
@@ -65,18 +66,17 @@ scale collaborative experiences. However, writing large Web applications is know
 difficult~\cite{Mikkonen08_SpaghettiJs,Preciado05_RIAMethodologyNecessity}. One challenge comes from the fact
 that the business logic is scattered into heterogeneous client-side and server-side
 environments~\cite{Echeverria09_RIA,Kuuskeri09_PartitioningClientServer}. This gives less flexibility in the
-engineering process and requires a higher maintenance effort: if a piece of logic is implemented on client-side and
-finally needs to be implemented on server-side instead, the code can not be reused and the feature needs to be
-completely rewritten (and \emph{vice versa}). Even worse, logic parts that run on both client-side and server-side
-need to be duplicated. For instance, HTML fragments may be built from the server-side when a page is requested by a
-client, but they may also be built from the client-side to perform an incremental update subsequent to an user
-action. How could developers write HTML fragment definitions once and render them on both client-side and
-server-side?
+engineering process and requires a higher maintenance effort: there is no way to move a piece of code targeting
+the server-side to target the client-side, the code has to be rewritten. Even worse, logic parts that run on both
+client-side and server-side need to be duplicated. For instance, HTML fragments may be built from the server-side
+when a page is requested by a client, but they may also be built from the client-side to perform an incremental
+update subsequent to an user action. How could developers write HTML fragment definitions once and render them on
+both client-side and server-side?
 
-The more interactive the application is, the more logic needs to be duplicated between the server-side
-and the client-side, and the higher is the complexity of the client-side code. Developers use libraries and
-frameworks to get high-level abstractions on client-side, making their code easier to reason about and to maintain,
-but also making their code run less efficiently (due to \emph{abstraction penalty}).
+The more interactive the application is, the more logic needs to be duplicated between the server-side and the
+client-side, and the higher is the complexity of the client-side code. Developers use libraries and frameworks to get
+high-level abstractions on client-side, making their code easier to reason about and to maintain, but also making
+their code run less efficiently (due to \emph{abstraction penalty}).
 
 Performance is a primary concern in Web applications, because they are expected to run on a broad range of devices,
 from the powerful desktop personal computer to the less powerful smart phone. “Every 100~ms delay costs 1\% of
@@ -98,9 +98,9 @@ executable code leverage the native APIs, when possible, for performance reasons
 
 Generating efficient code for heterogeneous platforms is hard to achieve in an extensible way: the translation of
 common abstractions like collections into their native counterpart (JavaScript arrays on client-side and standard
-library's collections on server-side) may be hard coded in the compiler, but that would not scale to handle all the
-abstractions a complete application may use (\eg HTML fragment definitions, form validation rules, or even some
-business data type that may be represented differently).
+library's collections on server-side) may be hard-coded in the compiler, but that approach would not scale to handle
+all the abstractions a complete application may use (\eg HTML fragment definitions, form validation rules, or even
+some business data type that may be represented differently).
 
 On one hand, for engineering reasons, developers want to write Web applications using a single high-level language,
 abstracting over the target platforms differences and reducing code complexity. But on the other hand, for
@@ -114,7 +114,7 @@ gives the opportunity to control the code generation scheme for a given abstract
 Kossakowski \etal introduced \emph{js-scala}, a compiled embedded DSL defined in Scala that generates JavaScript
 code, making it possible to write the client-side code of Web applications using
 JavaScript~\cite{Kossakowski12_JsDESL}. However, Kossakowski \etal did not address the engineering dilemma described
-above. This paper enriches \emph{js-scala} with the following contributions\footnote{The code is available at
+above. This paper enriches js-scala with the following contributions\footnote{The code is available at
 \href{http://github.com/js-scala}{http://github.com/js-scala}}:
 
 \begin{itemize}
@@ -126,11 +126,12 @@ leverage the target platform native environments.
 
 We validate our approach with a case study implemented with various candidate technologies and discuss the relative
 pro and cons of them. Though the code written in our DSL is high-level and can be shared between clients and servers,
-it has the same runtime performances as hand-tuned low-level JavaScript code.
+it has the same runtime performances on client-side as hand-tuned low-level JavaScript code.
 
 The remainder of this paper is organized as follows. The next section introduces existing approaches for defining
-cross-compiling languages. Sections \ref{contribution} and \ref{contribution-shared} present our contribution.
-Section \ref{validation} compares our solution to common approaches. Section \ref{discussion} concludes.
+cross-compiling languages and presents the framework we used to define our DSLs. Sections \ref{contribution} and
+\ref{contribution-shared} present our contribution. Section \ref{validation} compares our solution to common
+approaches. Section \ref{discussion} concludes.
 
 \section{Background}
 
@@ -152,39 +153,42 @@ The first approach for defining a cross-platform language consists in hard-codin
 code generation scheme of each language feature to each target platform. Figure \ref{langs} (a) depicts this
 process. In order to support a feature related to a specific domain, the whole compiler pipeline (parser, code
 generator, \etc) may have to be adapted. This approach gives \emph{fat} languages because a lot of concepts are
-defined at the language level: general programming concepts such as naming, functions, classes, and more specific
-concepts such as HTML fragment definition. Examples of such languages are Links~\cite{Cooper07_Links}, Opa and
-Dart~\cite{Griffith11_Dart}. These languages are difficult to extend because each concept is defined in the compiler,
-and modifying a compiler requires a high effort. Furthermore, these languages also require to support common
-programming abstraction and composition mechanisms, as general purpose languages do. So they usually try to re-invent
-the features of general purpose languages. We argue that this approach for defining programming languages is
-difficult to scale: for every problem you have to rewrite a full-featured programming language besides addressing the
-concepts specific to the problem domain.
+defined at the language level: general programming concepts such as naming, functions, classes, as well as more
+domain-specific concepts such as HTML fragment definition. Examples of such languages for Web programming are
+Links~\cite{Cooper07_Links}, Opa and Dart~\cite{Griffith11_Dart}. These languages are difficult to extend because
+each concept is defined in the compiler, and modifying a compiler requires a high effort. Furthermore, these
+languages also require to support common programming abstraction and composition mechanisms, as general purpose
+languages do. So they usually try to re-invent the features of general purpose languages, that’s why we argue that
+this approach for defining programming languages is difficult to scale: for every specific problem you would have to
+rewrite a full-featured programming language besides addressing the concepts specific to the problem domain.
 
 \paragraph{Domain-Specific Languages}
 
 Another approach consists in defining several independent domain-specific languages~\cite{Van00_DSL}, each one
 focusing on concerns specific to a given problem domain, and then to combine all the source artifacts written with
-these language into one executable program, as shown in figure~\ref{langs} (b). Defining such a language requires a
-minimal effort compared to the previous approach. On the other hand, it is difficult to have interoperability between
-DSLs (ref). \cite{Groenewegen08_WebDSL} shows such a domain-specific language for defining Web applications.
+these language into one executable program, as shown in figure~\ref{langs} (b). Defining such languages requires a
+minimal effort compared to the previous approach because each language has a limited set of features. On the other
+hand, it is difficult to have interoperability between DSLs (missing ref). \cite{Groenewegen08_WebDSL} gave an
+example of such a domain-specific language for defining Web applications.
 
 \paragraph{Thin Languages}
 
-Alternatively, one can define concepts relative to a specific domain as libraries on top of a thin general purpose
-language (this is also referred to as \emph{embedded} domain-specific languages). Figure \ref{langs} (c) depicts this
-approach. The general purpose language is used as a host language and does not need to be modified if a new concept
-is introduced, because concepts are defined as pure libraries. However, this approach gives no opportunity to
-translate a concept efficiently according to the target platform characteristics. Examples of languages following
-this approach are Java/GWT, Kotlin, HaXe and SharpKit.
+Alternatively, one can define concepts relative to a specific domain as a library on top of a thin general purpose
+language (it is also referred to as a domain-specific \emph{embedded} language~\cite{Hudak96_DSEL}). Figure
+\ref{langs} (c) depicts this approach. The general purpose language is used as a host language and does not need to
+be modified if a new concept is introduced, because concepts are defined as pure libraries. On the other hand, the
+syntax of the DSLs is limited by the syntax flexibility of the host language. Furthermore, this approach gives no
+opportunity to translate a concept efficiently according to the target platform characteristics because concepts are
+defined as libraries and are translated by the compiler, which has no domain-specific knowledge. Examples of
+languages following this approach are Java/GWT, Kotlin, HaXe and SharpKit.
 
 \paragraph{Deeply Embedded Languages}
 
 The last approach, shown in figure \ref{langs} (d), can be seen as a middle-ground between the two previous
-approaches: DSLs are embedded in a host language but use a code generation process. The embedding makes it easy to
-combine several DSLs and makes the language implementation easier because the host language infrastructure is
-reused. On the other hand, the syntax of the DSLs is limited by the syntax flexibility of the host language. The code
-generation process is specific to each DSL and gives the opportunity to perform domain-specific optimizations.
+approaches: DSLs are embedded in a host language but use a code generation process. This approach share the same
+benefits and limits as embedded DSLs for defining language units. The code generation process is specific to each DSL
+and gives the opportunity to perform domain-specific optimizations. In other words deeply embedded DSLs bring
+domain-specific knowledge to the compiler.
 
 (Summary explaining why we choose the deep embedded DSLs approach)
 
@@ -195,11 +199,12 @@ DSLs in Scala. It has been used to define high-performance DSLs for parallel com
 define JavaScript as an embedded DSL in Scala~\cite{Kossakowski12_JsDESL}.
 
 LMS is based on staging~\cite{Jorring1986_Staging}: a program using LMS is a regular Scala program that evaluates
-to an intermediate representation (IR) of a final program. A code generator can traverse this IR to produce the final
-program code. Expressions evaluated in the initial program and those evaluated in the final program are distinguished
-by their type: a \code{Rep[Int]} value in the initial program is a staged computation that generates code evaluating
-to an \code{Int} value in the final program. An \code{Int} computation in the initial program is evaluated during the
-initial program evaluation and becomes a constant in the final program.
+to an intermediate representation (IR) of a final program. This IR is a graph of expressions that can be traversed
+by code generators to produce the final program code. Expressions evaluated in the initial program and those
+evaluated in the final program (namely, staged expressions) are distinguished by their type: a \code{Rep[Int]} value
+in the initial program is a staged expression that generates code evaluating to an \code{Int} value in the final
+program. An \code{Int} computation in the initial program is evaluated during the initial program evaluation and
+becomes a constant in the final program.
 
 Defining a DSL with LMS consists in the following steps:
 
@@ -292,16 +297,14 @@ def getWords() = {
 \end{lstlisting}
 \end{figure}
 
-Listing~\ref{js-scala-selectors} shows how to implement listing~\ref{jquery-selectors} using \emph{js-scala}. We
+Listing~\ref{js-scala-selectors} shows how to implement listing~\ref{jquery-selectors} using js-scala. We
 provide two functions for searching elements: \code{find} to find the first element matching a selector and
-\code{findAll} to find all the matching elements. During staging these functions try to analyze the selector that is
-passed as parameter and, when appropriate, produce code using the specialized API, otherwise they produce code using
-\code{querySelector} and \code{querySelectorAll}. As a result, listing~\ref{js-scala-selectors} generates a
-JavaScript program identical to listing~\ref{vanilla-selectors}: the high-level abstraction (the \code{find} and
-\code{findAll} functions) exist only in the initial program, not in the final JavaScript program. It gives two
-advantages: (1) the execution of the final program is more performant because of the use of specialized APIs, (2) the
-final program’s size is smaller because it does not need to include jQuery. (Todo. Move this last sentence in the
-discussion)
+\code{findAll} to find all the matching elements. During the first evaluation step, these functions try to analyze
+the selector that is passed as parameter and, when appropriate, produce code using the specialized  API, otherwise
+they produce  code using \code{querySelector} and \code{querySelectorAll}. As a result,
+listing~\ref{js-scala-selectors} generates a JavaScript program identical to listing~\ref{vanilla-selectors}: the
+high-level abstraction (the \code{find} and \code{findAll} functions) exist only in the initial program, not in the
+final JavaScript program.
 
 \begin{figure}
 \begin{lstlisting}[label=selector-impl,caption=Selectors optimization]
@@ -316,7 +319,7 @@ def find(receiver: Rep[Selector],
 \end{lstlisting}
 \end{figure}
 
-Listing \ref{selector-impl} shows the implementation of the \code{find} function producing different IR node
+Listing \ref{selector-impl} shows the implementation of the \code{find} function producing different IR nodes
 according to the selector passed as parameter. The \code{getConstIdCss} function analyzes the selector: if it
 is a constant \code{String} value containing a CSS ID selector, it returns the value of the identifier. If the
 \code{find} function is applied to the \code{document} and to an ID selector, it returns a
@@ -336,7 +339,7 @@ function returns a \code{SelectorGetElementsByClassName} in case of a CSS class 
 
 Null references are a known source of problems in programming languages~\cite{Hoare09_Null,Nanda09_Null}. For
 example, consider listing \ref{null-unsafe} finding a particular widget in the page and then a particular
-button in the widget. The native \code{querySelector} method returns \code{null} if no node matched the given
+button within the widget. The native \code{querySelector} method returns \code{null} if no node matched the given
 selector in the document. If we run this code in a page where the widget is not present, it will throw an error
 and stop further JavaScript execution. Defensive code can be written to handle \code{null} references, but leads to
 very cumbersome code, as shown in listing \ref{null-defensive}.
@@ -372,12 +375,12 @@ Scala). In that case, sequencing over the monad encodes optional value dereferen
 convenient syntax for monad sequencing, it brings a convenient syntax for optional value dereferencing, alleviating
 developers from the burden of defensive programming.
 
-Listing \ref{null-js-scala} implements in \emph{js-scala} a program equivalent to listing \ref{null-defensive}. The
-\code{for} notation is used to sequence computations over optional values encoded with a monad. The \code{find}
-function returns a \code{Rep[Option[Element]]} value, that can either be a \code{Rep[Some[Element]]} (if an element
-was found) or a \code{Rep[None.type]} (if no element was found). The \code{for} expression contains a sequence
-of statements that are executed in order, as long as the previous statement returned a \code{Rep[Some[Element]]}
-value.
+Listing \ref{null-js-scala} implements in js-scala a program equivalent to listing \ref{null-defensive}. The
+\code{for} notation is used to sequence computations over optional values that are encoded with a monad. The
+\code{find} function returns a \code{Rep[Option[Element]]} value, that can either be a \code{Rep[Some[Element]]} (if
+an element was found) or a \code{Rep[None.type]} (if no element was found). The \code{for} expression contains a
+sequence of statements that are executed in order, as long as the previous statement returned a
+\code{Rep[Some[Element]]} value.
 
 \begin{figure}
 \begin{lstlisting}[label=null-js-scala,caption=Handling null references in js-scala]
@@ -389,10 +392,11 @@ for {
 \end{figure}
 
 Such a monadic API brings both safety and expressiveness to developers manipulating optional values but usually
-involves the creation of an extra container object holding the optional value. In our case, we expose the monadic API
-at the first stage but we generate code that does not wrap values in container objects but instead checks if they are
-\code{null} or not when dereferenced. So the extra container object exists only at the stage-level and is removed
-during code generation: listing \ref{null-js-scala} produces a code equivalent to listing \ref{null-defensive}.
+involves the creation of an extra container object holding the optional value. In our case, the monadic API is
+used in the initial program but generates code that does not wrap values in container objects but instead checks if
+they are \code{null} or not when dereferenced. So the extra container object exists only in the initial program and
+is removed during code generation: listing \ref{null-js-scala} produces a code equivalent to listing
+\ref{null-defensive}.
 
 \begin{figure}
 \begin{lstlisting}[caption=JavaScript code generator for null references handling DSL,label=option-codegen]
@@ -418,9 +422,9 @@ returned by the implementations of \code{isEmpty} and \code{foreach}, respective
 \code{OptionForeach} node, it wraps the code block dereferencing the value within a \code{if} checking that the value
 is not \code{null}.
 
-Last but not least, we leverage the modular architecture of LMS to define two code generators for this API: one
-targeting JavaScript and the other targeting Scala. So the same abstraction is efficiently translated on both server
-and client sides.
+Last but not least, we make this abstraction available on server-side by writing a code generator similar to the
+JavaScript code generator, but targeting Scala (FIXME Show the code generator?). So the same abstraction is
+efficiently translated on both server and client sides.
 
 \subsection{DOM Fragments Definition}
 
@@ -547,7 +551,7 @@ case Text(content) =>
 
 Listings \ref{js-gen-forest} and \ref{scala-gen-forest} show the relevant parts of the code generators for this DSL.
 They basically follow the same pattern: they visit \code{Tag} and \code{Text} IR nodes and produce the corresponding
-elements in the target language. (TODO More details)
+elements in the target language. (FIXME More details)
 
 % \subsection{Ad-Hoc Polymorphism}
 % 
@@ -614,7 +618,16 @@ We also have written several implementations of a complete application using dif
 server sides, and compared the amount of code written, the runtime performances and the ability to modularize the
 code.
 
+Our goal was to evaluate the level of abstraction provided by each solution and their performances. We took the
+number of lines of code as a measure of the level of abstraction. We also measured the ability to share code between
+client and server sides.
+
+The tests were run on a DELL Latitude E6430 laptop with 8 GB of RAM, on the Google Chrome v27 Web browser.
+
 \subsection{Micro-Benchmark}
+
+We reimplemented the optional value abstraction and a same program using it in the following languages: JavaScript,
+HaXe and Java.
 
 \begin{figure}
 \centering
@@ -623,11 +636,9 @@ code.
 \label{micro-benchmark}
 \end{figure}
 
-Figure \ref{micro-benchmark} shows the micro-benchmark results. We measured the runtime performance, the number of
-lines of code (as an indication of the abstraction level), and finally the ratio of runtime performance and lines of
-code. \emph{js-scala} is between 3 to 100 times faster than other approaches on our benchmark. Combined with the
-fact that it provides high-level abstractions, it has a performance / lines of code ratio more than 4 times higher
-than other approaches.
+Figure \ref{micro-benchmark} shows the micro-benchmark results. Js-scala is between 3 to 100 times faster than
+other approaches on our benchmark. Combined with the fact that it provides high-level abstractions, it has a
+performance / lines of code ratio more than 4 times higher than other approaches.
 
 \subsection{Real World Application}
 
@@ -637,30 +648,15 @@ and look at the results. It contains JavaScript code to handle the dynamic behav
 double-posting prevention, dynamic form update and rich interaction with the document.
 
 The application was initially written using jQuery. We rewrote it using several technologies for the client-side
-part: vanilla JavaScript (low-level code without third-party library), js-scala, GWT and HaXe. In each case we tried
-to write the application in an idiomatic way.
+part: vanilla JavaScript (low-level code without third-party library), js-scala, GWT and HaXe. In each case we
+tried to write the application in an idiomatic way\footnote{Source code is available at
+\href{http://github.com/julienrf/chooze}{http://github.com/julienrf/chooze}}.
 
-\paragraph*{Vanilla JavaScript} Low-level code.
+\subsubsection{Performance}
 
-\paragraph*{jQuery} High-level code.
-
-\paragraph*{js-scala} High-level code. HTML fragment definition reused between server and client sides.
-
-\paragraph*{HaXe} Low-level code.
-
-\paragraph*{GWT} High-level code?
-
-\subsection{Benchmarks, Code Metrics}
-
-Our goal is to evaluate the level of abstraction provided by each solution and their performances. We took the
-number of lines of code as a measure of the level of abstraction. We also measured the ability to share code between
-client and server sides.
-
-We simulated user actions on a Web page (2000 clicks on buttons, triggering a dynamic update of the page and
-involving the use of the Option monad, the selectors API and the HTML fragment definition API) and measured the time
-it took complete them. We only measured the execution time of client-side code execution. The tests were run on a
-DELL Latitude E6430 laptop with 8 GB of RAM, on the Google Chrome v27 Web browser. Figure \ref{benchmark} shows the
-benchmark results.
+The benchmark code simulates user actions on a Web page (2000 clicks on buttons, triggering a dynamic update of
+the page and involving the use of the optional value monad, the selectors API and the HTML fragment definition API).
+Figure \ref{benchmark} shows the benchmark results.
 
 \begin{figure}
 \centering
@@ -669,22 +665,26 @@ benchmark results.
 \label{benchmark}
 \end{figure}
 
-The runtime performances of the vanilla JavaScript, HaXe and \emph{js-scala} versions are similar (though the
-\emph{js-scala} version is slightly slower by 6\%). It is worth noting that the vanilla JavaScript and the HaXe
-versions use low-level code compared to \emph{js-scala}, as shown in the second part of the figure (lines of code):
-the \emph{js-scala} version needs only 74 lines of code while the vanilla JavaScript version needs 116 lines of code
-(57\% bigger) and the HaXe version needs 148 lines of code (100\% bigger). The jQuery JavaScript version, of which
-code is high-level (54 lines of code, 27\% less than \emph{js-scala}) runs 10 times slower than the \emph{js-scala}
-version.
+The runtime performances of the vanilla JavaScript, HaXe and js-scala versions are similar (though the js-scala
+version is slightly slower by 6\%). It is worth noting that the vanilla JavaScript and the HaXe versions use
+low-level code compared to js-scala, as shown in the second part of the figure (lines of code): the js-scala version
+needs only 74 lines of code while the vanilla JavaScript version needs 116 lines of code (57\% bigger) and the HaXe
+version needs 148 lines of code (100\% bigger). The jQuery JavaScript version, of which code is high-level (54 lines
+of code, 27\% less than js-scala) runs 10 times slower than the js-scala version.
 
-The last part of the figure compares the runtime performance / lines of code ratio. \emph{js-scala} shows the best
-score, being 1.48 times better than the vanilla JavaScript version, 1.88 times better than the HaXe version,
-3.77 times better than the GWT version and 7.82 times better than the jQuery JavaScript version.
+The last part of the figure compares the runtime performance / lines of code ratio. Js-scala shows the best score,
+being 1.48 times better than the vanilla JavaScript version, 1.88 times better than the HaXe version, 3.45 times
+better than the GWT version and 7.82 times better than the jQuery JavaScript version.
+
+\subsubsection{Code Reuse}
+
+We were able to share HTML DOM fragment definitions between server-side and client-side in js-scala.
 
 \section{Conclusion}
 \label{discussion}
 
 We implemented a high-level language abstracting over client and server heterogeneity but producing efficient code.
+Generated code size?
 
 %\appendix
 %\section{Appendix Title}
@@ -693,7 +693,7 @@ We implemented a high-level language abstracting over client and server heteroge
 %
 \acks
 
-Acknowledgments, if needed.
+This work was funded by Zenexity.
 
 \bibliographystyle{abbrvnat}
 \bibliography{biblio}
