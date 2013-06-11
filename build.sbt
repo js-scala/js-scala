@@ -6,7 +6,7 @@ version := "0.4-SNAPSHOT"
 
 scalaOrganization := "org.scala-lang.virtualized"
 
-scalaVersion := "2.10.1"
+scalaVersion := "2.10.2-RC1"
 
 libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
