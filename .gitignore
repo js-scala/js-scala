@@ -21,5 +21,4 @@ examples/canvas/koch_.html
 examples/d3/d3_.html
 
 # Tests
-test-out/
-!test-out/*.check
+~test-out/*.check
