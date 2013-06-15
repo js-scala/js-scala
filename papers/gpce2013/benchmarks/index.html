@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="benchmark.js"></script>
+        <script type="text/javascript" src="js-scala.js"></script>
+        <script type="text/javascript" src="selectors-js-scala.js"></script>
+        <script type="text/javascript" src="haxe.js"></script>
+        <script type="text/javascript" src="gwt/benchmark/benchmark.nocache.js"></script>
+        <script src="jquery-1.9.0.min.js"></script>
+    </head>
+    <body>
+        <form id="add-user" action="">
+            <fieldset>
+                <input class="foo" type="text"/>
+                <input class="word" type="text"/>
+                <input class="word" type="text"/>
+            </fieldset>
+            <fieldset>
+                <input class="bar" type="text"/>
+                <input class="word" type="text"/>
+            </fieldset>
+            <fieldset>
+                <input class="foo" type="text"/>
+                <input class="foo" type="text"/>
+            </fieldset>
+            <fieldset>
+                <input class="word" type="text"/>
+                <input type="submit"/>
+            </fieldset>
+        </form>
+        <div id="result"></div>
+        <script type="text/javascript">
+          (function () {
+
+              // --- Vanilla
+              var vanilla = (function () {
+                  var maybe = function (x) {
+                      return x + 1
+                  };
+
+                  return function () {
+                      var a = maybe(0);
+                      if (a !== null) {
+                          var b = maybe(a);
+                          if (b !== null) {
+                              var c = maybe(b);
+                              if (c !== null) {
+                                  var d = maybe(c);
+                                  if (d !== null) {
+                                      return d
+                                  }
+                              }
+                          }
+                      }
+                      return null
+                  }
+              })();
+
+              // --- Vanilla with abstractions
+              var vanilla2 = (function () {
+                  var Some = function (v) {
+                      this.value = v;
+                  };
+                  Some.prototype.bind = function (f) {
+                      return f(this.value)
+                  };
+
+                  var None = {
+                      bind: function (_) {
+                          return this
+                      }
+                  };
+
+                  var maybe = function (x) {
+                      return new Some(x + 1)
+                  };
+
+                  return function () {
+                    return maybe(0).bind(function (a) {
+                        return maybe(a).bind(function (b) {
+                            return maybe(b).bind(function (c) {
+                                return maybe(c).bind(function (d) {
+                                    return new Some(d)
+                                })
+                            })
+                        })
+                    })
+                  }
+
+              })();
+
+
+
+              // --- Selectors
+
+              var selectorsOpt = function () {
+                  var form = document.getElementById('add-user');
+                  if (form !== null) {
+                      var sections =
+                              form.getElementsByTagName('fieldset');
+                      var results = [];
+                      for (var i = 0 ; i < sections.length ; i++) {
+                          var words = sections[i]
+                                  .getElementsByClassName('word');
+                          results[i] = words;
+                      }
+                      return results
+                  } else return null
+              };
+
+              var selectors = function () {
+                  var form = document.querySelector('#add-user');
+                  if (form !== null) {
+                      var sections = form.querySelectorAll('fieldset');
+                      var results = [];
+                      for (var i = 0 ; i < sections.length ; i++) {
+                          results[i] = sections[i].querySelectorAll('.word');
+                      }
+                      return results
+                  } else return null
+              };
+
+              var selectorsjQuery = function () {
+                  var form = $('#add-user');
+                  var sections = $('fieldset', form);
+                  return sections.map(function () {
+                      return $('.word', this)
+                  })
+              };
+
+
+              var el = document.getElementById('result');
+              var running = document.createElement('p');
+              running.textContent = 'Benchmark is running…';
+              el.appendChild(running);
+
+              setTimeout(function () {
+                  julienrf.gpce.Benchmark.gwt();
+                  var results = [];
+                  var suite = new Benchmark.Suite;
+                  /*suite.add('vanilla-hand-tuned', vanilla)
+                          .add('vanilla', vanilla2)
+                          .add('js-scala', jsscala)
+                          .add('haxe', Benchmark.haxe)
+                          .add('gwt', julienrf.gpce.Benchmark.gwt)
+                          .on('cycle', function (event) { results.push(event) })
+                          .run();
+
+                  results.push({target: 'selectors'});*/
+
+                  suite = new Benchmark.Suite;
+                  suite.add('vanilla-opt', selectorsOpt)
+                          .add('vanilla', selectors)
+                          .add('jquery', selectorsjQuery)
+                          .add('js-scala', selectorsJsScala)
+                          .on('cycle', function (e) { results.push(e) })
+                          .run();
+
+                  el.removeChild(running);
+                  results.forEach(function (result) {
+                      var p = document.createElement('p');
+                      p.textContent = result.target;
+                      console.log(result);
+                      el.appendChild(p);
+                  });
+              }, 200); // 200ms because the GWT benchmark is loaded asynchronously
+          })()
+        </script>
+    </body>
+</html>

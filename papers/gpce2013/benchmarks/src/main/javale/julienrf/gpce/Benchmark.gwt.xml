@@ -1,0 +1,10 @@
+<module rename-to='benchmarkgwt'>
+
+  <inherits name='org.timepedia.exporter.Exporter'/>
+
+  <entry-point class='julienrf.gpce.client.Main'/>
+  <set-property name="export" value="yes"/>
+
+  <source path='client'/>
+
+</module>
