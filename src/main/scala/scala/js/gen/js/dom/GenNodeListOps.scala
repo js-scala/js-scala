@@ -2,8 +2,9 @@ package scala.js.gen.js.dom
 
 import scala.js.exp.dom.NodeListOpsExp
 import scala.js.gen.js.GenEffect
+import scala.js.gen.QuoteGen
 
-trait GenNodeListOps extends GenEffect {
+trait GenNodeListOps extends GenEffect with QuoteGen {
   val IR: NodeListOpsExp
   import IR._
 
@@ -23,6 +24,14 @@ trait GenNodeListOps extends GenEffect {
       stream.println("for (var "+ quote(i) +" = 0, "+ quote(l) +" = " + quote(ns) + ".length ; "+ quote(i) +" < "+ quote(l) +" ; "+ quote(i) +"++) {")
       emitValDef(n, quote(ns)+".item("+ quote(i) +")")
       emitBlock(block)
+      stream.println("}")
+    case NodeListMap(ns, n, block) =>
+      val i, l = fresh[Int]
+      emitValDef(sym, "[]")
+      stream.println(q"for (var $i = 0, $l = $ns.length ; $i < $l ; $i++) {")
+      emitValDef(n, q"$ns.item($i)")
+      emitBlock(block)
+      stream.println(q"$sym.push(${getBlockResult(block)});")
       stream.println("}")
     case NodeListForeachWithIndex(ns, a, i, block) =>
       val l = fresh[Int]
