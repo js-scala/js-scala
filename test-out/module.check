@@ -1,0 +1,21 @@
+define([],function(){
+return{
+"pack": {
+"fun1": function (x0) {
+return x0
+}
+},
+"fun2": function (x1, x2) {
+return x1
+}
+,
+"fun3": function (x3, x4) {
+var x5 = x3 + x4;
+return x5
+}
+,
+"fun4": function (x6, x7, x8) {
+return x8
+}
+}
+});
