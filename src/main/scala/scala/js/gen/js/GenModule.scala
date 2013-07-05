@@ -4,7 +4,7 @@ import java.io.PrintWriter
 import scala.virtualization.lms.internal.GenericCodegen
 
 
-  trait GenModule extends GenericCodegen {
+  trait GenModule extends Codegen {
     def module: Module
     abstract sealed class Element
     case class Module(nes: (String, Element)*) extends Element
