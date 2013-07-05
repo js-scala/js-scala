@@ -17,7 +17,7 @@ class TestDom extends FileDiffSuite {
   trait DSLJSGen extends GenEffect with GenDom with GenDebug { val IR: DSLExp }
 
   def testOn() {
-
+    
     trait Prog { this: DSL =>
 
       def main() = {
