@@ -328,7 +328,7 @@ trait ListOpsInScala extends ListOps with InScala {
   def list_new[A](xs: Seq[A])(implicit ev: Manifest[A], pos: SourceContext) = xs.to[List]
   def list_fromseq[A](xs: Seq[A])(implicit ev: Manifest[A], pos: SourceContext) = xs.to[List]
   def list_map[A, B](l: List[A], f: A => B)(implicit mA: Manifest[A], mB: Manifest[B], pos: SourceContext) = l.map(f)
-  def list_flatMap[A, B](f: A => List[B])(xs: List[A])(implicit mA: Manifest[A], mB: Manifest[B], pos: SourceContext) = xs.flatMap(f)
+  def list_flatMap[A, B](xs: List[A], f: A => List[B])(implicit mA: Manifest[A], mB: Manifest[B], pos: SourceContext) = xs.flatMap(f)
   def list_filter[A](l: List[A], f: A => Boolean)(implicit mA: Manifest[A], pos: SourceContext) = l.filter(f)
   def list_sortby[A, B](l: List[A], f: A => B)(implicit mA: Manifest[A], mB: Manifest[B], ev: Ordering[B], pos: SourceContext) = l.sortBy(f)
   def list_prepend[A](l: List[A], e: A)(implicit mA: Manifest[A], pos: SourceContext) = e :: l
