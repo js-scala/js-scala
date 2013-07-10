@@ -1,7 +1,6 @@
 package scala.js.macroimpl
 
 import scala.language.experimental.macros
-
 import scala.reflect.macros.Context
 
 object Records {
@@ -55,7 +54,7 @@ object Records {
       """
 
       q"""
-      class $anon{ 
+      class $anon { 
         val $ctor = record[$objName]
         ..$defGetters
         $defCopy

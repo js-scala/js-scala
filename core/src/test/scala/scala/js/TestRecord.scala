@@ -37,7 +37,6 @@ class TestRecord extends FileDiffSuite {
         log(w)
         log(w.age)
         
-        
         val Point = record[Point]
         val p = Point(unit(15), unit(22))
         log(p)
@@ -56,5 +55,3 @@ class TestRecord extends FileDiffSuite {
      
   }
 }
-
-  
