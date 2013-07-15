@@ -337,7 +337,9 @@
 % Text area:
 
 \newdimen{\standardtextwidth}
+%\setlength{\standardtextwidth}{42pc}
 \setlength{\standardtextwidth}{42pc}
+
 
 \if \@onecolumn
   \setlength{\textwidth}{40.5pc}
@@ -347,7 +349,7 @@
 
 \setlength{\topskip}{8pt}
 \setlength{\columnsep}{2pc}
-\setlength{\textheight}{54.5pc}
+\setlength{\textheight}{52.5pc}
 
 % Running foot:
 
