@@ -26,9 +26,13 @@
 
 ### Use it in your project
 
-1. Add a dependency on `js-scala-0.3-SNAPSHOT`
-2. Set the Scala organization to `org.scala-lang.virtualized`
+1. Add a dependency on js-scala 0.4-SNAPSHOT
+  - `libraryDependencies += "EPFL" %% "js-scala" % "0.4-SNAPSHOT"`
+2. Use Scala 2.10.2-RC1 and set the Scala organization to `org.scala-lang.virtualized`
+  - `scalaVersion := "2.10.2-RC1"`
+  - `scalaOrganization := "org.scala-lang.virtualized"`
 3. Set the `-Yvirtualize` compiler option
+  - `scalacOptions += "-Yvirtualize"`
 
 ### Use it in Play! 2.1
 
