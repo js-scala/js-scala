@@ -1,5 +1,4 @@
-package scala.js
-package examples
+package scala.js.examples
 
 import scala.js.language.JsScala
 import scala.js.exp.JsScalaExp

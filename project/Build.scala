@@ -11,14 +11,14 @@ object BuildSettings {
   )
 }
 
-object MyBuild extends Build {
+object JsScalaBuild extends Build {
   import BuildSettings._
 
   lazy val root = Project(
     "root",
-    file("core"),
+    file("."),
     settings = buildSettings
-  ) aggregate (macros, core)
+  ) aggregate (macros, core, examples)
 
   lazy val macros = Project(
     "macros",
@@ -38,7 +38,7 @@ object MyBuild extends Build {
     "core",
     file("core"),
     settings = buildSettings ++ Seq(
-      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics", "-Ymacro-debug-lite"),
+      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics"/*, "-Ymacro-debug-lite"*/),
       name := "js-scala",
       //Our tests are not threadsafe so disabling parallel execution for now
       parallelExecution in Test := false,
@@ -54,6 +54,17 @@ object MyBuild extends Build {
       libraryDependencies <<= (scalaVersion, libraryDependencies) { (ver, deps) => deps :+ compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % ver)}
     )
   ) dependsOn (macros)
+
+  lazy val examples = Project(
+    "examples",
+    file("examples"),
+    settings = buildSettings ++ Seq(
+      autoCompilerPlugins := true,
+      libraryDependencies <<= (scalaVersion, libraryDependencies) { (ver, deps) => deps :+ compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % ver)},
+      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics")
+    )
+  ) dependsOn (core)
+
 }
 
 
