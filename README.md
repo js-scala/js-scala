@@ -8,30 +8,21 @@
 ### Setup
 
 1. Setup [virtualization-lms-core](http://github.com/TiarkRompf/virtualization-lms-core):
-
-    - `$ git clone git@github.com:TiarkRompf/virtualization-lms-core.git`
-    - `$ cd virtualization-lms-core`
-    - `$ sbt publish-local`
-
+  - `$ git clone git@github.com:TiarkRompf/virtualization-lms-core.git`
+  - `$ cd virtualization-lms-core`
+  - `$ sbt publish-local`
 2. Clone the project and manage it using sbt:
-
-    - `$ cd ..`
-    - `$ git clone git@github.com:js-scala/js-scala.git`
-    - `$ cd js-scala`
-    - `$ sbt`
-
+  - `$ cd ..`
+  - `$ git clone git@github.com:js-scala/js-scala.git`
+  - `$ cd js-scala`
+  - `$ sbt`
 3. Run the tests:
-
-    - `> test`
-
+  - `> test`
 4. Run the examples:
-
-    - `> project examples`
-    - `> run`
-
+  - `> project examples`
+  - `> run`
 5. Publish it (if you want to use it in your project):
-
-    - `> publish-local`
+  - `> publish-local`
 
 ### Use it in your project
 
