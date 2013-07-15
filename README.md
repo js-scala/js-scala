@@ -18,11 +18,11 @@
   - `$ sbt`
 3. Run the tests:
   - `> test`
-4. Run the examples:
+4. Publish it (if you want to use it in your project):
+  - `> publish-local`
+5. Run the examples:
   - `> project examples`
   - `> run`
-5. Publish it (if you want to use it in your project):
-  - `> publish-local`
 
 ### Use it in your project
 

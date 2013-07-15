@@ -17,7 +17,9 @@ object JsScalaBuild extends Build {
   lazy val root = Project(
     "root",
     file("."),
-    settings = buildSettings
+    settings = buildSettings ++ Seq(
+      publishLocal := ()
+    )
   ) aggregate (macros, core, examples)
 
   lazy val macros = Project(
@@ -30,7 +32,8 @@ object JsScalaBuild extends Build {
       libraryDependencies ++= Seq(
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
         "EPFL" %% "lms" % "0.3-SNAPSHOT"
-      )
+      ),
+      publishLocal := ()
     )
   )
 
@@ -39,7 +42,11 @@ object JsScalaBuild extends Build {
     file("core"),
     settings = buildSettings ++ Seq(
       scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics"/*, "-Ymacro-debug-lite"*/),
+
       name := "js-scala",
+      mappings in (Compile, packageBin) <++= mappings in (macros, Compile, packageBin),
+      mappings in (Compile, packageSrc) <++= mappings in (macros, Compile, packageSrc),
+
       //Our tests are not threadsafe so disabling parallel execution for now
       parallelExecution in Test := false,
       // disable publishing of main docs
@@ -59,6 +66,7 @@ object JsScalaBuild extends Build {
     "examples",
     file("examples"),
     settings = buildSettings ++ Seq(
+      publishLocal := (),
       autoCompilerPlugins := true,
       libraryDependencies <<= (scalaVersion, libraryDependencies) { (ver, deps) => deps :+ compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % ver)},
       scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics")
