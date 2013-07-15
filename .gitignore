@@ -13,6 +13,7 @@ project/user.sbt
 .settings/
 .idea/
 .idea_modules/
+*.iml
 
 # Examples
 examples/ajax/twitter_.js
