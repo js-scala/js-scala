@@ -4,7 +4,7 @@ import java.io.PrintWriter
 import scala.virtualization.lms.internal.GenericCodegen
 
 
-  trait GenModule extends Codegen {
+  trait GenModuleAMD extends Codegen {
     def module: Module
     abstract sealed class Element
     case class Module(nes: (String, Element)*) extends Element
@@ -32,10 +32,12 @@ import scala.virtualization.lms.internal.GenericCodegen
       val args = List(s1, s2, s3)
       Function(args, body)
     }
-    def emitModule(name: String, out: java.io.PrintWriter) {
-      out.println(s"""var "$name" = {""")
+    def emitModuleAMD(out: java.io.PrintWriter) {
+      out.println("define([],function(){")
+      out.println("return{")
       emitModule(module, out)
-      out.println("};")
+      out.println("}")
+      out.println("});")
       out.close()
     }
     protected def emitElement(m: Element, out: java.io.PrintWriter) {

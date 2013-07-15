@@ -1,10 +1,9 @@
-package scala.js.gen.js
+package scala.js.gen.scala
 
 import java.io.PrintWriter
-import scala.virtualization.lms.internal.GenericCodegen
+import scala.virtualization.lms.common.ScalaGenBase
 
-
-  trait GenModule extends Codegen {
+  trait GenModule extends ScalaGenBase {
     def module: Module
     abstract sealed class Element
     case class Module(nes: (String, Element)*) extends Element
@@ -33,32 +32,30 @@ import scala.virtualization.lms.internal.GenericCodegen
       Function(args, body)
     }
     def emitModule(name: String, out: java.io.PrintWriter) {
-      out.println(s"""var "$name" = {""")
+      out.println(s"""object $name {""")
       emitModule(module, out)
       out.println("};")
       out.close()
     }
     protected def emitElement(m: Element, out: java.io.PrintWriter) {
       m match {
-        case f @ Function(arg, body) => emitSource(arg, body,"",out)(f.Manifest)
-        case m: Module =>
-          out.println("{")
-          emitModule(m, out)
-          out.print("}")
+        case f @ Function(arg, body) => emitSource(arg, body,"" ,out)(f.Manifest)
+        case m: Module => emitModule(m, out)
       }
     }
     protected def emitModule(mod: Module, out: java.io.PrintWriter) {
       mod.nes match {
         case (name, el) +: nes => 
           def emitEl(n: String, e: Element) = {
-            out.print(s""""$n": """)
+            out.print(s"""object $n {""")
             emitElement(e, out)
           }
           emitEl(name, el)
           for ((name, el) <- nes) {
-            out.println(",")
+            out.println("},")
             emitEl(name, el)
           }
+          out.println("}")
         case _ =>
       }
     }
