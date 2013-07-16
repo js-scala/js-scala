@@ -26,14 +26,14 @@ object JsScalaBuild extends Build {
     "macros",
     file("macros"),
     settings = buildSettings ++ Seq(
+      name := "js-scala-macros",
       scalaVersion := "2.10.3-SNAPSHOT",
       scalaOrganization := "org.scala-lang.macro-paradise",
       libraryDependencies <+= (scalaVersion)("org.scala-lang.macro-paradise" % "scala-reflect" % _),
       libraryDependencies ++= Seq(
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
         "EPFL" %% "lms" % "0.3-SNAPSHOT"
-      ),
-      publishLocal := ()
+      )
     )
   )
 
