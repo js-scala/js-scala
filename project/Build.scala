@@ -26,7 +26,7 @@ object JsScalaBuild extends Build {
     "macros",
     file("macros"),
     settings = buildSettings ++ Seq(
-      scalaVersion := "2.10.2-SNAPSHOT",
+      scalaVersion := "2.10.3-SNAPSHOT",
       scalaOrganization := "org.scala-lang.macro-paradise",
       libraryDependencies <+= (scalaVersion)("org.scala-lang.macro-paradise" % "scala-reflect" % _),
       libraryDependencies ++= Seq(
