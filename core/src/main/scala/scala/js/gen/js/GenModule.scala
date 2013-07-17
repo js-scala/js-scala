@@ -4,32 +4,34 @@ import java.io.PrintWriter
 import scala.virtualization.lms.internal.GenericCodegen
 import scala.js.gen.BaseGenModule
 
+
 trait GenModule extends BaseGenModule with Codegen {
   def emitModule(name: String, out: java.io.PrintWriter) {
-    out.println(s"""var $name = {""")
-    emitModule(module, out)
-    out.println("};")
-    out.flush()
+    withStream(out){
+    stream.println(s"""var $name = {""")
+    emitModule(module)
+    stream.println("};")}
+    
   }
-  protected def emitElement(m: Element, out: java.io.PrintWriter) {
+  protected def emitElement(m: Element) {
     m match {
-      case f @ Function(arg, body) => emitSource(arg, body,"",out)(f.Manifest)
+      case f @ Function(arg, body) => emitSource(arg, body,"",stream)(f.Manifest)
       case m: Module =>
-        out.println("{")
-        emitModule(m, out)
-        out.print("}")
+        stream.println("{")
+        emitModule(m)
+        stream.print("}")
     }
   }
-  protected def emitModule(mod: Module, out: java.io.PrintWriter) {
+  protected def emitModule(mod: Module) {
     mod.nes match {
       case (name, el) +: nes => 
         def emitEl(n: String, e: Element) = {
-          out.print(s""""$n": """)
-          emitElement(e, out)
+          stream.print(s""""$n": """)
+          emitElement(e)
         }
         emitEl(name, el)
         for ((name, el) <- nes) {
-          out.println(",")
+          stream.println(",")
           emitEl(name, el)
         }
       case _ =>

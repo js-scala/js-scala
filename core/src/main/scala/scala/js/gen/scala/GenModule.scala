@@ -6,22 +6,22 @@ import scala.js.gen.BaseGenModule
 
 trait GenModule extends BaseGenModule with ScalaGenBase {
   def emitModule(name: String, out: java.io.PrintWriter) {
-    out.println(s"""object $name {""")
-    emitModule(module, out)
-    out.println("}")
-    out.flush()
+    withStream(out){
+    stream.println(s"""object $name {""")
+    emitModule(module)
+    stream.println("}")}
   }
-  protected def emitModule(mod: Module, out: java.io.PrintWriter) { 
+  protected def emitModule(mod: Module) { 
     for ((n, e) <- mod.nes) {
-      out.print(s"""object $n """)
+      stream.print(s"""object $n """)
       e match {
           case f @ Function(arg, body) =>
-            out.print(s"""extends $n """)
-            emitSource(arg, body,n ,out)(f.Manifest)
+            stream.print(s"""extends $n """)
+            emitSource(arg, body,n ,stream)(f.Manifest)
           case m: Module =>
-            out.print("{")
-            emitModule(m, out)
-            out.println("}")
+            stream.print("{")
+            emitModule(m)
+            stream.println("}")
       }
     }
   }
