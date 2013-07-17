@@ -1,4 +1,4 @@
-var "Module 1" = {
+var "Module1" = {
 "pack": {
 "fun1": function (x0) {
 return x0

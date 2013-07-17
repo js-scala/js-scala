@@ -32,7 +32,7 @@ class TestModuleScala extends FileDiffSuite {
             ("fun4" -> fun(prog.third _))
         )
       }
-      genModule.emitModule("Module 1",new PrintWriter(System.out))
+      genModule.emitModule("Module1",new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix + "module-scala")
   }
@@ -46,7 +46,7 @@ class TestModuleScala extends FileDiffSuite {
         val IR: prog.type = prog
         val module = Module()
       }
-      genModule.emitModule("Module 1",new PrintWriter(System.out))
+      genModule.emitModule("Module1",new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix + "module-empty-scala")
     

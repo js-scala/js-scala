@@ -32,7 +32,7 @@ class TestModuleAMD extends FileDiffSuite {
             ("fun4" -> fun(prog.third _))
         )
       }
-      genModuleAMD.emitModuleAMD(new PrintWriter(System.out))
+      genModuleAMD.emitModule(new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix + "moduleAMD")
   }
@@ -46,7 +46,7 @@ class TestModuleAMD extends FileDiffSuite {
         val IR: prog.type = prog
         val module = Module()
       }
-      genModuleAMD.emitModuleAMD(new PrintWriter(System.out))
+      genModuleAMD.emitModule(new PrintWriter(System.out))
     }
     assertFileEqualsCheck(prefix + "moduleAMD-empty")
     

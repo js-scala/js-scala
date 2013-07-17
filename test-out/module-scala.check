@@ -1,8 +1,8 @@
-object Module 1 {
-object pack {object fun1 {/*****************************************
+object Module1 {
+object pack {object fun1 extends fun1 /*****************************************
   Emitting Generated Code                  
 *******************************************/
-class  extends ((Int)=>(Int)) {
+class fun1 extends ((Int)=>(Int)) {
 def apply(x0:Int): Int = {
 x0
 }
@@ -11,11 +11,10 @@ x0
   End of Generated Code                  
 *******************************************/
 }
-},
-object fun2 {/*****************************************
+object fun2 extends fun2 /*****************************************
   Emitting Generated Code                  
 *******************************************/
-class  extends ((Int, java.lang.String)=>(Int)) {
+class fun2 extends ((Int, java.lang.String)=>(Int)) {
 def apply(x1:Int, x2:java.lang.String): Int = {
 x1
 }
@@ -23,11 +22,10 @@ x1
 /*****************************************
   End of Generated Code                  
 *******************************************/
-},
-object fun3 {/*****************************************
+object fun3 extends fun3 /*****************************************
   Emitting Generated Code                  
 *******************************************/
-class  extends ((Int, Int)=>(Int)) {
+class fun3 extends ((Int, Int)=>(Int)) {
 def apply(x3:Int, x4:Int): Int = {
 val x5 = x3 + x4
 x5
@@ -36,11 +34,10 @@ x5
 /*****************************************
   End of Generated Code                  
 *******************************************/
-},
-object fun4 {/*****************************************
+object fun4 extends fun4 /*****************************************
   Emitting Generated Code                  
 *******************************************/
-class  extends ((java.lang.String, Double, Int)=>(Int)) {
+class fun4 extends ((java.lang.String, Double, Int)=>(Int)) {
 def apply(x6:java.lang.String, x7:Double, x8:Int): Int = {
 x8
 }
@@ -49,4 +46,3 @@ x8
   End of Generated Code                  
 *******************************************/
 }
-};
