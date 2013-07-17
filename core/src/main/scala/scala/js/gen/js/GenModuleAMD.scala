@@ -11,7 +11,6 @@ trait GenModuleAMD extends BaseGenModule with Codegen{
     emitModule(module, out)
     out.println("}")
     out.println("});")
-    out.close()
   }
   protected def emitElement(m: Element, out: java.io.PrintWriter) {
     m match {

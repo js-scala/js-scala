@@ -6,10 +6,9 @@ import scala.js.gen.BaseGenModule
 
 trait GenModule extends BaseGenModule with Codegen {
   def emitModule(name: String, out: java.io.PrintWriter) {
-    out.println(s"""var "$name" = {""")
+    out.println(s"""var $name = {""")
     emitModule(module, out)
     out.println("};")
-    out.close()
   }
   protected def emitElement(m: Element, out: java.io.PrintWriter) {
     m match {

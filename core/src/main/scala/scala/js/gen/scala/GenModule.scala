@@ -9,7 +9,6 @@ trait GenModule extends BaseGenModule with ScalaGenBase {
     out.println(s"""object $name {""")
     emitModule(module, out)
     out.println("}")
-    out.close()
   }
   protected def emitModule(mod: Module, out: java.io.PrintWriter) { 
     for ((n, e) <- mod.nes) {
