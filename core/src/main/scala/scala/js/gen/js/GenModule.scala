@@ -9,6 +9,7 @@ trait GenModule extends BaseGenModule with Codegen {
     out.println(s"""var $name = {""")
     emitModule(module, out)
     out.println("};")
+    out.flush()
   }
   protected def emitElement(m: Element, out: java.io.PrintWriter) {
     m match {
