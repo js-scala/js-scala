@@ -1,10 +1,10 @@
 package scala.js
 
 import java.io.PrintWriter
-import scala.js.gen.js.{ GenEffect, GenNumericOps, GenModule }
+import scala.js.gen.js.{ GenEffect, GenNumericOps, GenModuleAMD }
 import scala.virtualization.lms.common.{ NumericOps, NumericOpsExp }
 
-class TestModule extends FileDiffSuite {
+class TestModuleAMD extends FileDiffSuite {
 
   trait Prog extends NumericOps {
 
@@ -22,8 +22,8 @@ class TestModule extends FileDiffSuite {
     val prog = new Prog with NumericOpsExp
 
     val prefix = "test-out/"
-    withOutFile(prefix + "module") {
-      val genModule = new GenEffect with GenNumericOps with GenModule {
+    withOutFile(prefix + "moduleAMD") {
+      val genModuleAMD = new GenEffect with GenNumericOps with GenModuleAMD {
         val IR: prog.type = prog
         val module = Module(
           ("pack" -> Module("fun1" -> fun(prog.id _))),
@@ -31,22 +31,22 @@ class TestModule extends FileDiffSuite {
           ("fun3" -> fun(prog.add _)),
           ("fun4" -> fun(prog.third _)))
       }
-      genModule.emitModule("Module1", new PrintWriter(System.out))
+      genModuleAMD.emitModule(new PrintWriter(System.out))
     }
-    assertFileEqualsCheck(prefix + "module")
+    assertFileEqualsCheck(prefix + "moduleAMD")
   }
 
   def testEmitEmptyModule() = {
     val prog = new Prog with NumericOpsExp
 
     val prefix = "test-out/"
-    withOutFile(prefix + "module-empty") {
-      val genModule = new GenEffect with GenNumericOps with GenModule {
+    withOutFile(prefix + "moduleAMD-empty") {
+      val genModuleAMD = new GenEffect with GenNumericOps with GenModuleAMD {
         val IR: prog.type = prog
         val module = Module()
       }
-      genModule.emitModule("Module1", new PrintWriter(System.out))
+      genModuleAMD.emitModule(new PrintWriter(System.out))
     }
-    assertFileEqualsCheck(prefix + "module-empty")
+    assertFileEqualsCheck(prefix + "moduleAMD-empty")
   }
 }

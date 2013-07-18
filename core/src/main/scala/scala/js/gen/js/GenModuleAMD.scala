@@ -4,12 +4,14 @@ import java.io.PrintWriter
 import scala.virtualization.lms.internal.GenericCodegen
 import scala.js.gen.BaseGenModule
 
-trait GenModule extends BaseGenModule with Codegen {
-  def emitModule(name: String, out: java.io.PrintWriter) {
+trait GenModuleAMD extends BaseGenModule with Codegen {
+  def emitModule(out: java.io.PrintWriter) {
     withStream(out) {
-      stream.println(s"""var $name = {""")
+      stream.println("define([],function(){")
+      stream.println("return{")
       emitModule(module)
-      stream.println("};")
+      stream.println("}")
+      stream.println("});")
     }
   }
   protected def emitElement(m: Element) {
