@@ -1,7 +1,6 @@
 package scala.js.gen
 
 import virtualization.lms.internal.GenericCodegen
-//import js.Codegen
 
 trait BaseGenModule extends GenericCodegen {
   def module: Module
