@@ -44,6 +44,8 @@ trait ElementOpsExp extends ElementOps with EffectExp with TupledFunctionsExp wi
   def input_set_name(input: Exp[Input], value: Exp[String]) = reflectEffect(InputSetName(input, value))
   def input_name(input: Exp[Input]) = reflectEffect(InputName(input))
   def input_value(input: Exp[Input]) = reflectEffect(InputValue(input))
+  def input_set_checked(input: Exp[Input], value: Exp[Boolean]) = reflectEffect(InputSetChecked(input, value))
+  def input_checked(input: Exp[Input]) = reflectEffect(InputChecked(input))
 
   def form_submit(form: Exp[Form]) = reflectEffect(FormSubmit(form))
 
@@ -67,6 +69,8 @@ trait ElementOpsExp extends ElementOps with EffectExp with TupledFunctionsExp wi
   case class InputSetName(input: Exp[Input], value: Exp[String]) extends Def[Unit]
   case class InputName(input: Exp[Input]) extends Def[String]
   case class InputValue(input: Exp[Input]) extends Def[String]
+  case class InputSetChecked(input: Exp[Input], value: Exp[Boolean]) extends Def[Unit]
+  case class InputChecked(input: Exp[Input]) extends Def[Boolean]
 
   case class FormSubmit(form: Exp[Form]) extends Def[Unit]
 

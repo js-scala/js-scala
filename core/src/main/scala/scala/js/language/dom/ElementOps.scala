@@ -49,12 +49,16 @@ trait ElementOps extends Base with EventOps with SelectorOps with Core {
     def name_=(n: Rep[String]) = input_set_name(input, n)
     def name = input_name(input)
     def value = input_value(input)
+    def checked_=(b: Rep[Boolean]) = input_set_checked(input, b)
+    def checked = input_checked(input)
   }
   def input_set_disabled(input: Rep[Input], value: Rep[Boolean]): Rep[Unit]
   def input_disabled(input: Rep[Input]): Rep[Boolean]
   def input_set_name(input: Rep[Input], value: Rep[String]): Rep[Unit]
   def input_name(input: Rep[Input]): Rep[String]
   def input_value(input: Rep[Input]): Rep[String]
+  def input_set_checked(input: Rep[Input], value: Rep[Boolean]): Rep[Unit]
+  def input_checked(input: Rep[Input]): Rep[Boolean]
 
   trait Form extends Element
   implicit class FormOps(form: Rep[Form]) {

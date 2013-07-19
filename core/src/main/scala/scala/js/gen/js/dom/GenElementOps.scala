@@ -41,6 +41,10 @@ trait GenElementOps extends GenEffect {
       emitValDef(sym, s"${quote(input)}.name")
     case InputValue(input) =>
       emitValDef(sym, s"${quote(input)}.value")
+    case InputSetChecked(input, value) =>
+      emitAssignment(quote(input) + ".checked", quote(value))
+    case InputChecked(input) =>
+      emitValDef(sym, quote(input) + ".checked")
 
     case FormSubmit(form) =>
       emitValDef(sym, quote(form) + ".submit()")
