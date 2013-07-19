@@ -25,6 +25,7 @@ trait Records extends Base {
 
   def record_construct[A : Manifest](fields: (String, Rep[_])*): Rep[A]
   def record_select[A : Manifest, B : Manifest](obj: Rep[A], label: String): Rep[B]
+  def record_equal[A: Manifest, Boolean : Manifest](obj: Rep[A], bis: Rep[A], fieldsObj: Seq[String], fieldsBis: Seq[String]): Rep[Boolean]
 
   /**
    * {{{
