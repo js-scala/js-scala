@@ -2,20 +2,15 @@ package scala.js.exp.dom
 
 import scala.js.language.dom.SelectorOps
 import scala.virtualization.lms.common.EffectExp
+import scala.js.exp.FFIExp
 
-trait SelectorOpsExp extends SelectorOps with EffectExp with ElementOpsExp {
+trait SelectorOpsExp extends SelectorOps with EffectExp with ElementOpsExp with FFIExp {
 
   def selector_find[A : Selectable : Manifest](s: Exp[Selector], selector: Exp[String]) =
-    reflectEffect(SelectorFind[A](s, selector))
+    foreign"$s.querySelector($selector)"[Option[A]].withEffect()
 
   def selector_findAll[A : Selectable : Manifest](s: Exp[Selector], selector: Exp[String]) =
-     reflectEffect(SelectorFindAll[A](s, selector))
-
-  case class SelectorFind[A : Selectable](s: Exp[Selector], selector: Exp[String]) extends Def[Option[A]]
-  case class SelectorGetElementById[A : Selectable](s: Exp[Selector], selector: Exp[String]) extends Def[Option[A]]
-  case class SelectorFindAll[A : Selectable](s: Exp[Selector], selector: Exp[String]) extends Def[NodeList[A]]
-  case class SelectorGetElementsByClassName[A : Selectable](s: Exp[Selector], selector: Exp[String]) extends Def[NodeList[A]]
-  case class SelectorGetElementsByTagName[A : Selectable](s: Exp[Selector], selector: Exp[String]) extends Def[NodeList[A]]
+    foreign"$s.querySelectorAll($selector)"[NodeList[A]].withEffect()
 
 }
 
@@ -30,7 +25,7 @@ trait SelectorOpsExpOpt extends SelectorOpsExp with BrowserExp {
       case Const(selectorString) =>
         selectorString.trim match {
           //if the first charactere is a '#' we are searching a ID
-          case Id(id, _) if s == document => reflectEffect(SelectorGetElementById[A](s, unit(id)))
+          case Id(id, _) if s == document => foreign"$s.getElementById(${unit(id)})"[Option[A]].withEffect()
           case _ => super.selector_find(s, selector)
         }
       case _ => super.selector_find(s, selector)
@@ -40,7 +35,7 @@ trait SelectorOpsExpOpt extends SelectorOpsExp with BrowserExp {
 
   override def selector_findAll[A : Selectable : Manifest](s: Exp[Selector], selector: Exp[String]) = {
     //the Regex to recover the class
-    val Classe = "\\.((-?[A-Za-z0-9_]+)+)".r
+    val ClassName = "\\.((-?[A-Za-z0-9_]+)+)".r
     //the Regex to recover the tag
     val Tag = "((-?[A-Za-z0-9_]+)+)".r
 
@@ -49,9 +44,9 @@ trait SelectorOpsExpOpt extends SelectorOpsExp with BrowserExp {
       case Const(selectorString) =>
         selectorString.trim match {
           //if the first charactere is a '.' we are searching a class
-          case Classe(classe, _) => reflectEffect(SelectorGetElementsByClassName[A](s, unit(classe)))
+          case ClassName(name, _) => foreign"$s.getElementsByClassName(${unit(name)})"[NodeList[A]].withEffect()
           //if it's a character chain we are searching a tag
-          case Tag(tag, _) => reflectEffect(SelectorGetElementsByTagName[A](s, unit(tag)))
+          case Tag(tag, _) => foreign"$s.getElementsByTagName(${unit(tag)})"[NodeList[A]].withEffect()
           case _ => super.selector_findAll(s, selector)
         }
       case _ => super.selector_findAll(s, selector)
