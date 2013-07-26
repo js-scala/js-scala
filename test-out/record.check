@@ -1,0 +1,27 @@
+function main(x0) {
+var x1 = {'nom' : "5D",'power' : List(jour, nuit)};
+var x2 = {'x' : 15,'y' : 22,'dimension' : x1};
+var x3 = {'name' : "Zev",'age' : 22,'mail' : "plop",'lePoint' : x2};
+var x4 = console.log(x3);
+var x5 = x3.name;
+var x6 = console.log(x5);
+var x7 = x3.mail;
+var x8 = {'name' : x5,'age' : 33,'mail' : x7,'lePoint' : x2};
+var x9 = console.log(x8);
+var x10 = x8.age;
+var x11 = console.log(x10);
+var x15 = x3.name==x8.name;
+var x16 = x3.age==x8.age;
+var x18 = x3.mail==x8.mail;
+var x20 = x3.lePoint.x==x8.lePoint.x;
+var x22 = x3.lePoint.y==x8.lePoint.y;
+var x24 = x3.lePoint.dimension.nom==x8.lePoint.dimension.nom;
+var x26 = x3.lePoint.dimension.power==x8.lePoint.dimension.power;
+var x25 = x24&&x26;
+var x23 = x22&&x25;
+var x21 = x20&&x23;
+var x19 = x18&&x21;
+var x17 = x16&&x19;
+var x12 = x15&&x17;
+var x13 = console.log(x12);
+}
