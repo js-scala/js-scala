@@ -2,7 +2,7 @@ package scala.js.gen.js
 
 import scala.js.exp.RecordsExp
 
-trait GenRecords extends GenBase {
+trait GenRecords extends GenBase with GenEqual {
   val IR: RecordsExp
   import IR._
 

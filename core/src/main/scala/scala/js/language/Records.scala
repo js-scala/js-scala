@@ -21,7 +21,7 @@ import scala.virtualization.lms.common.Base
  *     Point(p1.x + p2.x, p1.y + p2.y)
  * }}}
  */
-trait Records extends Base {
+trait Records extends Base with Equals {
 
   type Record = scala.js.macroimpl.Records.Record
 

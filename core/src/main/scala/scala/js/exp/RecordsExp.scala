@@ -1,9 +1,9 @@
 package scala.js.exp
 
-import scala.virtualization.lms.common.BaseExp
+import scala.virtualization.lms.common.{BaseExp, EqualExp}
 import scala.js.language.Records
 
-trait RecordsExp extends BaseExp with Records {
+trait RecordsExp extends BaseExp with Records with EqualExp {
   
   def record_construct[A : Manifest](fields: (String, Exp[_])*) = {
     RecordApply[A](fields)

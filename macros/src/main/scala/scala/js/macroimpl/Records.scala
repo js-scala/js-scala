@@ -77,7 +77,7 @@ object Records {
 
       val defEqual = q"""
         def === (bis: Rep[$objName]): Rep[Boolean] = {
-          record_equal($obj, bis, List(..$fieldsObj), List(..$fieldsObj))
+          record_equal($obj, bis, Seq(..$fieldsObj), Seq(..$fieldsObj))
         }
       """
 
