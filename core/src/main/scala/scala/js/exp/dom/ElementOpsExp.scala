@@ -4,7 +4,7 @@ import scala.js.exp.{FFIExp, OptionOpsExp}
 import scala.js.language.dom.ElementOps
 import scala.virtualization.lms.common.{EffectExp, IfThenElseExp, TupledFunctionsExp}
 
-trait ElementOpsExp extends ElementOps with EffectExp with TupledFunctionsExp with OptionOpsExp with IfThenElseExp with FFIExp {
+trait ElementOpsExp extends ElementOps with EffectExp with EventOpsExp with SelectorOpsExp with CoreExp with TupledFunctionsExp with OptionOpsExp with IfThenElseExp with FFIExp {
 
   def css_fontweight(css: Rep[CSSStyleDeclaration]) = foreign"$css.fontWeight"[Int].withEffect()
   def css_set_fontweight(css: Rep[CSSStyleDeclaration], v: Rep[Int]) = foreign"$css.fontWeight = $v".withEffect()

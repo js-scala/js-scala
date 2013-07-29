@@ -5,11 +5,11 @@ import scala.virtualization.lms.common.EffectExp
 trait FFIExp extends EffectExp {
 
   implicit class ForeignInterpolator(ctx: StringContext) {
-    def foreign(args: Rep[Any]*): ForeignExpressionBuilder =
+    def foreign(args: Exp[Any]*): ForeignExpressionBuilder =
       ForeignExpressionBuilder(ctx, args)
   }
 
-  case class ForeignExpressionBuilder(ctx: StringContext, args: Seq[Rep[Any]]) {
+  case class ForeignExpressionBuilder(ctx: StringContext, args: Seq[Exp[Any]]) {
     def withEffect[A : Manifest](effect: Summary = Simple()) = ForeignExpression(ctx, args) withEffect effect
     def pure[A : Manifest] = apply[A]
     def apply[A : Manifest] = ForeignExpression(ctx, args)

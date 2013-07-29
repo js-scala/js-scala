@@ -4,7 +4,7 @@ import scala.js.language.dom.SelectorOps
 import scala.virtualization.lms.common.EffectExp
 import scala.js.exp.FFIExp
 
-trait SelectorOpsExp extends SelectorOps with EffectExp with ElementOpsExp with FFIExp {
+trait SelectorOpsExp extends SelectorOps with EffectExp with NodeListOpsExp with FFIExp { this: ElementOpsExp =>
 
   def selector_find[A : Selectable : Manifest](s: Exp[Selector], selector: Exp[String]) =
     foreign"$s.querySelector($selector)"[Option[A]].withEffect()
