@@ -2,7 +2,7 @@ package scala.js.language
 
 import scala.language.experimental.macros
 
-import scala.virtualization.lms.common.Base
+import scala.virtualization.lms.common.{Base, Equal}
 
 /**
  * Reifies case classes as staged records
@@ -21,10 +21,13 @@ import scala.virtualization.lms.common.Base
  *     Point(p1.x + p2.x, p1.y + p2.y)
  * }}}
  */
-trait Records extends Base {
+trait Records extends Base with Equal {
+
+  type Record = scala.js.macroimpl.Records.Record
 
   def record_construct[A : Manifest](fields: (String, Rep[_])*): Rep[A]
   def record_select[A : Manifest, B : Manifest](obj: Rep[A], label: String): Rep[B]
+  def record_equal[A: Manifest, Boolean : Manifest](obj: Rep[A], bis: Rep[A], fieldsObj: Seq[String], fieldsBis: Seq[String]): Rep[Boolean]
 
   /**
    * {{{

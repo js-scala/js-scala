@@ -1,10 +1,11 @@
 package scala.js.macroimpl
 
 import scala.language.experimental.macros
-
 import scala.reflect.macros.Context
 
 object Records {
+  
+  trait Record
 
   def record[U: c.WeakTypeTag](c: Context) =
     c.Expr[Any](new Generator[c.type](c).construct[U])
@@ -18,7 +19,6 @@ object Records {
     import c.universe._
 
     def ops[U: c.WeakTypeTag](obj: c.Expr[U]) = {
-
       val anon = newTypeName(c.fresh)
       val wrapper = newTypeName(c.fresh)
       val ctor = newTermName(c.fresh)
@@ -54,11 +54,39 @@ object Records {
         def copy(..${paramsCopy.reverse}): Rep[$objName] = $ctor(..${paramsConstruct.reverse})
       """
 
+      def getFields(params: List[Symbol], root: String, list: List[Tree]): List[Tree] = {
+        if(params.size == 0){
+          list
+        }else{
+          val param = params.head
+          val paramNameString = param.name.toString
+          if(param.typeSignature <:< typeOf[Record]){
+            val paramMembers = param.typeSignature.members.toList.filter(_.isPrivate)
+            val l = getFields(paramMembers, root+paramNameString+".", list)
+            val k = getFields(params.splitAt(1)._2, root, l)
+            k
+          }else{
+            val name = root+paramNameString
+            val l = getFields(params.splitAt(1)._2, root, q"""$name"""::list)
+            l
+          }
+        }
+      }
+
+      val fieldsObj = getFields(params, "", List())
+
+      val defEqual = q"""
+        def === (bis: Rep[$objName]): Rep[Boolean] = {
+          record_equal($obj, bis, Seq(..$fieldsObj), Seq(..$fieldsObj))
+        }
+      """
+
       q"""
-      class $anon{ 
+      class $anon { 
         val $ctor = record[$objName]
         ..$defGetters
         $defCopy
+        $defEqual
       }
       class $wrapper extends $anon{}
       new $wrapper

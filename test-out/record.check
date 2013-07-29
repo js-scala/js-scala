@@ -1,17 +1,16 @@
 function main(x0) {
-var x1 = {'name' : "Zev",'age' : 22,'mail' : "plop"};
-var x2 = console.log(x1);
-var x3 = x1.name;
-var x4 = console.log(x3);
-var x5 = x1.mail;
-var x6 = {'name' : x3,'age' : 33,'mail' : x5};
+var x1 = ["jour","nuit"];
+var x2 = {'nom' : "5D",'power' : x1};
+var x3 = {'x' : 15,'y' : 22,'dimension' : x2};
+var x4 = {'name' : "Zev",'age' : 22,'mail' : "plop",'lePoint' : x3};
+var x5 = console.log(x4);
+var x6 = x4.name;
 var x7 = console.log(x6);
-var x8 = x6.age;
-var x9 = console.log(x8);
-var x10 = {'x' : 15,'y' : 22};
-var x11 = console.log(x10);
-var x12 = x10.x;
-var x13 = x10.y;
-var x14 = x12==x13;
-var x15 = console.log(x14);
+var x8 = x4.mail;
+var x9 = {'name' : x6,'age' : 33,'mail' : x8,'lePoint' : x3};
+var x10 = console.log(x9);
+var x11 = x9.age;
+var x12 = console.log(x11);
+var x13 = (x4.lePoint.dimension.power==x9.lePoint.dimension.power)&&(x4.lePoint.dimension.nom==x9.lePoint.dimension.nom)&&(x4.lePoint.y==x9.lePoint.y)&&(x4.lePoint.x==x9.lePoint.x)&&(x4.mail==x9.mail)&&(x4.age==x9.age)&&(x4.name==x9.name);
+var x14 = console.log(x13);
 }
