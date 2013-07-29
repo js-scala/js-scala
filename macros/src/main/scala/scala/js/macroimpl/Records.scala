@@ -2,12 +2,10 @@ package scala.js.macroimpl
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
-import com.sun.corba.se.impl.protocol.GetInterface
-import com.sun.corba.se.impl.protocol.GetInterface
-
-trait Record
 
 object Records {
+  
+  trait Record
 
   def record[U: c.WeakTypeTag](c: Context) =
     c.Expr[Any](new Generator[c.type](c).construct[U])
@@ -62,7 +60,7 @@ object Records {
         }else{
           val param = params.head
           val paramNameString = param.name.toString
-          if(param.typeSignature  <:< typeOf[Record]){
+          if(param.typeSignature <:< typeOf[Record]){
             val paramMembers = param.typeSignature.members.toList.filter(_.isPrivate)
             val l = getFields(paramMembers, root+paramNameString+".", list)
             val k = getFields(params.splitAt(1)._2, root, l)

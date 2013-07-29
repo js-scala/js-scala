@@ -12,27 +12,19 @@ trait GenRecords extends GenBase {
     case RecordEqual(obj, bis, fieldsObj, fieldsBis) => 
       if(fieldsObj.size>0){
         val fields = fieldsObj.zip(fieldsBis)
-        val x = fresh[Boolean]
-        emitValDef(x, literalObjectSelect(obj,fieldsObj(0)) + "==" + literalObjectSelect(bis,fieldsBis(0)))
-        emitValDef(sym, quote(x) + "&&" + equalRec(obj, bis, fields, 1))
+        val valDef = fields.reduceLeft{(field, n) => 
+          if (field==fields(0)){
+            ("(" + literalObjectSelect(obj,n._1) + "==" + literalObjectSelect(bis,n._2) + ")" + "&&" + "(" +  literalObjectSelect(obj,field._1) + "==" + literalObjectSelect(bis,field._2) + ")", "")
+          }else{
+            ("(" + literalObjectSelect(obj,n._1) + "==" + literalObjectSelect(bis,n._2) + ")" + "&&" + field._1, "")
+          }
+        }
+        emitValDef(sym, valDef._1)
       }else{
-        
+        emitValDef(sym, quote(obj) + "==" + quote(bis))
       }
-      
-    case _ => super.emitNode(sym, rhs)
-  }
-  
-  def equalRec[A](obj: Exp[A], bis: Exp[A], fields: Seq[(String, String)], index: Int): String = {
-    
-    if(index == fields.size-1){
-       val x = fresh[Boolean]
-       emitValDef(x, literalObjectSelect(obj,fields(index)._1) + "==" + literalObjectSelect(bis,fields(index)._2))
-       quote(x)
-    }else{
-      val x, y = fresh[Boolean]
-      emitValDef(x, literalObjectSelect(obj,fields(index)._1) + "==" + literalObjectSelect(bis,fields(index)._2))
-      emitValDef(y, quote(x) + "&&" + equalRec(obj, bis, fields, index+1))
-      quote(y)
-    }
+    case _ => 
+      super.emitNode(sym, rhs)
+       
   }
 }

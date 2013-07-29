@@ -6,7 +6,6 @@ import java.io.PrintWriter
 import gen.js.{GenEffect, GenDebug, GenEqual, GenRecords}
 import language.{Debug, Records}
 import exp.{DebugExp, RecordsExp}
-import macroimpl.Record
 
 class TestRecord extends FileDiffSuite {
 
@@ -46,12 +45,6 @@ class TestRecord extends FileDiffSuite {
         log(w.age)
 
         log(u === w)
-        /*log(u === v)
-        
-        val z = v.age 
-        log(z)*/
-        
-        //val q = p.copy()
        }
      }
 
