@@ -49,4 +49,7 @@ trait ElementOpsExp extends ElementOps with EffectExp with EventOpsExp with Sele
 
   def form_submit(form: Exp[Form]) = foreign"$form.submit()".withEffect()
 
+  def img_src(img: Exp[Img]) = foreign"$img.src".withEffect()
+  def img_set_src(img: Exp[Img], src: Exp[String]) = foreign"$img.src = $src".withEffect()
+
 }

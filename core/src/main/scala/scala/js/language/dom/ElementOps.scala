@@ -66,4 +66,12 @@ trait ElementOps extends Base with EventOps with SelectorOps with Core {
   }
   def form_submit(f: Rep[Form]): Rep[Unit]
 
+  trait Img extends Element
+  implicit class ImgOps(img: Rep[Img]) {
+    def src = img_src(img)
+    def src_=(src: Rep[String]) = img_set_src(img, src)
+  }
+  def img_src(img: Rep[Img]): Rep[String]
+  def img_set_src(img: Rep[Img], src: Rep[String]): Rep[Unit]
+
 }
