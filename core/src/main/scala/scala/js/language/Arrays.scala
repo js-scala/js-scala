@@ -2,13 +2,15 @@ package scala.js.language
 
 import scala.virtualization.lms.common.Base
 
+/**
+ * JavaScript arrays (they have variable length)
+ */
 trait Arrays extends Base {
-  implicit def repArrayToArrayOps[T:Manifest](a: Rep[Array[T]]): ArrayOps[T] = new ArrayOps(a)
-
-  class ArrayOps[T:Manifest](a: Rep[Array[T]]) {
+  implicit class ArrayOps[T:Manifest](a: Rep[Array[T]]) {
     def apply(i: Rep[Int]) = array_apply(a, i)
     def length = array_length(a)
     def update(i: Rep[Int], x: Rep[T]) = array_update(a, i, x)
+    def push(x: Rep[T]) = array_push(a, x)
     def foreach(block: Rep[T] => Rep[Unit]) = array_foreach(a, block)
     def map[U:Manifest](block: Rep[T] => Rep[U]) = array_map(a, block)
     def flatMap[U:Manifest](block: Rep[T] => Rep[Array[U]]) = array_flatMap(a, block)
@@ -21,6 +23,7 @@ trait Arrays extends Base {
   def array_apply[T:Manifest](a: Rep[Array[T]], i: Rep[Int]): Rep[T]
   def array_length[T:Manifest](a: Rep[Array[T]]): Rep[Int]
   def array_update[T:Manifest](a: Rep[Array[T]], i: Rep[Int], x: Rep[T]): Rep[Unit]
+  def array_push[T : Manifest](a: Rep[Array[T]], x: Rep[T]): Rep[Int]
   def array_foreach[T:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[Unit]): Rep[Unit]
   def array_map[T:Manifest,U:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[U]): Rep[Array[U]]
   def array_flatMap[T:Manifest,U:Manifest](a: Rep[Array[T]], block: Rep[T] => Rep[Array[U]]): Rep[Array[U]]

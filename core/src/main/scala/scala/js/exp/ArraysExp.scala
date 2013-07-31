@@ -8,6 +8,7 @@ trait ArraysExp extends Arrays with EffectExp {
   case class ArrayApply[T:Manifest](a: Exp[Array[T]], i: Exp[Int]) extends Def[T]
   case class ArrayLength[T:Manifest](a: Exp[Array[T]]) extends Def[Int]
   case class ArrayUpdate[T:Manifest](a: Exp[Array[T]], i: Exp[Int], x: Exp[T]) extends Def[Unit]
+  case class ArrayPush[T : Manifest](a: Exp[Array[T]], x: Exp[T]) extends Def[Int]
   case class ArrayForeach[T:Manifest](a: Exp[Array[T]], x: Sym[T], block: Block[Unit]) extends Def[Unit]
   case class ArrayMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Block[U]) extends Def[Array[U]]
   case class ArrayFlatMap[T:Manifest,U:Manifest](a: Exp[Array[T]], x: Sym[T], block: Block[Array[U]]) extends Def[Array[U]]
@@ -23,6 +24,7 @@ trait ArraysExp extends Arrays with EffectExp {
   def array_apply[T:Manifest](a: Exp[Array[T]], i: Exp[Int]) = ArrayApply(a, i)
   def array_length[T:Manifest](a: Exp[Array[T]]) = ArrayLength(a)
   def array_update[T:Manifest](a: Exp[Array[T]], i: Exp[Int], x: Exp[T]) = reflectEffect(ArrayUpdate(a, i, x))
+  def array_push[T : Manifest](a: Exp[Array[T]], x: Exp[T]) = reflectEffect(ArrayPush(a, x))
   def array_foreach[T:Manifest](a: Exp[Array[T]], block: Exp[T] => Exp[Unit]) = {
     val x = fresh[T]
     val b = reifyEffects(block(x))

@@ -116,49 +116,54 @@ return x77
 }
 return x79
 }
-function test2Legacy(x82) {
-var x83 = [1, 2, 3];
-var x84 = [4, 5, 6];
-var x93 = function ( x85) {
-var x86 = x84[0] = x85;
+function test11(x82) {
+var x83 = [1, 2];
+var x84 = x83.push(x82);
+return x84
+}
+function test2Legacy(x86) {
+var x87 = [1, 2, 3];
+var x88 = [4, 5, 6];
+var x97 = function ( x89) {
+var x90 = x88[0] = x89;
 };
-for (var x91 = 0, x92 = x83.length ; x91 < x92 ; x91++) {
-x93(x83[x91]);
+for (var x95 = 0, x96 = x87.length ; x95 < x96 ; x95++) {
+x97(x87[x95]);
 }
-var x88;
-var x89 = x84[0];
-return x89
+var x92;
+var x93 = x88[0];
+return x93
 }
-function test3Legacy(x94) {
-var x95 = [1, 2, 3];
-var x98 = [];
-var x102 = function (x96) {
-var x97 = x96 + x94;
-return x97
+function test3Legacy(x98) {
+var x99 = [1, 2, 3];
+var x102 = [];
+var x106 = function (x100) {
+var x101 = x100 + x98;
+return x101
 };
-for (var x100 = 0, x101 = x95.length ; x100 < x101 ; x100++) {
-x98[x100] = x102(x95[x100]);
+for (var x104 = 0, x105 = x99.length ; x104 < x105 ; x104++) {
+x102[x104] = x106(x99[x104]);
 }
-return x98
+return x102
 }
-function test5Legacy(x103) {
-var x104 = [1, 2, 3];
-var x107 = [];
-var x113 = function (x105) {
-var x106 = x105==x103;
-return x106
+function test5Legacy(x107) {
+var x108 = [1, 2, 3];
+var x111 = [];
+var x117 = function (x109) {
+var x110 = x109==x107;
+return x110
 };
-for (var x111 = 0, x112 = x104.length ; x111 < x112 ; x111++) {
-if (x113(x104[x111])) {
-x107.push(x104[x111]);
+for (var x115 = 0, x116 = x108.length ; x115 < x116 ; x115++) {
+if (x117(x108[x115])) {
+x111.push(x108[x115]);
 }
 }
-var x109 = [];
-var x116 = function (x108) {
-return x108
+var x113 = [];
+var x120 = function (x112) {
+return x112
 };
-for (var x114 = 0, x115 = x107.length ; x114 < x115 ; x114++) {
-x109[x114] = x116(x107[x114]);
+for (var x118 = 0, x119 = x111.length ; x118 < x119 ; x118++) {
+x113[x118] = x120(x111[x118]);
 }
-return x109
+return x113
 }

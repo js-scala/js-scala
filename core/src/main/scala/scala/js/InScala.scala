@@ -160,6 +160,7 @@ trait ArraysInScala extends Arrays with InScala {
   def array_apply[T:Manifest](a: Array[T], i: Int): T = OriginalOps.array_apply(a, i)
   def array_length[T:Manifest](a: Array[T]): Int = OriginalOps.array_length(a)
   def array_update[T:Manifest](a: Array[T], i: Int, x: T): Unit = OriginalOps.array_update(a, i, x)
+  def array_push[T : Manifest](a: Array[T], x: T) = sys.error("This operation is not available in Scala")
   def array_foreach[T:Manifest](a: Array[T], block: T => Unit): Unit = OriginalOps.array_foreach(a, block)
   def array_map[T:Manifest,U:Manifest](a: Array[T], block: T => U): Array[U] = OriginalOps.array_map(a, block)
   def array_flatMap[T:Manifest,U:Manifest](a: Array[T], block: T => Array[U]): Array[U] = OriginalOps.array_flatMap(a, block)

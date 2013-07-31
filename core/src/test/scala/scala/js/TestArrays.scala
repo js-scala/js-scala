@@ -65,6 +65,11 @@ trait ArraysProg { this: LiftNumeric with NumericOps with Equal with Arrays =>
     val a = array(1, 2, 3)
     for (x1 <- a; i <- range(0, n); x2 <- a) yield (x1+x2)*i
   }
+
+  def test11(n: Rep[Int]): Rep[Int] = {
+    val a = array(1, 2)
+    a.push(n)
+  }
 }
 
 class TestArrays extends FileDiffSuite {
@@ -86,6 +91,7 @@ class TestArrays extends FileDiffSuite {
         codegen.emitSource(test8 _, "test8", new PrintWriter(System.out))
         codegen.emitSource(test9 _, "test9", new PrintWriter(System.out))
         codegen.emitSource(test10 _, "test10", new PrintWriter(System.out))
+        codegen.emitSource(test11 _, "test11", new PrintWriter(System.out))
         val genLegacy = new GenNumericOps with GenEqual with GenArraysLegacy { val IR: self.type = self }
         genLegacy.emitSource(test2 _, "test2Legacy", new PrintWriter(System.out))
         genLegacy.emitSource(test3 _, "test3Legacy", new PrintWriter(System.out))

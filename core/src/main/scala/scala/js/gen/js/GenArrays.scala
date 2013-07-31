@@ -11,6 +11,7 @@ trait GenArrays extends GenEffect {
     case ArrayApply(a, i) => emitValDef(sym, quote(a) + "[" + quote(i) + "]")
     case ArrayLength(a) => emitValDef(sym, quote(a) + ".length")
     case ArrayUpdate(a, i, x) => emitValDef(sym, quote(a) + "[" + quote(i) + "] = " + quote(x))
+    case ArrayPush(a, x) => emitValDef(sym, quote(a) + ".push(" + quote(x) + ")")
     case ArrayForeach(a, x, block) =>
       stream.println("var " + quote(sym) + "=" + quote(a) + ".forEach(")
       stream.println("function(" + quote(x) + ",i_,a_){")
