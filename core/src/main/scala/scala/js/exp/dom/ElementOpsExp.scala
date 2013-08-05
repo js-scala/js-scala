@@ -13,6 +13,7 @@ trait ElementOpsExp extends ElementOps with EffectExp with EventOpsExp with Sele
   def element_tagName(e: Exp[Element]) = foreign"$e.tagName"[String]
   def element_className(e: Exp[Element]) = foreign"$e.className"[String].withEffect()
   def element_parentNode(e: Exp[Element]) = foreign"$e.parentNode"[Option[Element]].withEffect()
+  def element_firstChild(e: Exp[Element]) = foreign"$e.firstChild"[Option[Element]].withEffect()
   def element_previousSibling(e: Exp[Element]) = foreign"$e.previousSibling"[Option[Element]].withEffect()
   def element_classList(e: Exp[Element]) = foreign"$e.classList"[DOMTokenList].withEffect()
   def element_removeChild(e: Exp[Element], c: Exp[Element]) = foreign"$e.removeChild($c)".withEffect()

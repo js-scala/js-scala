@@ -18,6 +18,7 @@ trait ElementOps extends Base with EventOps with SelectorOps with Core {
     def tagName = element_tagName(e)
     def className = element_className(e)
     def parentNode = element_parentNode(e)
+    def firstChild = element_firstChild(e)
     def previousSibling = element_previousSibling(e)
     def classList = element_classList(e)
     def closest(p: Rep[Element] => Rep[Boolean]) = element_closest(e, p)
@@ -32,6 +33,7 @@ trait ElementOps extends Base with EventOps with SelectorOps with Core {
   def element_tagName(e: Rep[Element]): Rep[String]
   def element_className(e: Rep[Element]): Rep[String]
   def element_parentNode(e: Rep[Element]): Rep[Option[Element]]
+  def element_firstChild(e: Rep[Element]): Rep[Option[Element]]
   def element_previousSibling(e: Rep[Element]): Rep[Option[Element]]
   def element_classList(e: Rep[Element]): Rep[DOMTokenList]
   def element_closest(e: Rep[Element], p: Rep[Element] => Rep[Boolean]): Rep[Option[Element]]

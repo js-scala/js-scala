@@ -1,9 +1,9 @@
 package scala.js.gen.js.dom
 
 import scala.js.exp.dom.BrowserExp
-import scala.js.gen.js.GenEffect
+import scala.js.gen.js.{GenFFI, GenEffect}
 
-trait GenBrowser extends GenEffect with GenSelectorOps with GenEventOps with GenElementOps  {
+trait GenBrowser extends GenEffect with GenSelectorOps with GenEventOps with GenElementOps with GenFFI  {
   val IR: BrowserExp
   import IR._
 

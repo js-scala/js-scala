@@ -14,6 +14,10 @@ trait Browser extends Base with SelectorOps with EventOps with ElementOps {
   val history = window.history
 
   trait Document extends Selector with EventTarget
+  implicit class DocumentOps(document: Rep[Document]) {
+    def body = document_body(document)
+  }
+  def document_body(document: Rep[Document]): Rep[Element]
 
   trait History
   implicit class HistoryOps(h: Rep[History]) {
