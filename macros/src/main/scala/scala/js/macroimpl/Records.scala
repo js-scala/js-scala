@@ -18,62 +18,54 @@ object Records {
   class Generator[C <: Context](val c: C) extends QuasiquoteCompat {
     import c.universe._
 
+    case class Member(name: String, term: TermName, tpe: Type)
+
+    object Member {
+      def apply(symbol: Symbol) = {
+        // Trim because case classes members introduce a trailing space
+        val nameStr = symbol.name.decoded.trim
+        new Member(nameStr, newTermName(nameStr), symbol.typeSignature)
+      }
+    }
+
+    /** @return The members of the type `tpe` */
+    def listMembers(tpe: Type): Seq[Member] =
+      (for (member <- tpe.members if member.isPrivate) yield Member(member)).to[Seq]
+
     def ops[U: c.WeakTypeTag](obj: c.Expr[U]) = {
       val anon = newTypeName(c.fresh)
       val wrapper = newTypeName(c.fresh)
       val ctor = newTermName(c.fresh)
 
       val U = implicitly[c.WeakTypeTag[U]]
-      val members = U.tpe.members.toList 
+      val members = listMembers(U.tpe)
 
       val objName = U.tpe.typeSymbol.name
 
-      // FIXME Is it the right way to retrieve constructor parameters?
-      val params = members.filter(_.isPrivate)
+      val defGetters = for(member <- members) yield q"def ${member.term}: Rep[${member.tpe}] = record_select($obj , ${member.name})"
 
-      val defGetters = for(param <- params) yield {
-        val paramName = param.name
-        val paramNameString = param.name.toString
-        val paramType = param.typeSignature
-        q"def $paramName: Rep[$paramType] = record_select($obj , $paramNameString)"
-      }
+      val paramsCopy = for(member <- members) yield q"val ${member.term}: Rep[${member.tpe}] = record_select($obj , ${member.name})"
 
-      val paramsCopy = for(param <- params) yield {
-        val paramName = param.name.toTermName
-        val paramNameString = param.name.toString
-        val paramType = param.typeSignature
-        q"val $paramName: Rep[$paramType] = record_select($obj , $paramNameString)"
-      }
-
-      val paramsConstruct = for(param <- params) yield {
-        val paramName = param.name.toTermName
-        q"$paramName"
-      }
+      val paramsConstruct = for(member <- members) yield q"${member.term}"
 
       val defCopy = q"""
         def copy(..${paramsCopy.reverse}): Rep[$objName] = $ctor(..${paramsConstruct.reverse})
       """
 
-      def getFields(params: List[Symbol], root: String, list: List[Tree]): List[Tree] = {
-        if(params.size == 0){
-          list
-        }else{
-          val param = params.head
-          val paramNameString = param.name.toString
-          if(param.typeSignature <:< typeOf[Record]){
-            val paramMembers = param.typeSignature.members.toList.filter(_.isPrivate)
-            val l = getFields(paramMembers, root+paramNameString+".", list)
-            val k = getFields(params.splitAt(1)._2, root, l)
-            k
-          }else{
-            val name = root+paramNameString
-            val l = getFields(params.splitAt(1)._2, root, q"""$name"""::list)
-            l
+      def getFields(params: Seq[Member], root: String, list: List[Tree]): List[Tree] = params match {
+        case Nil => list
+        case param +: tail =>
+          if (param.tpe <:< typeOf[Record]) {
+            val paramMembers = listMembers(param.tpe)
+            val l = getFields(paramMembers, root + param.name + ".", list)
+            getFields(tail, root, l)
+          } else {
+            val name = root + param.name
+            getFields(tail, root, q"""$name""" :: list)
           }
-        }
       }
 
-      val fieldsObj = getFields(params, "", List())
+      val fieldsObj = getFields(members, "", List())
 
       val defEqual = q"""
         def === (bis: Rep[$objName]): Rep[Boolean] = {
@@ -96,32 +88,14 @@ object Records {
     def construct[U: c.WeakTypeTag] = {
 
       val U = implicitly[c.WeakTypeTag[U]]
-      val members = U.tpe.members.toList
+      val members = listMembers(U.tpe)
       val objName = U.tpe.typeSymbol.name
 
-      val params = members.filter(_.isPrivate)
+      val paramsDef = for(member <- members) yield q"val ${member.term}: Rep[${member.tpe}]"
 
-      val paramsDef = for(param <- params) yield {
-        val paramName = param.name.toTermName
-        val paramType = param.typeSignature
-        q"val $paramName: Rep[$paramType]"
-      }
+      val paramsConstruct = for(member <- members) yield q"${member.name} -> ${member.term}"
 
-      val paramsConstruct = for(param <- params) yield {
-        val paramName = param.name.toTermName
-        val paramNameString = param.name.toString
-        q"$paramNameString -> $paramName"
-      }
-
-      val paramsName = for(param <- params) yield {
-        val paramName = param.name
-        q"$paramName"
-      }
-
-      val paramsType = for(param <- params) yield {
-        val paramType = param.typeSignature
-        tq"Rep[$paramType]"
-      }
+      val paramsType = for(member <- members) yield tq"Rep[${member.tpe}]"
 
       q"""
         new ${newTypeName("Function"+paramsType.length)} [..${paramsType.reverse}, Rep[$objName]] {

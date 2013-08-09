@@ -18,13 +18,13 @@ class TestRecord extends FileDiffSuite {
     trait DSLJSGen extends GenEffect with GenRecords with GenListOps with GenDebug { val IR: DSLExp }
 
     trait Prog extends DSL {
-      class User(name: String, age: Int, mail: String, lePoint: Point) extends Record
+      case class User(name: String, age: Int, mail: String, lePoint: Point) extends Record
       implicit def userOps(u: Rep[User]) = recordOps(u)
 
-      class Point(x: Int, y: Int, dimension: Dimension) extends Record
+      case class Point(x: Int, y: Int, dimension: Dimension) extends Record
       implicit def pointOps(p:Rep[Point]) = recordOps(p)
 
-      class Dimension(nom: String, power: List[String]) extends Record
+      case class Dimension(nom: String, power: List[String]) extends Record
       implicit def dimensionOps(d:Rep[Dimension]) = recordOps(d)
 
       def main(n: Rep[String]) = {
