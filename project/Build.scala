@@ -41,7 +41,7 @@ object JsScalaBuild extends Build {
     "core",
     file("core"),
     settings = buildSettings ++ Seq(
-      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics"/*, "-Ymacro-debug-lite"*/),
+      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics", "-Ymacro-debug-lite"),
 
       name := "js-scala",
       mappings in (Compile, packageBin) <++= mappings in (macros, Compile, packageBin),
