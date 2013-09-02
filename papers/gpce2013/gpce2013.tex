@@ -51,10 +51,10 @@ share code between both sides or to move code from one side to the other. Anothe
 performance: while Web applications rely on ever more code on the client-side, they may run on smart
 phones with limited hardware capabilities. These two challenges raise the following problem: how to
 benefit from high-level languages and libraries making code complexity easier to manage and
-abstracting over the clients and servers differences without trading this engineering comfort for
+abstracting over the clients and servers differences without trading this ease of engineering for
 performance? This article presents high-level abstractions defined as deep embedded DSLs in Scala,
 that can (1) generate efficient code leveraging the target platform characteristics, (2) be shared
-between clients and servers. Though code written with our DSL has a high level of abstraction our
+between clients and servers. Though code written with our DSL has a high level of abstraction, our
 benchmark on a real world application reports that it runs as fast as hand tuned low-level
 JavaScript code.
 \end{abstract}
@@ -128,7 +128,7 @@ platform.
 
 Kossakowski \etal introduced \emph{js-scala}, a compiled embedded DSL defined in Scala that
 generates JavaScript code, making it possible to write the client-side code of Web applications
-using JavaScript~\cite{Kossakowski12_JsDESL}. However, Kossakowski \etal did not address the
+using Scala~\cite{Kossakowski12_JsDESL}. However, Kossakowski \etal did not address the
 engineering dilemma described above. This paper enriches js-scala with the following
 contributions\footnote{The code is available at
 \href{http://github.com/js-scala}{http://github.com/js-scala}}:
@@ -142,7 +142,7 @@ generation in order to leverage the target platform native environments.
 
 We validate our approach with a case study implemented with various candidate technologies and
 discuss the relative pro and cons of them. Though the code written in our DSL is high-level and can
-be shared between clients and servers, it has the same runtime performances on client-side as
+be shared between clients and servers, it has the same runtime performance on client-side as
 hand-tuned low-level JavaScript code.
 
 The remainder of this paper is organized as follows. The next section overviews the
@@ -193,7 +193,7 @@ languages~\cite{Van00_DSL}, each one focusing on concerns specific to a given pr
 then to combine all the source artifacts written with these language into one executable program, as
 shown in figure~\ref{fig:langs} (b). Defining such languages requires a minimal effort compared to
 the previous approach because each language has a limited set of features. On the other hand, it is
-difficult to have interoperability between DSLs. \cite{Groenewegen08_WebDSL} gave an example of such
+difficult to have interoperability between DSLs. \cite{Visser07} gave an example of such
 a domain-specific language for defining Web applications.
 
 \paragraph{Thin Languages}
@@ -340,12 +340,12 @@ developers\footnote{According to
 used by more than 40\% of the top million sites.} use the jQuery library~\cite{Bibeault08_jQuery}
 that actually provides only one function to search for elements. Listing \ref{jquery-selectors}
 shows an equivalent JavaScript program as listing \ref{vanilla-selectors}, but using jQuery. The
-code is both shorter and simpler, thanks to its higher-level of abstraction. jQuery provides an API
-that is simpler to master because it has less functions, but this benefit comes at the price of a
-decrease in runtime performances.
+code is both shorter and simpler, thanks to its higher level of abstraction. jQuery provides an API
+that is simpler to master because it has fewer functions, but this benefit comes at the price of a
+decrease in runtime performance.
 
 Instead, we propose a solution that has a high-level API but generates JavaScript code using the
-specialized native API, when possible, in order to get both engineering comfort and performances.
+specialized native API, when possible, in order to get both ease of engineering and performance.
 We achieve this by analyzing, during the first evaluation step, the selector that is
 passed as parameter and, when appropriate, by producing JavaScript code using the specialized API,
 and otherwise producing code using \code{querySelector} and \code{querySelectorAll}.
@@ -657,7 +657,7 @@ generators for this DSL. They basically follow the same pattern: they visit \cod
 \section{Evaluation}
 \label{sec:validation}
 
-Our goal is to evaluate the level of abstraction provided by our solution and its performances, by
+Our goal is to evaluate the level of abstraction provided by our solution and its performance, by
 comparing it with common approaches. We take the number of lines of code as an inverse approximation
 of the level of abstraction. We also evaluate the ability to share code between client and server
 sides.
@@ -769,7 +769,7 @@ the HTML fragment definition API). Figure \ref{benchmark} shows the benchmark re
 \label{benchmark}
 \end{figure}
 
-The runtime performances of the vanilla JavaScript, HaXe and js-scala versions are similar (though
+The runtime performance of the vanilla JavaScript, HaXe and js-scala versions are similar (though
 the js-scala version is slightly slower by 6\%). It is worth noting that the vanilla JavaScript and
 the HaXe versions use low-level code compared to js-scala, as shown in the middle of the figure
 (lines of code): the js-scala version needs only 74 lines of code while the vanilla JavaScript
@@ -785,7 +785,7 @@ JavaScript version.
 \subsubsection{Code Reuse}
 
 We were able to share some DOM fragment definitions between server-side and client-side only in
-the js-scala version. In the GWT version we don’t have choice: dynamic DOM fragments are always
+the js-scala version. In the GWT version we don’t have a choice: dynamic DOM fragments are always
 built only on client-side (a practice that makes it more difficult to make the pages content
 crawlable by search engines and may increase the initial display time). In the other versions the
 code for building the DOM fragment is duplicated between client and server sides, representing 20
@@ -797,7 +797,7 @@ of HTML (5\% of the total).
 
 \subsubsection{Threats to Validity}
 
-Our goal was to put the runtime performances in perspective with the level of abstraction. We are
+Our goal was to put the runtime performance in perspective with the level of abstraction. We are
 aware that the indicator we chose as an inverse approximation of the abstraction level, the number
 of lines of code, is not scientifically established and may be subject to discussion. However, we
 think it is a reasonable approximation in our case because all the candidate languages we use have
@@ -819,7 +819,7 @@ impact on the number of lines of code.
 \label{sec:discussion}
 
 We implemented our solution as compiled embedded DSLs in Scala. Generating code from our DSLs is a
-two steps process: an initial Scala program first evaluates to an intermediate representation of
+two step process: an initial Scala program first evaluates to an intermediate representation of
 the final program that is traversed by code generators to produce the final JavaScript code.
 Domain-specific optimizations can happen during the IR construction (as shown in section
 \ref{sec:selectors}) or during the code generation (as shown in section \ref{sec:option}).
@@ -835,7 +835,7 @@ knowledge to the code generation scheme to produce efficient code for client and
 
 These characteristics allowed us to capture some Web programming patterns as high-level
 abstractions, making the code of our application simpler to reason about and making some parts of
-the code reusable between client and server sides, while keeping execution performances on
+the code reusable between client and server sides, while keeping execution performance on
 client-side as high as if we used hand-tuned low-level JavaScript code.
 
 \section{Conclusion}
@@ -851,7 +851,7 @@ servers that differ in their technical API. We also showed how these abstraction
 between client and server sides. 
 
 Our two kinds of benchmarks, (i) micro-benchmarks to evaluate one abstraction and (ii) a benchmark
-on a real application using these abstractions, show performances similar to hand-optimized
+on a real application using these abstractions, show performance similar to hand-optimized
 low-level code.
 
 In a future work we may investigate more coarse-grained optimizations like smart DOM updates
