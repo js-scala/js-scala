@@ -211,7 +211,7 @@ this approach gives no opportunity to efficiently translate a concept according 
 platform characteristics because the compiler has no domain-specific knowledge (though some
 compilers hard-code the translation of some common abstractions such as arrays to leverage the
 target platform characteristics). Examples of languages following this approach are Java/GWT,
-Kotlin, HaXe and SharpKit.
+Kotlin, HaXe and SharpKit. Libraries written in JavaScript (\eg{} jQuery~\cite{Bibeault08_jQuery}) also match this category though most of them do not support both client and server sides.
 
 \paragraph{Deeply Embedded Languages}
 
@@ -317,9 +317,7 @@ function getWords() {
 \end{figure}
 
 Listing \ref{vanilla-selectors} gives an example of use of various functions from the native
-selectors API to retrieve a list of input fields within a form. The existence of several
-specialized functions in the API makes it possible to write efficient code, but forces users to
-think at a low abstraction level.
+selectors API to retrieve a list of input fields within a form. The \code{getWords} function first finds in the document the HTML element with id \code{add-user}, then collects all its \code{fieldset} children elements, and for each one returns the list of its children elements having class \code{word}. The existence of several specialized functions in the API makes it possible to write efficient code, but forces users to think at a low abstraction level.
 
 \begin{figure}[htb]
 \begin{lstlisting}[language=JavaScript,label=jquery-selectors,caption=Searching elements in jQuery]
@@ -337,7 +335,7 @@ A high-level abstraction for searching elements in a document could be just one 
 finding all elements matching a given CSS selector. In fact, most JavaScript
 developers\footnote{According to
 \href{http://trends.builtwith.com/javascript}{http://trends.builtwith.com/javascript}, jQuery is
-used by more than 40\% of the top million sites.} use the jQuery library~\cite{Bibeault08_jQuery}
+used by more than 40\% of the top million sites.} use the jQuery library
 that actually provides only one function to search for elements. Listing \ref{jquery-selectors}
 shows an equivalent JavaScript program as Listing \ref{vanilla-selectors}, but using jQuery. The
 code is both shorter and simpler, thanks to its higher level of abstraction. jQuery provides an API
