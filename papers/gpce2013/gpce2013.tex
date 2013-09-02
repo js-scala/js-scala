@@ -158,7 +158,7 @@ contribution. Section \ref{sec:validation} compares our solution to common appro
 %\vspace{0.1cm}
 
 We classified existing approaches providing high-level abstractions for Web programming in four
-categories, as shown in figure \ref{fig:langs}.
+categories, as shown in Figure \ref{fig:langs}.
 
 \begin{figure}[htb]
 \begin{center}
@@ -191,7 +191,7 @@ Dart~\cite{Griffith11_Dart}.
 Another approach consists in defining several independent domain-specific
 languages~\cite{Van00_DSL}, each one focusing on concerns specific to a given problem domain, and
 then to combine all the source artifacts written with these language into one executable program, as
-shown in figure~\ref{fig:langs} (b). Defining such languages requires a minimal effort compared to
+shown in Figure~\ref{fig:langs} (b). Defining such languages requires a minimal effort compared to
 the previous approach because each language has a limited set of features. On the other hand, it is
 difficult to have interoperability between DSLs. \cite{Visser07} gave an example of such
 a domain-specific language for defining Web applications.
@@ -216,7 +216,7 @@ Kotlin, HaXe and SharpKit.
 \paragraph{Deeply Embedded Languages}
 
 %\vspace{0.1cm}
-The last approach, shown in figure \ref{fig:langs} (d), can be seen as a middle-ground between the
+The last approach, shown in Figure \ref{fig:langs} (d), can be seen as a middle-ground between the
 two previous approaches: DSLs are embedded in a host language but use a code generation process.
 This approach shares the same benefits and limitations as embedded DSLs for defining language units.
 However, the code generation process is specific to each DSL and gives the opportunity to perform
@@ -339,7 +339,7 @@ developers\footnote{According to
 \href{http://trends.builtwith.com/javascript}{http://trends.builtwith.com/javascript}, jQuery is
 used by more than 40\% of the top million sites.} use the jQuery library~\cite{Bibeault08_jQuery}
 that actually provides only one function to search for elements. Listing \ref{jquery-selectors}
-shows an equivalent JavaScript program as listing \ref{vanilla-selectors}, but using jQuery. The
+shows an equivalent JavaScript program as Listing \ref{vanilla-selectors}, but using jQuery. The
 code is both shorter and simpler, thanks to its higher level of abstraction. jQuery provides an API
 that is simpler to master because it has fewer functions, but this benefit comes at the price of a
 decrease in runtime performance.
@@ -412,9 +412,9 @@ selector matching button elements within the element having the \code{add-user} 
 \code{DocumentGetElementById} node is returned, then translated into a call to the specialized
 \code{getElementById} function.
 
-Finally, listing~\ref{js-scala-selectors} shows how to implement listing~\ref{jquery-selectors} in
+Finally, Listing~\ref{js-scala-selectors} shows how to implement Listing~\ref{jquery-selectors} in
 Scala using js-scala. The code has the same abstraction level as with jQuery, however it
-generates a JavaScript program identical to listing~\ref{vanilla-selectors}: the high-level
+generates a JavaScript program identical to Listing~\ref{vanilla-selectors}: the high-level
 abstractions (the \code{find} and \code{findAll} functions) exist only in the initial program, not
 in the final JavaScript program.
 
@@ -425,12 +425,12 @@ This section presents an abstraction to handle \code{null} references and shows 
 abstraction can be shared between client and server code.
 
 \code{null} references are a known source of problems in programming
-languages~\cite{Hoare09_Null,Nanda09_Null}. For example, consider listing \ref{null-unsafe} finding
+languages~\cite{Hoare09_Null,Nanda09_Null}. For example, consider Listing \ref{null-unsafe} finding
 a particular widget in the page and then a particular button within the widget. The native
 \code{querySelector} method returns \code{null} if no node matched the given selector in the
 document. If we run this code in a page where the widget is not present, it will throw an error
 and stop further JavaScript execution. Defensive code can be written to handle \code{null}
-references, but leads to very cumbersome code, as shown in listing \ref{null-defensive}.
+references, but leads to very cumbersome code, as shown in Listing \ref{null-defensive}.
 
 \begin{figure}[htb]
 \begin{lstlisting}[language=JavaScript,label=null-unsafe,caption=Unsafe code]
@@ -468,7 +468,7 @@ defensive programming.
 In our DSL, we encode an optional value of type \code{Rep[A]} using a \code{Rep[Option[A]]} value,
 which can either be a \code{Rep[Some[A]]} (if there is a value) or a \code{Rep[None.type]} (if
 there is no value). An optional value can be dereferenced using the \code{for} notation, as shown
-in listing \ref{null-js-scala}, that implements in js-scala a program equivalent to listing
+in Listing \ref{null-js-scala}, that implements in js-scala a program equivalent to Listing
 \ref{null-defensive}. The \code{find} function returns a \code{Rep[Option[Element]]}. The \code{for}
 expression contains a sequence of statements that are executed in order, as long as the previous
 statement returned a \code{Rep[Some[Element]]} value.
@@ -486,8 +486,8 @@ Such a monadic API brings both safety and expressiveness to developers manipulat
 but usually involves the creation of an extra container object holding the optional value. In our
 case, the monadic API is used in the initial program but generates code that does not wrap values in
 container objects but instead checks if they are \code{null} or not when dereferenced. So the extra
-container object exists only in the initial program and is removed during code generation: listing
-\ref{null-js-scala} produces a code equivalent to listing~\ref{null-defensive}.
+container object exists only in the initial program and is removed during code generation: Listing
+\ref{null-js-scala} produces a code equivalent to Listing~\ref{null-defensive}.
 
 \begin{figure}[htb]
 \begin{lstlisting}[caption=JavaScript code generator for null references handling
@@ -508,7 +508,7 @@ override def emitNode(sym: Sym[Any], rhs: Def[Any]) =
 
 Listing \ref{option-codegen} shows the JavaScript code generator for methods \code{isEmpty} (that
 checks if the optional value contains a value) and \code{foreach} (that is called when the
-\code{for} notation is used, as in listing \ref{null-js-scala}). The \code{emitNode} method handles
+\code{for} notation is used, as in Listing \ref{null-js-scala}). The \code{emitNode} method handles
 \code{OptionIsEmpty} and \code{OptionForeach} nodes returned by the implementations of
 \code{isEmpty} and \code{foreach}, respectively. In the case of the \code{OptionIsEmpty} node, it
 simply generates an expression testing if the value is \code{null}. In the case of the
@@ -558,9 +558,9 @@ def articleUi(article: Article) =
 
 A common task in Web applications consists in computing HTML fragments representing a part of the
 page content. This task can be performed either from the server-side (to initially respond to a
-request) or from the client-side (to update the current page). As an example, listing \ref{dom-api}
+request) or from the client-side (to update the current page). As an example, Listing \ref{dom-api}
 defines a JavaScript function \code{articleUi} that builds a DOM tree containing an article
-description, and listing \ref{scala-xml-api} shows how one could implement a similar function on
+description, and Listing \ref{scala-xml-api} shows how one could implement a similar function on
 server-side using the standard Scala XML library. The reader may notice that the client-side
 and server-side APIs are very different and that the client-side API is very low-level and
 inconvenient to use.
@@ -570,7 +570,7 @@ Scala APIs. Though they are different, both APIs define HTML elements with attri
 We propose to have a function \code{el} to define an HTML element, eventually containing attributes
 and children elements. Any children of an element that is not an element itself is converted into a
 text node. Listing \ref{forest} shows how to implement our example with our DSL. The children
-elements of an element can also be obtained dynamically from a collection, as shown in listing
+elements of an element can also be obtained dynamically from a collection, as shown in Listing
 \ref{forest-loops}.
 
 \begin{figure}[htb]
@@ -596,10 +596,10 @@ def articlesUi(articles: Rep[Seq[Article]]) =
 The \code{el} function returns an \code{Element} IR node that is a tree composed of other
 \code{Element} and \code{Text} nodes. The JavaScript and Scala code generators traverse this tree
 and produce code building an equivalent DOM tree and XML fragment, respectively. When the children
-of an element are constant values (as in listing \ref{forest}) rather than dynamically computed (as
-in listing \ref{forest-loops}), the code generators unroll the loop that adds children to their
-parent, for better performance. As a result, listing \ref{forest} generates a code equivalent to
-listing \ref{dom-api} on client-side and equivalent to listing \ref{scala-xml-api} on server-side.
+of an element are constant values (as in Listing \ref{forest}) rather than dynamically computed (as
+in Listing \ref{forest-loops}), the code generators unroll the loop that adds children to their
+parent, for better performance. As a result, Listing \ref{forest} generates a code equivalent to
+Listing \ref{dom-api} on client-side and equivalent to Listing \ref{scala-xml-api} on server-side.
 
 \begin{figure*}
 \begin{lstlisting}[language=JavaScript,label=js-gen-forest,caption=JavaScript code generator for the
@@ -686,8 +686,8 @@ https://github.com/js-scala/js-scala/tree/master/papers/gpce2013/benchmarks}}.
 We could not implement this abstraction in GWT or HaXe as efficiently as we did in js-scala because
 it relies on the staging mechanism: the best we could do in GWT or Haxe is to expose the native
 high-level API (\code{querySelector} and \code{querySelectorAll}). So we directly compared the
-execution time of the JavaScript code generated by listing \ref{js-scala-selectors} with a
-JavaScript program equivalent to listing \ref{vanilla-selectors} but using the high-level native
+execution time of the JavaScript code generated by Listing \ref{js-scala-selectors} with a
+JavaScript program equivalent to Listing \ref{vanilla-selectors} but using the high-level native
 API (\code{querySelector} and \code{querySelectorAll}) instead. The code was executed in a Web page
 containing a few elements: 4 \code{fieldset} elements, each containing 0 to 2 elements with class
 \code{word}.
@@ -700,8 +700,8 @@ containing a few elements: 4 \code{fieldset} elements, each containing 0 to 2 el
 \end{figure}
 
 Figure \ref{fig:selectors-benchmark} shows the benchmark results. The JavaScript-opt version is
-listing \ref{vanilla-selectors}, which uses low-level native APIs, the JavaScript version is the
-equivalent listing using the high-level native API, and the jQuery version is listing
+Listing \ref{vanilla-selectors}, which uses low-level native APIs, the JavaScript version is the
+equivalent listing using the high-level native API, and the jQuery version is Listing
 \ref{jquery-selectors}. The js-scala version is slightly slower than the JavaScript-opt (by 14\%),
 but is 2.88 times faster than the JavaScript version, and 28.6 times faster than the jQuery
 version. Finally, the js-scala version has a performance to lines of code ratio more than 1.72
