@@ -72,7 +72,7 @@ class TestAdt extends FileDiffSuite {
         val europe = Woman(unit("Europe"), unit(36), zeus, minos)
         
         val Man = adt[Man]
-        val asterion  = Man(unit("Astérion"), unit(42), europe)
+        val asterion  = Man(unit("Asterion"), unit(42), europe)
         
         log(asterion.wife)
         
@@ -99,4 +99,4 @@ class TestAdt extends FileDiffSuite {
      
   }
 }
-             
+            

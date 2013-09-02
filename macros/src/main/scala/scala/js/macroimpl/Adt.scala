@@ -138,7 +138,7 @@ object Adts {
 
         val paramsFold = for((param, symbol) <- allSubClasses) yield q"val $symbol: (Rep[$param] => Rep[A])"
 
-        val paramsFoldLambda = for((param, symbol) <- allSubClasses) yield q"doLambda($symbol)"  //ok (?)  si val = doLambda, erreur de type, à montrer à Olivier
+        val paramsFoldLambda = for((param, symbol) <- allSubClasses) yield q"doLambda($symbol)"
 
         val paramsFoldName = for(param <- paramsFoldLambda) yield q"$param.asInstanceOf[Rep[${U.tpe} => A]]"
 

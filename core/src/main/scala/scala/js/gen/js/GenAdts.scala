@@ -36,5 +36,3 @@ trait GenAdts extends GenBase with GenFunctions with GenEqual {
        
   }
 }
-
-// emitValDef(sym, "Function("+quote(obj)+", "+fs.map(quote).mkString(",")+"){ ["+fs.map(quote).mkString(",")+"]["+quote(obj)+".$variant]("+quote(obj)+") }")
