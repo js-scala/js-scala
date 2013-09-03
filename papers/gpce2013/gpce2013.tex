@@ -128,17 +128,12 @@ platform.
 
 Kossakowski \etal introduced \emph{js-scala}, a compiled embedded DSL defined in Scala that
 generates JavaScript code, making it possible to write the client-side code of Web applications
-using Scala~\cite{Kossakowski12_JsDESL}. However, Kossakowski \etal did not address the
-engineering dilemma described above. This paper enriches js-scala with the following
-contributions\footnote{The code is available at
-\href{http://github.com/js-scala}{http://github.com/js-scala}}:
+using Scala~\cite{Kossakowski12_JsDESL}. However, the authors did not discuss any specific optimization and did not consider performance issues of their approach. Our paper shows how js-scala has been extended to support a set of specific optimizations allowing our high-level abstractions for Web programming to be efficiently compiled on both client and server sides\footnote{The code is available at \href{http://github.com/js-scala}{http://github.com/js-scala}}.
 
-\begin{itemize}
- \item we define high-level abstractions, typically used in Web programming, that generate low-level
-code leveraging native Web browser APIs;
- \item in the case of abstractions shared between servers and clients, we specialize the code
-generation in order to leverage the target platform native environments.
-\end{itemize}
+% \begin{itemize}
+%  \item we define high-level abstractions, typically used in Web programming, that generate low-level code leveraging native Web browser APIs;
+%  \item in the case of abstractions shared between servers and clients, we specialize the code generation in order to leverage the target platform native environments.
+% \end{itemize}
 
 We validate our approach with a case study implemented with various candidate technologies and
 discuss the relative pro and cons of them. Though the code written in our DSL is high-level and can
@@ -554,7 +549,7 @@ A common task in Web applications consists in computing HTML fragments represent
 page content. This task can be performed either from the server-side (to initially respond to a
 request) or from the client-side (to update the current page). As an example, Listing \ref{dom-api}
 defines a JavaScript function \code{articleUi} that builds a DOM tree containing an article
-description. Listing \ref{scala-xml-api} shows how one could implement a similar function on server-side using the standard Scala XML library. The reader may notice that the client-side and server-side APIs are very different and that the client-side native API is very low-level and inconvenient to use. We could use a library on client-side to get a higher level API for DOM fragment creation, but that would decrease the runtime performance. Instead, we want to define a high-level API that compiles to code as efficient as if it was written using the native APIs, on both platforms.
+description. Listing \ref{scala-xml-api} shows how one could implement a similar function on server-side using the standard Scala XML library. The reader may notice that the client-side and server-side APIs are very different and that the client-side native API is very low-level and inconvenient to use. We could use a library on client-side to get a higher level API for DOM fragment creation, but that would decrease the runtime performance. Instead, we want to define a high-level API that compiles to code as efficient as if it was written using the native APIs on both platforms.
 
 Our first step consists in capturing, in a high-level API, the concepts common to the JavaScript and
 Scala APIs. Though they are different, both APIs define HTML elements with attributes and content.
