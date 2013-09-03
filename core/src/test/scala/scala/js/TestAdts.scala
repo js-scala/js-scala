@@ -7,7 +7,7 @@ import gen.js.{GenEffect, GenDebug, GenAdts, GenListOps}
 import language.{Debug, Adts}
 import exp.{DebugExp, AdtsExp}
 
-class TestAdt extends FileDiffSuite {
+class TestAdts extends FileDiffSuite {
 
   def testAdt() {
 
@@ -76,14 +76,13 @@ class TestAdt extends FileDiffSuite {
         
         log(asterion.wife)
         
-        
-        def hello(p: Rep[Person]) = p.Fold(
-            (m: Rep[Mutant]) => log(m.name),
-            (g: Rep[God]) => log(g.name),
-            (d: Rep[Devil]) => log(d.name),
-            (m: Rep[Man]) => log(m.name),
-            (w: Rep[Woman]) => log(w.name)
-            )
+        def hello(p: Rep[Person]) = p.fold(
+          (m: Rep[Mutant]) => log(m.name),
+          (g: Rep[God]) => log(g.name),
+          (d: Rep[Devil]) => log(d.name),
+          (m: Rep[Man]) => log(m.name),
+          (w: Rep[Woman]) => log(w.name)
+        )
         
         log(hello(minos))
         

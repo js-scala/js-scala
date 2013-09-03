@@ -30,40 +30,34 @@ object Adts {
     }
 
     /** @return The members of the type `tpe` */
-    def listMembers(tpe: Type): List[Member] = {
-      val fields = tpe.typeSymbol.typeSignature.declarations.toList.collect{ case x: TermSymbol if x.isVal && x.isCaseAccessor => Member(x) }
-      fields
-    }
+    def listMembers(tpe: Type): List[Member] =
+      tpe.typeSymbol.typeSignature.declarations.toList.collect { case x: TermSymbol if x.isVal && x.isCaseAccessor => Member(x) }
 
     def getVariant(it: Iterator[Symbol], s: Symbol, i: Int, find: Boolean): (Int, Boolean) = {
-          val result = if(!it.hasNext){
-              (i, false)
+      val result = if (!it.hasNext) {
+        (i, false)
+      } else {
+        val sc = it.next
+        val k = if (s == sc) {
+          (i, true)
+        } else {
+          val nextI: (Int, Boolean) = if (sc.asClass.isTrait) {
+            getVariant(sc.asClass.knownDirectSubclasses.toList.init.iterator, s, i, false)
+          } else {
+            (i+1, false)
+          }
 
-            }else{
-              val sc = it.next
+          if (nextI._2) {
+            nextI
+          } else {
+            getVariant(it, s, nextI._1, false)
+          }
 
-              val k = if (s == sc){
-                (i, true)
-
-                }else{
-                  val nextI: (Int, Boolean) = if (sc.asClass.isTrait){
-                      getVariant(sc.asClass.knownDirectSubclasses.toList.init.iterator, s, i, false)
-
-                    }else{
-                      (i+1, false)
-                    }
-
-                  if(nextI._2){
-                    nextI
-                  }else{
-                    getVariant(it, s, nextI._1, false)
-                  }
-
-                }
-              k
-            }
-          result
         }
+        k
+      }
+      result
+    }
 
 
     def ops[U: c.WeakTypeTag](obj: c.Expr[U]) = {
@@ -118,23 +112,14 @@ object Adts {
         val s = c.weakTypeOf[U].typeSymbol.asClass
         s.typeSignature // SI-7046
 
-        val subClasses = s.knownDirectSubclasses
-        
-        def getSubClasses (subClasses: List[Symbol], list: List[Symbol]): List[Symbol] = {
-            if(subClasses.isEmpty){
-              list
-            }else{
-              val classe = subClasses.head
-              if(classe.asClass.isTrait){
-                val l = getSubClasses(classe.asClass.knownDirectSubclasses.toList, list)
-                getSubClasses(subClasses.tail, l)
-              }else{
-                getSubClasses(subClasses.tail, classe :: list)
-              }
-            }
+        // Collect the concrete subtypes of a given class symbol
+        def getSubClasses(clazz: ClassSymbol): List[Symbol] =
+          clazz.knownDirectSubclasses.foldLeft(List.empty[Symbol]) { (result, clazz) =>
+            if (clazz.asClass.isTrait) getSubClasses(clazz.asClass) ++ result
+            else clazz :: result
           }
 
-        val allSubClasses = getSubClasses(subClasses.toList, List()).reverse.zipWithIndex.map { case (s, _) => (s, newTermName(c.fresh())) }
+        val allSubClasses = getSubClasses(s).reverse.map { s => (s, newTermName(c.fresh())) }
 
         val paramsFold = for((param, symbol) <- allSubClasses) yield q"val $symbol: (Rep[$param] => Rep[A])"
 
@@ -142,7 +127,7 @@ object Adts {
 
         val paramsFoldName = for(param <- paramsFoldLambda) yield q"$param.asInstanceOf[Rep[${U.tpe} => A]]"
 
-        val defFold = q"""def Fold[A : Manifest](..$paramsFold): Rep[A] = {
+        val defFold = q"""def fold[A : Manifest](..$paramsFold): Rep[A] = {
             val seqParams = Seq(..$paramsFoldName)
             adt_fold($obj, seqParams)
           }
@@ -169,7 +154,7 @@ object Adts {
           new $wrapper
           """
       }else{
-        c.abort(c.enclosingPosition, s"$objName is not a case class or a sealed trait")
+        c.abort(c.enclosingPosition, s"$objName is not a case class or a sealed trait") // TODO support abstract classes as well as traits
       }
     }
 
@@ -185,29 +170,28 @@ object Adts {
 
       val paramsType = for(member <- members) yield tq"Rep[${member.tpe}]"
 
-        val variants = U.tpe.baseClasses.drop(1).filter(bc => bc.asClass.toType <:< typeOf[Adt] && bc.asClass.toType != typeOf[Adt])
+      val variants = U.tpe.baseClasses.drop(1).filter(bc => bc.asClass.toType <:< typeOf[Adt] && bc.asClass.toType != typeOf[Adt])
 
-        if(!variants.isEmpty){
-          val i = 0
-          val it = variants.reverse.iterator
+      if (!variants.isEmpty) {
+        val it = variants.reverse.iterator
 
-          val variant = getVariant(it, U.tpe.typeSymbol.asClass, 0, false)._1
+        val variant = getVariant(it, U.tpe.typeSymbol.asClass, 0, false)._1
 
-          q"""
-           new ${newTypeName("Function"+paramsType.length)} [..${paramsType}, Rep[$objName]] {
-             def apply (..${paramsDef}) = adt_construct[$objName](..${paramsConstruct}, "$$variant" -> unit($variant))
-           }
-          """
+        q"""
+         new ${newTypeName("Function"+paramsType.length)} [..${paramsType}, Rep[$objName]] {
+           def apply (..${paramsDef}) = adt_construct[$objName](..${paramsConstruct}, "$$variant" -> unit($variant))
+         }
+        """
 
-        }else{
+      } else {
 
-          q"""
-           new ${newTypeName("Function"+paramsType.length)} [..${paramsType}, Rep[$objName]] {
-             def apply (..${paramsDef}) = adt_construct[$objName](..${paramsConstruct})
-           }
-          """
+        q"""
+         new ${newTypeName("Function"+paramsType.length)} [..${paramsType}, Rep[$objName]] {
+           def apply (..${paramsDef}) = adt_construct[$objName](..${paramsConstruct})
+         }
+        """
 
-        }
+      }
     }
   }
 }
