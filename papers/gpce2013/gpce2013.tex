@@ -224,12 +224,8 @@ domain-specific optimizations. In other words deeply embedded DSLs bring domain-
 to the compiler. Js-scala~\cite{Kossakowski12_JsDESL} is an example of deeply embedded DSL in Scala
 for Web programming. It makes it possible to produce JavaScript programs from Scala code that uses
 basic language concepts like arrays and control structures (\code{if} and \code{while}) as well as
-mechanisms specific to the Scala compiler, like delimited continuations to handle asynchronous
-computations. Though the initial authors of js-scala showed how to use the native browser APIs in an
-untyped fashion, they did not show how to build high-level abstractions for Web programming
-generating efficient code leveraging the browser APIs and did not show how to share such
-abstractions between server and client sides (they achieved code sharing, yet on the server-side
-their DSL was not compiled but interpreted). Our paper addresses these limitations.
+mechanisms specific to the Scala compiler like delimited continuations to handle asynchronous
+computations. Paper \cite{Kossakowski12_JsDESL} presented the implementation of js-scala using staging, but did not discuss any specific optimization and did not consider performance issues of this approach. In this paper, we show how js-scala has been extended to support a set of specific optimizations allowing our high-level abstractions for Web programming to be efficiently compiled on heterogeneous platforms.
 
 \section{Lightweight Modular Staging}
 \label{sec:lms}
@@ -320,7 +316,7 @@ Listing \ref{vanilla-selectors} gives an example of use of various functions fro
 selectors API to retrieve a list of input fields within a form. The \code{getWords} function first finds in the document the HTML element with id \code{add-user}, then collects all its \code{fieldset} children elements, and for each one returns the list of its children elements having class \code{word}. The existence of several specialized functions in the API makes it possible to write efficient code, but forces users to think at a low abstraction level.
 
 \begin{figure}[htb]
-\begin{lstlisting}[language=JavaScript,label=jquery-selectors,caption=Searching elements in jQuery]
+\begin{lstlisting}[language=JavaScript,label=jquery-selectors,caption=Searching elements using jQuery]
 function getWords() {
   var form = $('#add-user');
   var sections = $('fieldset', form);
@@ -526,7 +522,7 @@ challenge is to define an API providing a common vocabulary that generates code 
 platform native APIs.
 
 \begin{figure}[htb]
-\begin{lstlisting}[language=JavaScript,caption=JavaScript DOM API,label=dom-api]
+\begin{lstlisting}[language=JavaScript,caption=JavaScript DOM creation native API,label=dom-api]
 var articleUi = function (article) {
   var div = document.createElement('div');
   div.setAttribute('class', 'article');
@@ -558,10 +554,7 @@ A common task in Web applications consists in computing HTML fragments represent
 page content. This task can be performed either from the server-side (to initially respond to a
 request) or from the client-side (to update the current page). As an example, Listing \ref{dom-api}
 defines a JavaScript function \code{articleUi} that builds a DOM tree containing an article
-description, and Listing \ref{scala-xml-api} shows how one could implement a similar function on
-server-side using the standard Scala XML library. The reader may notice that the client-side
-and server-side APIs are very different and that the client-side API is very low-level and
-inconvenient to use.
+description. Listing \ref{scala-xml-api} shows how one could implement a similar function on server-side using the standard Scala XML library. The reader may notice that the client-side and server-side APIs are very different and that the client-side native API is very low-level and inconvenient to use. We could use a library on client-side to get a higher level API for DOM fragment creation, but that would decrease the runtime performance. Instead, we want to define a high-level API that compiles to code as efficient as if it was written using the native APIs, on both platforms.
 
 Our first step consists in capturing, in a high-level API, the concepts common to the JavaScript and
 Scala APIs. Though they are different, both APIs define HTML elements with attributes and content.
@@ -749,7 +742,7 @@ Chooze~\footnote{Source code is available at
 complete application for making polls. It allows users to create a poll, define the choice
 alternatives, share the poll, vote and look at the results. It contains JavaScript code to handle
 the dynamic behavior of the application: double-posting prevention, dynamic form update and rich
-interaction with the document. The size of the whole application (server and client sides) is about one thousand of lines of code.
+interaction with the document. The size of the whole application (server and client sides) is about one thousand lines of code.
 
 The application was initially written using jQuery. We rewrote it in vanilla JavaScript (low-level
 hand-tuned code without third-party library), js-scala, GWT and HaXe.
