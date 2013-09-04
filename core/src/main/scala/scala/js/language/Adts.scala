@@ -1,7 +1,7 @@
 package scala.js.language
 
 import scala.language.experimental.macros
-import scala.virtualization.lms.common.{Base, Equal}
+import scala.virtualization.lms.common.Functions
 
 /**
  * Reifies case classes as staged adts
@@ -20,7 +20,7 @@ import scala.virtualization.lms.common.{Base, Equal}
  *     Point(p1.x + p2.x, p1.y + p2.y)
  * }}}
  */
-trait Adts extends Base with Equal {
+trait Adts extends Functions {
 
   type Adt = scala.js.macroimpl.Adts.Adt
 
@@ -38,7 +38,7 @@ trait Adts extends Base with Equal {
    * 
    * @return a staged smart constructor for the data type T
    */
-  def adt[T] = macro scala.js.macroimpl.Adts.adt[T]
+  def adt[T <: Adt] = macro scala.js.macroimpl.Adts.adt[T]
   
   /**
    * {{{
@@ -51,6 +51,6 @@ trait Adts extends Base with Equal {
    *
    * @return an object with staged members for the type T
    */
-  def adtOps[T](o: Rep[T]) = macro scala.js.macroimpl.Adts.ops[T]
+  def adtOps[T <: Adt](o: Rep[T]) = macro scala.js.macroimpl.Adts.ops[T]
 
 }

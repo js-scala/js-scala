@@ -2,7 +2,7 @@ package scala.js.gen.js
 
 import scala.js.exp.AdtsExp
 
-trait GenAdts extends GenBase with GenFunctions with GenEqual {
+trait GenAdts extends GenBase with GenFunctions {
   val IR: AdtsExp
   import IR._
 
@@ -29,7 +29,7 @@ trait GenAdts extends GenBase with GenFunctions with GenEqual {
         emitValDef(sym, quote(obj) + "==" + quote(bis))
       }
     case AdtFold(obj, fs) => {
-      emitValDef(sym, "function("+quote(obj)+", "+fs.map(quote).mkString(",")+"){ ["+fs.map(quote).mkString(",")+"]["+quote(obj)+".$variant]("+quote(obj)+"); }")
+      emitValDef(sym, "["+fs.map(quote).mkString(",")+"]["+quote(obj)+".$variant]("+quote(obj)+")")
     }
     case _ => 
       super.emitNode(sym, rhs)

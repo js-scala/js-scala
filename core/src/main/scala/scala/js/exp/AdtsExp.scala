@@ -1,9 +1,9 @@
 package scala.js.exp
 
-import scala.virtualization.lms.common.{BaseExp, EqualExp, TupledFunctionsExp}
+import scala.virtualization.lms.common.{TupledFunctionsExp, BaseExp}
 import scala.js.language.Adts
 
-trait AdtsExp extends BaseExp with Adts with TupledFunctionsExp with EqualExp {
+trait AdtsExp extends Adts with BaseExp with TupledFunctionsExp {
   
   def adt_construct[A : Manifest](fields: (String, Exp[_])*) = {
     AdtApply[A](fields)

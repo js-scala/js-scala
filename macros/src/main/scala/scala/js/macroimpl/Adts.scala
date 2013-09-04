@@ -8,11 +8,11 @@ object Adts {
   
   trait Adt
 
-  def adt[U: c.WeakTypeTag](c: Context) =
+  def adt[U <: Adt : c.WeakTypeTag](c: Context) =
     c.Expr[Any](new Generator[c.type](c).construct[U])
 
 
-  def ops[U: c.WeakTypeTag](c: Context)(o: c.Expr[U]) =
+  def ops[U : c.WeakTypeTag](c: Context)(o: c.Expr[U]) =
     c.Expr[Any](new Generator[c.type](c).ops(o))
 
 

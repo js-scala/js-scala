@@ -9,12 +9,174 @@ import exp.{DebugExp, AdtsExp}
 
 class TestAdts extends FileDiffSuite {
 
+  val prefix = "test-out/"
+
+  def testProducts(): Unit = {
+
+    trait Prog extends Adts {
+
+      case class Product(x: Int, s: String) extends Adt
+      case class NestedProduct(p: Product, b: Boolean) extends Adt
+
+      // Smart constructors
+      object C {
+        val Product = adt[Product]
+        val NestedProduct = adt[NestedProduct]
+      }
+
+      // Methods
+      implicit def ProductOps(p: Rep[Product]) = adtOps(p)
+      implicit def NestedProductOps(n: Rep[NestedProduct]) = adtOps(n)
+
+      def construction(x: Rep[Int], s: Rep[String], b: Rep[Boolean]): Rep[NestedProduct] = {
+        val p = C.Product(x, s)
+        C.NestedProduct(p, b)
+      }
+
+      def memberSelection(n: Rep[NestedProduct]) = n.p
+
+      def equal(n1: Rep[NestedProduct], n2: Rep[NestedProduct]) = n1 === n2
+
+      def copy(n: Rep[NestedProduct], b: Rep[Boolean]) = n.copy(p = n.p, b = b)
+
+    }
+
+    withOutFile(prefix + "adt/product") {
+      val prog = new Prog with AdtsExp
+      val gen = new GenAdts { val IR: prog.type = prog }
+      val out = new PrintWriter(System.out)
+      gen.emitSource3(prog.construction, "construction", out)
+      gen.emitSource(prog.memberSelection, "selection", out)
+      out.println("ERROR Return type of member selection is not correct")
+      gen.emitSource2(prog.equal, "equal", out)
+      out.println("ERROR Return type of === is not correct")
+      gen.emitSource2(prog.copy, "copy", out)
+    }
+    assertFileEqualsCheck(prefix + "adt/product")
+  }
+
+  def testSums(): Unit = {
+
+    trait Prog extends Adts {
+
+      sealed trait CoProduct extends Adt
+      case class Left(x: Int) extends CoProduct
+      case class Right(s: String) extends CoProduct
+
+      object C {
+        val Left = adt[Left]
+        val Right = adt[Right]
+      }
+
+      implicit def CoProductOps(c: Rep[CoProduct]) = adtOps(c)
+      implicit def LeftOps(l: Rep[Left]) = adtOps(l)
+      implicit def RightOps(r: Rep[Right]) = adtOps(r)
+
+      def construction1(x: Rep[Int]) = C.Left(x)
+
+      def construction2(s: Rep[String]) = C.Right(s)
+
+      def selection(l: Rep[Left]) = l.x
+
+      def equal1(c1: Rep[CoProduct], c2: Rep[CoProduct]) = c1 === c2
+
+      def equal2(c: Rep[CoProduct], l: Rep[Left]) = c === l
+
+      def copy(l: Rep[Left], x: Rep[Int]) = l.copy(x = x)
+
+      def fold(c: Rep[CoProduct]) = c.fold(
+        (l: Rep[Left]) => unit("left"),
+        (r: Rep[Right]) => unit("right")
+      )
+
+    }
+
+    withOutFile(prefix + "adt/sum") {
+      val prog = new Prog with AdtsExp
+      val gen = new GenAdts { val IR: prog.type = prog }
+      val out = new PrintWriter(System.out)
+      gen.emitSource(prog.construction1, "construction1", out)
+      gen.emitSource(prog.construction2, "construction2", out)
+      gen.emitSource(prog.selection, "selection", out)
+      out.println("ERROR Return type of member selection is not correct")
+      gen.emitSource2(prog.equal1, "equal1", out)
+      gen.emitSource2(prog.equal2, "equal2", out)
+      out.println("ERROR === is not correct")
+      out.println("ERROR Return type of === is not correct")
+      gen.emitSource2(prog.copy, "copy", out)
+      gen.emitSource(prog.fold, "fold", out)
+    }
+    assertFileEqualsCheck(prefix + "adt/sum")
+  }
+
+
+  def testHierarchy(): Unit = {
+    trait DSL extends Adts {
+
+      sealed trait Top extends Adt
+      case class One(x: Int) extends Top
+      sealed trait Middle extends Top
+      case class Two(s: String) extends Middle
+      case class Three(b: Boolean) extends Middle
+
+      object C {
+        val One = adt[One]
+        val Two = adt[Two]
+        val Three = adt[Three]
+      }
+
+      implicit def TopOps(t: Rep[Top]) = adtOps(t)
+      implicit def OneOps(o: Rep[One]) = adtOps(o)
+      implicit def MiddleOps(m: Rep[Middle]) = adtOps(m)
+      implicit def TwoOps(t: Rep[Two]) = adtOps(t)
+      implicit def ThreeOps(t: Rep[Three]) = adtOps(t)
+    }
+
+    trait Prog extends DSL {
+
+      def construction1(x: Rep[Int]) = C.One(x)
+
+      def construction2(s: Rep[String]) = C.Two(s)
+
+      def construction3(b: Rep[Boolean]) = C.Three(b)
+
+      def equal(t1: Rep[Top], t2: Rep[Top]) = t1 === t2
+
+      def fold1(t: Rep[Top]) = t.fold(
+        (o: Rep[One]) => unit("one"),
+        (t: Rep[Two]) => unit("two"),
+        (t: Rep[Three]) => unit("three")
+      )
+
+      def fold2(m: Rep[Middle]) = m.fold(
+        (t: Rep[Two]) => unit("two"),
+        (t: Rep[Three]) => unit("three")
+      )
+
+    }
+
+    withOutFile(prefix + "adt/hierarchy") {
+      val prog = new Prog with AdtsExp
+      val gen = new GenAdts { val IR: prog.type = prog }
+      val out = new PrintWriter(System.out)
+      gen.emitSource(prog.construction1, "construction1", out)
+      gen.emitSource(prog.construction2, "construction2", out)
+      gen.emitSource(prog.construction3, "construction3", out)
+      gen.emitSource2(prog.equal, "equal", out)
+      out.println("ERROR === is not correct")
+      out.println("ERROR Return type of === is not correct")
+      gen.emitSource(prog.fold1, "fold1", out)
+      gen.emitSource(prog.fold2, "fold2", out)
+    }
+    assertFileEqualsCheck(prefix + "adt/hierarchy")
+  }
+
   def testAdt() {
 
     val prefix = "test-out/"
 
-    trait DSL extends Base with Adts with ListOps with Functions with Debug  //need functions here
-    trait DSLExp extends DSL with AdtsExp with ListOpsExp with FunctionsExp with DebugExp
+    trait DSL extends Base with Adts with ListOps with Debug  //need functions here
+    trait DSLExp extends DSL with AdtsExp with ListOpsExp with DebugExp
     trait DSLJSGen extends GenEffect with GenAdts with GenListOps with GenDebug { val IR: DSLExp }
 
     trait Prog extends DSL {
@@ -89,12 +251,12 @@ class TestAdts extends FileDiffSuite {
        }
      }
 
-     withOutFile(prefix+"adt") {
+     withOutFile(prefix+"adt/test") {
       val prog = new Prog with DSLExp
       val codegen = new DSLJSGen { val IR: prog.type = prog }
       codegen.emitSource(prog.main _, "main", new PrintWriter(System.out))
      }
-     assertFileEqualsCheck(prefix+"adt")
+     assertFileEqualsCheck(prefix+"adt/test")
      
   }
 }

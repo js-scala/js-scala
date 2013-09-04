@@ -1,0 +1,43 @@
+function main(x0) {
+var x1 = {'effect' : "web"};
+var x2 = {'effect' : "spider sens"};
+var x5 = [x1,x2];
+var x6 = {'name' : "SpiderMan",'saveTheWorld' : true,'powers' : x5,'$variant' : 0};
+var x7 = console.log(x6);
+var x8 = x6.powers;
+var x9 = {'name' : "Venom",'saveTheWorld' : false,'powers' : x8,'$variant' : 0};
+var x10 = (x9.name==x6.name)&&(x9.saveTheWorld==x6.saveTheWorld)&&(x9.powers==x6.powers)&&(x9.$variant==x6.$variant);
+var x11 = console.log(x10);
+var x3 = {'effect' : "all"};
+var x12 = [x3];
+var x13 = {'name' : "Zeus",'good' : true,'religion' : true,'powers' : x12,'$variant' : 1};
+var x4 = {'effect' : "judge of the dead"};
+var x14 = [x4];
+var x15 = {'name' : "Minos",'bad' : false,'cult' : false,'powers' : x14,'$variant' : 2};
+var x16 = {'name' : "Europe",'age' : 36,'husband' : x13,'children' : x15,'$variant' : 4};
+var x17 = {'name' : "Asterion",'age' : 42,'wife' : x16,'$variant' : 3};
+var x18 = x17.wife;
+var x19 = console.log(x18);
+var x24 = function(x20) {
+var x21 = x20.name;
+var x22 = console.log(x21);
+};
+var x29 = function(x25) {
+var x26 = x25.name;
+var x27 = console.log(x26);
+};
+var x34 = function(x30) {
+var x31 = x30.name;
+var x32 = console.log(x31);
+};
+var x39 = function(x35) {
+var x36 = x35.name;
+var x37 = console.log(x36);
+};
+var x44 = function(x40) {
+var x41 = x40.name;
+var x42 = console.log(x41);
+};
+var x45 = [x24,x29,x34,x39,x44][x15.$variant](x15);
+var x46 = console.log(x45);
+}
