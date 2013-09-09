@@ -136,7 +136,7 @@ using Scala~\cite{Kossakowski12_JsDESL}. However, the authors did not discuss an
 % \end{itemize}
 
 We validate our approach with a case study implemented with various candidate technologies and
-discuss the relative pro and cons of them. Though the code written in our DSL is high-level and can
+discuss the relative pro and cons of them. We also measured the individual impact of each of our optimizations using micro-benchmarks. Though the code written in our DSL is high-level and can
 be shared between clients and servers, it has the same runtime performance on client-side as
 hand-tuned low-level JavaScript code.
 
@@ -175,9 +175,8 @@ the code generation scheme of each language feature to each target platform. Fig
 compiler pipeline (parser, code generator, \etc) may have to be adapted. This approach gives
 \emph{fat} languages because a lot of concepts are defined at the language level: general
 programming concepts such as naming, functions, classes, as well as more domain-specific concepts
-such as HTML fragment definition. Thus, implementing a fat language may require a high effort.
-Examples of such languages for Web programming are Links~\cite{Cooper07_Links}, Opa and
-Dart~\cite{Griffith11_Dart}.
+such as HTML fragment definition. Thus, implementing a fat language may require a high effort and adding support for these languages in development environments may require a even higher effort.
+Examples of such languages for Web programming are Links~\cite{Cooper07_Links}, Opa, Dart~\cite{Griffith11_Dart}.
 
 \paragraph{Domain-Specific Languages}
 
@@ -419,7 +418,7 @@ a particular widget in the page and then a particular button within the widget. 
 \code{querySelector} method returns \code{null} if no node matched the given selector in the
 document. If we run this code in a page where the widget is not present, it will throw an error
 and stop further JavaScript execution. Defensive code can be written to handle \code{null}
-references, but leads to very cumbersome code, as shown in Listing \ref{null-defensive}.
+references, but leads to very cumbersome code, as shown in Listing \ref{null-defensive}.\footnote{However, one could alleviate the syntax burden by using a language such as CoffeeScript~\cite{Ashkenas2011_CoffeeScript}, that suppports a special notation for optional values dereferencing and desugars directly to JavaScript.}
 
 \begin{figure}[htb]
 \begin{lstlisting}[language=JavaScript,label=null-unsafe,caption=Unsafe code]
