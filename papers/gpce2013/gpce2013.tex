@@ -52,9 +52,7 @@ performance: while Web applications rely on ever more code on the client-side, t
 phones with limited hardware capabilities. These two challenges raise the following problem: how to
 benefit from high-level languages and libraries making code complexity easier to manage and
 abstracting over the clients and servers differences without trading this ease of engineering for
-performance? This article presents high-level abstractions defined as deep embedded DSLs in Scala,
-that can (1) generate efficient code leveraging the target platform characteristics, (2) be shared
-between clients and servers. Though code written with our DSL has a high level of abstraction, our
+performance? This article presents high-level abstractions defined as deep embedded DSLs in Scala that can generate efficient code leveraging the characteristics of both client and server environments. We compare performance on client-side against other candidate technologies and against hand written low-level JavaScript code. Though code written with our DSL has a high level of abstraction, our
 benchmark on a real world application reports that it runs as fast as hand tuned low-level
 JavaScript code.
 \end{abstract}
