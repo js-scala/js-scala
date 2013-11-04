@@ -1,4 +1,4 @@
-\documentclass[preprint]{sigplanconf}
+\documentclass{sigplanconf}
 
 % The following \documentclass options may be useful:
 %
@@ -13,7 +13,71 @@
 \usepackage{graphicx}
 \usepackage{moresize}
 
-\input{macros}
+\usepackage{listings}
+%\usepackage[scaled]{luximono}
+
+%\usepackage{natbib}
+
+% ----- begin macros
+
+\lstdefinelanguage{Scala}%
+{morekeywords={abstract,%
+  case,catch,char,class,%
+  def,else,extends,final,for,%
+  if,import,implicit,%
+  match,module,%
+  new,null,%
+  object,override,%
+  package,private,protected,public,%
+  for,public,return,super,%
+  this,throw,trait,try,type,%
+  val,var,%
+  with,%
+  yield,%
+  lazy%
+  },%
+  sensitive,%
+  morecomment=[l]//,%
+  morecomment=[s]{/*}{*/},%
+  morestring=[b]",%
+  morestring=[b]',%
+  showstringspaces=false%
+}[keywords,comments,strings]%
+
+\lstdefinelanguage{JavaScript}%
+{morekeywords={for, var, attributes, class, classend, do, else, empty, endif, endwhile, fail, function,
+functionend, if, implements, in, inherit, inout, not, of, operations, out, return,
+then, types, while, use},%
+  sensitive,%
+  morecomment=[l]//,%
+  morecomment=[s]{/*}{*/},%
+  morestring=[b]",%
+  morestring=[b]',%
+  showstringspaces=false%
+}[keywords,comments,strings]%
+
+\lstset{language=Scala,%
+  mathescape=false,%
+%  columns=[c]fixed,%
+  aboveskip=\smallskipamount,
+  belowskip=\smallskipamount,
+%  basewidth={0.5em, 0.4em},%
+  basicstyle=\footnotesize,%
+  captionpos=b,
+  keywordstyle=\bfseries%\sffamily\bfseries,%
+%  keywordstyle=\sffamily\bfseries,%
+%  xleftmargin=0.5cm
+}
+
+\newcommand{\commentstyle}[1]{\slseries{#1}}
+\newcommand{\keywordstyle}[1]{\bfseries{#1}}
+
+\lstnewenvironment{slisting}{\lstset{language=Scala}}{}
+
+\newcommand{\code}[1]{\lstinline[language=Scala,columns=fixed,basicstyle=\footnotesize]|#1|}
+
+\def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
+\let\endchangemargin=\endlist
 
 \newcommand{\ie}{\emph{i.e.}}
 \newcommand{\eg}{\emph{e.g.}}
@@ -25,9 +89,8 @@
 
 \begin{document}
 
-\conferenceinfo{GPCE '13}{October 27--28, 2013, Indianapolis, Indiana, USA} 
-\copyrightyear{2013}
-\copyrightdata{[to be supplied]} 
+\conferenceinfo{GPCE~'13}{October 27--28, 2013, Indianapolis, Indiana, USA} 
+\copyrightyear{2013} \copyrightdata{978-1-4503-2373-4/13/10} \doi{2517208.2517227}
 
 %\titlebanner{banner above paper title}        % These are ignored unless
 %\preprintfooter{short description of paper}   % 'preprint' option specified.
@@ -59,7 +122,7 @@ JavaScript code.
 
 \category{D.3.3}{Programming Languages}{Language Constructs and Features}
 
-\terms Languages, Software Engineering
+%\terms Languages, Software Engineering
 
 \keywords Heterogeneous code generation, Domain-specific languages, Scala, Web
 
@@ -155,7 +218,7 @@ categories, as shown in Figure \ref{fig:langs}.
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=7.5cm]{langs.pdf}
+\includegraphics[width=7.5cm]{gpce19c-foy-langs.pdf}
 \end{center}
 \caption{Language engineering processes}
 \vspace{-0.5cm}
@@ -376,7 +439,7 @@ def getWords() = {
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=5cm]{ir.pdf}
+\includegraphics[width=5cm]{gpce19c-foy-ir.pdf}
 \end{center}
 \caption{Intermediate representations returned by the evaluation of (a)
 \code{document.find("\#add-user button")} and (b) \code{document.find("\#add-user")}}
@@ -677,7 +740,7 @@ containing a few elements: 4 \code{fieldset} elements, each containing 0 to 2 el
 
 \begin{figure}
 \centering
-\includegraphics[width=8cm]{selectors-benchmark.png}
+\includegraphics[width=8cm]{gpce19c-foy-selectors-benchmark.png}
 \caption{Micro-benchmark on the selectors abstraction}
 \label{fig:selectors-benchmark}
 \end{figure}
@@ -716,7 +779,7 @@ def benchmark = for {
 
 \begin{figure}
 \centering
-\includegraphics[width=8cm]{microbenchmark.png}
+\includegraphics[width=8cm]{gpce19c-foy-microbenchmark.png}
 \caption{Micro-benchmark on the optional values abstraction}
 \label{micro-benchmark}
 \end{figure}
@@ -747,7 +810,7 @@ the HTML fragment definition API). Figure \ref{benchmark} shows the benchmark re
 
 \begin{figure}
 \centering
-\includegraphics[width=8cm]{chooze.png}
+\includegraphics[width=8cm]{gpce19c-foy-chooze.png}
 \caption{Benchmarks on a real application}
 \label{benchmark}
 \end{figure}
@@ -850,7 +913,177 @@ minimizing the number of browser reflows.
 %This work was funded by Zenexity.
 
 \bibliographystyle{abbrvnat}
-\bibliography{biblio}
+\begin{thebibliography}{24}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Ashkenas(2011)]{Ashkenas2011_CoffeeScript}
+J.~Ashkenas.
+\newblock Coffeescript, 2011.
+
+\bibitem[Bibeault and Kats(2008)]{Bibeault08_jQuery}
+B.~Bibeault and Y.~Kats.
+\newblock \emph{jQuery in Action}.
+\newblock Dreamtech Press, 2008.
+
+\bibitem[Brown et~al.(2011)Brown, Sujeeth, Lee, Rompf, Chafi, Odersky, and
+  Olukotun]{Brown11_Parallel}
+K.~J. Brown, A.~K. Sujeeth, H.~J. Lee, T.~Rompf, H.~Chafi, M.~Odersky, and
+  K.~Olukotun.
+\newblock A heterogeneous parallel framework for domain-specific languages.
+\newblock In \emph{Parallel Architectures and Compilation Techniques (PACT),
+  2011 International Conference on}, pages 89--100. IEEE, 2011.
+
+\bibitem[Cannasse(2008)]{Cannasse08_HaXe}
+N.~Cannasse.
+\newblock Using haxe.
+\newblock \emph{The Essential Guide to Open Source Flash Development}, pages
+  227--244, 2008.
+
+\bibitem[Chaganti(2007)]{Chaganti07_GWT}
+P.~Chaganti.
+\newblock \emph{Google Web Toolkit: GWT Java Ajax Programming}.
+\newblock Packt Pub Limited, 2007.
+
+\bibitem[Cooper et~al.(2007)Cooper, Lindley, Wadler, and
+  Yallop]{Cooper07_Links}
+E.~Cooper, S.~Lindley, P.~Wadler, and J.~Yallop.
+\newblock Links: Web programming without tiers.
+\newblock In \emph{Formal Methods for Components and Objects}, pages 266--296.
+  Springer, 2007.
+
+\bibitem[Elliott et~al.(2003)Elliott, Finne, and
+  De~Moor]{Elliott2003_Compiling}
+C.~Elliott, S.~Finne, and O.~De~Moor.
+\newblock Compiling embedded languages.
+\newblock \emph{Journal of Functional Programming}, 13\penalty0 (3):\penalty0
+  455--481, 2003.
+
+\bibitem[Griffith(2011)]{Griffith11_Dart}
+R.~Griffith.
+\newblock The dart programming language for non-programmers-overview.
+\newblock 2011.
+
+\bibitem[Hoare(2009)]{Hoare09_Null}
+T.~Hoare.
+\newblock Null references: The billion dollar mistake.
+\newblock \emph{Presentation at QCon London}, 2009.
+
+\bibitem[Huang et~al.(2010)Huang, Xu, Tiwana, Mao, Zhang, and
+  Bahl]{Huang10_Perf}
+J.~Huang, Q.~Xu, B.~Tiwana, Z.~M. Mao, M.~Zhang, and P.~Bahl.
+\newblock Anatomizing application performance differences on smartphones.
+\newblock In \emph{Proceedings of the 8th international conference on Mobile
+  systems, applications, and services}, pages 165--178. ACM, 2010.
+
+\bibitem[Hudak(1996)]{Hudak96_DSEL}
+P.~Hudak.
+\newblock Building domain-specific embedded languages.
+\newblock \emph{ACM Computing Surveys}, 28, 1996.
+\newblock URL \url{http://dsel.ps}.
+
+\bibitem[J{\o}rring and Scherlis(1986)]{Jorring1986_Staging}
+U.~J{\o}rring and W.~L. Scherlis.
+\newblock Compilers and staging transformations.
+\newblock In \emph{Proceedings of the 13th ACM SIGACT-SIGPLAN symposium on
+  Principles of programming languages}, pages 86--96. ACM, 1986.
+
+\bibitem[Kossakowski et~al.(2012)Kossakowski, Amin, Rompf, and
+  Odersky]{Kossakowski12_JsDESL}
+G.~Kossakowski, N.~Amin, T.~Rompf, and M.~Odersky.
+\newblock Java{S}cript as an {E}mbedded {DSL}.
+\newblock In J.~Noble, editor, \emph{{ECOOP} 2012 -- {O}bject-{O}riented
+  {P}rogramming}, volume 7313 of \emph{Lecture Notes in Computer Science},
+  pages 409--434, Berlin, Heidelberg, 2012. Springer Berlin Heidelberg.
+\newblock \doi{10.1007/978-3-642-31057-7_19}.
+\newblock URL \url{https://github.com/js-scala/js-scala/}.
+
+\bibitem[Kuuskeri and Mikkonen(2009)]{Kuuskeri09_PartitioningClientServer}
+J.~Kuuskeri and T.~Mikkonen.
+\newblock Partitioning web applications between the server and the client.
+\newblock In \emph{Proceedings of the 2009 ACM symposium on Applied Computing},
+  SAC '09, pages 647--652, New York, NY, USA, 2009. ACM.
+\newblock ISBN 978-1-60558-166-8.
+\newblock \doi{10.1145/1529282.1529416}.
+\newblock URL \url{http://doi.acm.org/10.1145/1529282.1529416}.
+
+\bibitem[McGranaghan(2011)]{McGranaghan11_ClojureScript}
+M.~McGranaghan.
+\newblock Clojurescript: Functional programming for javascript platforms.
+\newblock \emph{Internet Computing, IEEE}, 15\penalty0 (6):\penalty0 97--102,
+  2011.
+
+\bibitem[Mikkonen and Taivalsaari(2008)]{Mikkonen08_SpaghettiJs}
+T.~Mikkonen and A.~Taivalsaari.
+\newblock Web applications - spaghetti code for the 21st century.
+\newblock In \emph{Proceedings of the 2008 Sixth International Conference on
+  Software Engineering Research, Management and Applications}, pages 319--328,
+  Washington, DC, USA, 2008. IEEE Computer Society.
+\newblock ISBN 978-0-7695-3302-5.
+\newblock \doi{10.1109/SERA.2008.16}.
+\newblock URL \url{http://dl.acm.org/citation.cfm?id=1443226.1444030}.
+
+\bibitem[Nanda and Sinha(2009)]{Nanda09_Null}
+M.~Nanda and S.~Sinha.
+\newblock Accurate interprocedural null-dereference analysis for java.
+\newblock In \emph{Software Engineering, 2009. ICSE 2009. IEEE 31st
+  International Conference on}, pages 133--143. IEEE, 2009.
+
+\bibitem[Preciado et~al.(2005)Preciado, Trigueros, S{\'a}nchez-Figueroa, and
+  Comai]{Preciado05_RIAMethodologyNecessity}
+J.~C. Preciado, M.~L. Trigueros, F.~S{\'a}nchez-Figueroa, and S.~Comai.
+\newblock Necessity of methodologies to model rich internet applications.
+\newblock In \emph{WSE}, pages 7--13. IEEE Computer Society, 2005.
+\newblock ISBN 0-7695-2470-2.
+
+\bibitem[Rodr{\'\i}guez-Echeverr{\'\i}a(2009)]{Echeverria09_RIA}
+R.~Rodr{\'\i}guez-Echeverr{\'\i}a.
+\newblock Ria: more than a nice face.
+\newblock In \emph{Proceedings of the Doctolral Consortium of the International
+  Conference on Web Engineering}, volume 484. CEUR-WS.org, 2009.
+
+\bibitem[Rompf(2012)]{Rompf12_LMSThesis}
+T.~Rompf.
+\newblock \emph{Lightweight Modular Staging and Embedded Compilers: Abstraction
+  without Regret for High-Level High-Performance Programming}.
+\newblock PhD thesis, {\'E}COLE POLYTECHNIQUE F{\'E}D{\'E}RALE DE LAUSANNE,
+  2012.
+
+%\vfill\eject
+
+\bibitem[Rompf et~al.(2012)Rompf, Sujeeth, Amin, Brown, Jovanovic, Lee,
+  Jonnalagedda, Olukotun, and Odersky]{Rompf12_LMS}
+T.~Rompf, A.~Sujeeth, N.~Amin, K.~Brown, V.~Jovanovic, H.~Lee, M.~Jonnalagedda,
+  K.~Olukotun, and M.~Odersky.
+\newblock Optimizing {D}ata {S}tructures in {H}igh-{L}evel {P}rograms: {N}ew
+  {D}irections for {E}xtensible {C}ompilers based on {S}taging.
+\newblock Technical report, 2012.
+
+\bibitem[Souders(2008)]{Souders08_Perf}
+S.~Souders.
+\newblock High-performance web sites.
+\newblock \emph{Communications of the ACM}, 51\penalty0 (12):\penalty0 36--41,
+  2008.
+
+\bibitem[Van~Deursen et~al.(2000)Van~Deursen, Klint, and Visser]{Van00_DSL}
+A.~Van~Deursen, P.~Klint, and J.~Visser.
+\newblock Domain-specific languages: an annotated bibliography.
+\newblock \emph{ACM Sigplan Notices}, 35\penalty0 (6):\penalty0 26--36, 2000.
+
+\bibitem[Visser(2007)]{Visser07}
+E.~Visser.
+\newblock {WebDSL}: {A} case study in domain-specific language engineering.
+\newblock In R.~Lämmel, J.~Visser, and J.~Saraiva, editors, \emph{Generative
+  and Transformational Techniques in Software Engineering II, International
+  Summer School, {GTTSE} 2007}, volume 5235 of \emph{Lecture Notes in Computer
+  Science}, pages 291--373, Braga, Portugal, 2007. Springer.
+\newblock ISBN 978-3-540-88642-6.
+\newblock \doi{http://dx.doi.org/10.1007/978-3-540-88643-3_7}.
+
+\end{thebibliography}
 %\begin{thebibliography}{}
 %\softraggedright
 %
