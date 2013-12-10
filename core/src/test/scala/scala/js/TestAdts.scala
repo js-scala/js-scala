@@ -232,7 +232,7 @@ class TestAdts extends FileDiffSuite {
         val asterion  = Man(unit("Asterion"), unit(42), europe)
         
         log(asterion.wife)
-        
+
         def hello(p: Rep[Person]) = p.fold(
           (m: Rep[Mutant]) => log(m.name),
           (g: Rep[God]) => log(g.name),
@@ -250,6 +250,7 @@ class TestAdts extends FileDiffSuite {
       val prog = new Prog with DSLExp
       val codegen = new DSLJSGen { val IR: prog.type = prog }
       codegen.emitSource(prog.main _, "main", new PrintWriter(System.out))
+      println("fold order is wrong")
      }
      assertFileEqualsCheck(prefix+"adt/test")
      

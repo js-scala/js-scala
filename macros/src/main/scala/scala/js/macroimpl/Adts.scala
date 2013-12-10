@@ -15,7 +15,7 @@ object Adts {
     c.Expr[Any](new Generator[c.type](c).ops(o))
 
 
-  class Generator[C <: Context](val c: C) extends QuasiquoteCompat {
+  class Generator[C <: Context](val c: C) {
     import c.universe._
 
     case class Member(name: String, term: TermName, tpe: Type)
@@ -131,7 +131,7 @@ object Adts {
 
       if (U.tpe.typeSymbol.asClass.isTrait && U.tpe.typeSymbol.asClass.isSealed){
         q"""
-        class $anon extends $U{
+        class $anon {
           $defFold
           $defEqual
         }
