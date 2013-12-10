@@ -26,7 +26,7 @@ trait Adts extends Functions {
 
   def adt_construct[A : Manifest](fields: (String, Rep[_])*): Rep[A]
   def adt_select[A : Manifest, B : Manifest](obj: Rep[A], label: String): Rep[B]
-  def adt_equal[A : Manifest, Boolean : Manifest](obj: Rep[A], bis: Rep[A], fieldsObj: Seq[String], fieldsBis: Seq[String]): Rep[Boolean]
+  def adt_equal[A : Manifest](obj: Rep[A], bis: Rep[A], fieldsObj: Seq[String], fieldsBis: Seq[String]): Rep[Boolean]
   def adt_fold[R <: Adt : Manifest, A : Manifest](obj: Rep[R], fs: Seq[Rep[_ <: R => A]]): Rep[A]
 
   /**

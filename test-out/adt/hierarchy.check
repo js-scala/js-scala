@@ -12,9 +12,9 @@ return x5
 }
 function equal(x6, x7) {
 var x8 = x6==x7;
+return x8
 }
 ERROR === is not correct
-ERROR Return type of === is not correct
 function fold1(x9) {
 var x11 = function(x10) {
 return "one"

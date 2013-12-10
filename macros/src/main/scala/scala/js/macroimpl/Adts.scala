@@ -2,7 +2,6 @@ package scala.js.macroimpl
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
-import sun.management.Flag
 
 object Adts {
   
@@ -34,11 +33,11 @@ object Adts {
       tpe.typeSymbol.typeSignature.declarations.toList.collect { case x: TermSymbol if x.isVal && x.isCaseAccessor => Member(x) }
 
     def getVariant(it: Iterator[Symbol], s: Symbol, i: Int, find: Boolean): (Int, Boolean) = {
-      val result = if (!it.hasNext) {
+      if (!it.hasNext) {
         (i, false)
       } else {
         val sc = it.next
-        val k = if (s == sc) {
+        if (s == sc) {
           (i, true)
         } else {
           val nextI: (Int, Boolean) = if (sc.asClass.isTrait) {
@@ -52,11 +51,8 @@ object Adts {
           } else {
             getVariant(it, s, nextI._1, false)
           }
-
         }
-        k
       }
-      result
     }
 
 
@@ -70,9 +66,9 @@ object Adts {
 
       val objName = U.tpe.typeSymbol.name
 
-      val defGetters = for(member <- members) yield q"def ${member.term}: Rep[${member.tpe}] = adt_select($obj , ${member.name})"
+      val defGetters = for(member <- members) yield q"def ${member.term}: Rep[${member.tpe}] = adt_select[${U.tpe}, ${member.tpe}]($obj , ${member.name})"
 
-      val paramsCopy = for(member <- members) yield q"val ${member.term}: Rep[${member.tpe}] = adt_select($obj , ${member.name})"
+      val paramsCopy = for(member <- members) yield q"val ${member.term}: Rep[${member.tpe}] = adt_select[${U.tpe}, ${member.tpe}]($obj , ${member.name})"
 
       val paramsConstruct = for(member <- members) yield q"${member.term}"
 

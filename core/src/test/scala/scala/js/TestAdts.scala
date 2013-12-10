@@ -47,9 +47,7 @@ class TestAdts extends FileDiffSuite {
       val out = new PrintWriter(System.out)
       gen.emitSource3(prog.construction, "construction", out)
       gen.emitSource(prog.memberSelection, "selection", out)
-      out.println("ERROR Return type of member selection is not correct")
       gen.emitSource2(prog.equal, "equal", out)
-      out.println("ERROR Return type of === is not correct")
       gen.emitSource2(prog.copy, "copy", out)
     }
     assertFileEqualsCheck(prefix + "adt/product")
@@ -98,11 +96,9 @@ class TestAdts extends FileDiffSuite {
       gen.emitSource(prog.construction1, "construction1", out)
       gen.emitSource(prog.construction2, "construction2", out)
       gen.emitSource(prog.selection, "selection", out)
-      out.println("ERROR Return type of member selection is not correct")
       gen.emitSource2(prog.equal1, "equal1", out)
       gen.emitSource2(prog.equal2, "equal2", out)
       out.println("ERROR === is not correct")
-      out.println("ERROR Return type of === is not correct")
       gen.emitSource2(prog.copy, "copy", out)
       gen.emitSource(prog.fold, "fold", out)
     }
@@ -164,7 +160,6 @@ class TestAdts extends FileDiffSuite {
       gen.emitSource(prog.construction3, "construction3", out)
       gen.emitSource2(prog.equal, "equal", out)
       out.println("ERROR === is not correct")
-      out.println("ERROR Return type of === is not correct")
       gen.emitSource(prog.fold1, "fold1", out)
       gen.emitSource(prog.fold2, "fold2", out)
     }
