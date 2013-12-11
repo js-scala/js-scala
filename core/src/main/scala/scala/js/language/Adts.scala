@@ -9,7 +9,7 @@ import scala.virtualization.lms.common.Functions
  * Example
  * 
  * {{{
- *   case class Point(x: Int, y: Int)
+ *   case class Point(x: Int, y: Int) extends Adt
  *   // Smart constructor
  *   val Point = adt[Point]
  *   // Members
@@ -31,9 +31,9 @@ trait Adts extends Functions {
 
   /**
    * {{{
-   *   case class Point(x: Int, y: Int)
+   *   case class Point(x: Int, y: Int) extends Adt
    *   val Point = adt[Point]
-   *   // Point is a function taking two Rep[Int] and returning a Rep[Point]
+   *   // Point is a staged smart constructor taking two Rep[Int] and returning a Rep[Point]
    * }}}
    * 
    * @return a staged smart constructor for the data type T
@@ -46,6 +46,10 @@ trait Adts extends Functions {
    *     implicit def pointOps(p: Rep[Point]) = adtOps(p)
    *     // Now you can select members of a Rep[Point]:
    *     "Point(x = " + point.x + ", y = " + point.y + ")"
+   *   }
+   *   // You also have a `copy` and an `===` method
+   *   def copyAndEqual(point: Rep[Point]) = {
+   *     point.copy(y = 0) === Point(42, 0)
    *   }
    * }}}
    *
