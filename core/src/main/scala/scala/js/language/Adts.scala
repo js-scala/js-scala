@@ -51,6 +51,6 @@ trait Adts extends Functions {
    *
    * @return an object with staged members for the type T
    */
-  def adtOps[T <: Adt](o: Rep[T]) = macro scala.js.macroimpl.Adts.ops[T]
+  def adtOps[T <: Adt](o: Rep[T]) = macro scala.js.macroimpl.Adts.ops[T, Rep]
 
 }

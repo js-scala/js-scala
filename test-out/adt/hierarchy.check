@@ -3,11 +3,11 @@ var x1 = {'x' : x0,'$variant' : 0};
 return x1
 }
 function construction2(x2) {
-var x3 = {'s' : x2,'$variant' : 1};
+var x3 = {'s' : x2,'$variant' : 2};
 return x3
 }
 function construction3(x4) {
-var x5 = {'b' : x4,'$variant' : 2};
+var x5 = {'b' : x4,'$variant' : 1};
 return x5
 }
 function equal(x6, x7) {
@@ -20,21 +20,11 @@ var x11 = function(x10) {
 return "one"
 };
 var x13 = function(x12) {
-return "two"
+return "three"
 };
 var x15 = function(x14) {
-return "three"
+return "two"
 };
 var x16 = [x11,x13,x15][x9.$variant](x9);
 return x16
-}
-function fold2(x17) {
-var x19 = function(x18) {
-return "two"
-};
-var x21 = function(x20) {
-return "three"
-};
-var x22 = [x19,x21][x17.$variant](x17);
-return x22
 }

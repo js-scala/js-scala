@@ -11,12 +11,53 @@ object Adts {
     c.Expr[Any](new Generator[c.type](c).construct[U])
 
 
-  def ops[U : c.WeakTypeTag](c: Context)(o: c.Expr[U]) =
+  def ops[U <: Adt : c.WeakTypeTag, R[_]](c: Context)(o: c.Expr[R[U]]) =
     c.Expr[Any](new Generator[c.type](c).ops(o))
 
 
   class Generator[C <: Context](val c: C) {
     import c.universe._
+
+    /**
+     * @return The whole class hierarchy the type `A` belongs to. Works only with closed class hierarchies.
+     *         The symbols are sorted by alphabetic order.
+     */
+    def wholeHierarchy[A <: Adt : WeakTypeTag]: Seq[ClassSymbol] = {
+
+      val rootClass: ClassSymbol =
+        weakTypeOf[A].baseClasses
+          // Take up to `Adt` super type
+          .takeWhile(_.asClass.toType != typeOf[Adt])
+          // Filter out type ancestors automatically added to case classes
+          .filterNot { s =>
+            val tpe = s.asClass.toType
+            tpe =:= typeOf[Equals] || tpe =:= typeOf[Serializable] || tpe =:= typeOf[java.io.Serializable] || tpe =:= typeOf[Product]
+          }.last.asClass // We know there is at least one element in the list because of `baseClasses`
+
+      def subHierarchy(base: ClassSymbol): List[ClassSymbol] = {
+        base.typeSignature // Needed before calling knownDirectSubclasses (SI-7046)
+        base.knownDirectSubclasses.foldLeft(List(base)) { (result, symbol) =>
+          val clazz = symbol.asClass
+          if (clazz.isCaseClass) clazz :: result
+          else if (clazz.isSealed && (clazz.isTrait || clazz.isAbstractClass)) subHierarchy(clazz) ++ result
+          else c.abort(c.enclosingPosition, "A class hierarchy may only contain case classes, sealed traits and sealed abstract classes")
+        }
+      }
+
+      subHierarchy(rootClass)
+        .sortBy(_.name.decoded)
+        .ensuring(_.nonEmpty, s"Oops: whole hierarchy of $rootClass is empty")
+    }
+
+    /**
+     * @return The class hierarchy of the type `A`, meaning, `A` and all its subclasses
+     */
+    def hierarchy[A <: Adt : WeakTypeTag]: Seq[ClassSymbol] =
+      wholeHierarchy[A]
+        .filter(_.toType <:< weakTypeOf[A])
+        .ensuring(_.nonEmpty, s"Oops: hierarchy of ${weakTypeOf[A].typeSymbol.asClass} is empty! (whole hierarchy is: ${wholeHierarchy[A]})")
+
+    def isConcrete(symbol: ClassSymbol): Boolean = !(symbol.isAbstractClass || symbol.isTrait)
 
     case class Member(name: String, term: TermName, tpe: Type)
 
@@ -32,31 +73,7 @@ object Adts {
     def listMembers(tpe: Type): List[Member] =
       tpe.typeSymbol.typeSignature.declarations.toList.collect { case x: TermSymbol if x.isVal && x.isCaseAccessor => Member(x) }
 
-    def getVariant(it: Iterator[Symbol], s: Symbol, i: Int, find: Boolean): (Int, Boolean) = {
-      if (!it.hasNext) {
-        (i, false)
-      } else {
-        val sc = it.next
-        if (s == sc) {
-          (i, true)
-        } else {
-          val nextI: (Int, Boolean) = if (sc.asClass.isTrait) {
-            getVariant(sc.asClass.knownDirectSubclasses.toList.init.iterator, s, i, false)
-          } else {
-            (i+1, false)
-          }
-
-          if (nextI._2) {
-            nextI
-          } else {
-            getVariant(it, s, nextI._1, false)
-          }
-        }
-      }
-    }
-
-
-    def ops[U: c.WeakTypeTag](obj: c.Expr[U]) = {
+    def ops[U <: Adt : c.WeakTypeTag, R[_]](obj: c.Expr[R[U]]) = {
       val anon = newTypeName(c.fresh)
       val wrapper = newTypeName(c.fresh)
       val ctor = newTermName(c.fresh)
@@ -78,6 +95,7 @@ object Adts {
 
       val variants = U.tpe.baseClasses.drop(1).filter(bc => bc.asClass.toType <:< typeOf[Adt] && bc.asClass.toType != typeOf[Adt])
 
+      // TODO Review this code
       def getFields(params: Seq[Member], root: String, list: List[Tree]): List[Tree] = params match {
         case Nil => 
           if(!variants.isEmpty){
@@ -99,33 +117,23 @@ object Adts {
 
       val fieldsObj = getFields(members, "", List())
 
-      val defEqual = q"""
-        def === (bis: Rep[$objName]): Rep[Boolean] = {
-          adt_equal($obj, bis, Seq(..$fieldsObj), Seq(..$fieldsObj))
-        }
-      """
-
-        val s = c.weakTypeOf[U].typeSymbol.asClass
-        s.typeSignature // SI-7046
-
-        // Collect the concrete subtypes of a given class symbol
-        def getSubClasses(clazz: ClassSymbol): List[Symbol] =
-          clazz.knownDirectSubclasses.foldLeft(List.empty[Symbol]) { (result, clazz) =>
-            if (clazz.asClass.isTrait) getSubClasses(clazz.asClass) ++ result
-            else clazz :: result
+      val defEqual =
+        q"""
+          def === (bis: Rep[$objName]): Rep[Boolean] = {
+            adt_equal($obj, bis, Seq(..$fieldsObj), Seq(..$fieldsObj))
           }
+        """
 
-        val allSubClasses = getSubClasses(s).reverse.map { s => (s, newTermName(c.fresh())) }
+      val variants2 = wholeHierarchy[U].filter(isConcrete).map(s => s -> newTermName(c.fresh()))
 
-        val paramsFold = for((param, symbol) <- allSubClasses) yield q"val $symbol: (Rep[$param] => Rep[A])"
+      val paramsFold = for((param, symbol) <- variants2) yield q"val $symbol: (Rep[$param] => Rep[A])"
 
-        val paramsFoldLambda = for((param, symbol) <- allSubClasses) yield q"doLambda($symbol)"
+      val paramsFoldLambda = for((_, symbol) <- variants2) yield q"doLambda($symbol)"
 
-        val paramsFoldName = for(param <- paramsFoldLambda) yield q"$param.asInstanceOf[Rep[${U.tpe} => A]]"
+      val paramsFoldName = for(param <- paramsFoldLambda) yield q"$param.asInstanceOf[Rep[$U => A]]"
 
-        val defFold = q"""def fold[A : Manifest](..$paramsFold): Rep[A] = {
-            val seqParams = Seq(..$paramsFoldName)
-            adt_fold($obj, seqParams)
+      val defFold = q"""def fold[A : Manifest](..$paramsFold): Rep[A] = {
+            adt_fold($obj, Seq(..$paramsFoldName))
           }
           """
 
@@ -154,39 +162,32 @@ object Adts {
       }
     }
 
-    def construct[U: c.WeakTypeTag] = {
-
-      val U = implicitly[c.WeakTypeTag[U]]
-      val members = listMembers(U.tpe)
-      val objName = U.tpe.typeSymbol.name
-
-      val paramsDef = for(member <- members) yield q"val ${member.term}: Rep[${member.tpe}]"
-
-      val paramsConstruct = for(member <- members) yield q"${member.name} -> ${member.term}"
-
-      val paramsType = for(member <- members) yield tq"Rep[${member.tpe}]"
-
-      val variants = U.tpe.baseClasses.drop(1).filter(bc => bc.asClass.toType <:< typeOf[Adt] && bc.asClass.toType != typeOf[Adt])
-
-      if (!variants.isEmpty) {
-        val it = variants.reverse.iterator
-
-        val variant = getVariant(it, U.tpe.typeSymbol.asClass, 0, false)._1
-
-        q"""
-         new ${newTypeName("Function"+paramsType.length)} [..${paramsType}, Rep[$objName]] {
-           def apply (..${paramsDef}) = adt_construct[$objName](..${paramsConstruct}, "$$variant" -> unit($variant))
-         }
-        """
-
-      } else {
-
-        q"""
-         new ${newTypeName("Function"+paramsType.length)} [..${paramsType}, Rep[$objName]] {
-           def apply (..${paramsDef}) = adt_construct[$objName](..${paramsConstruct})
-         }
-        """
-
+    def construct[U <: Adt : c.WeakTypeTag]: c.Tree = {
+      val U = weakTypeOf[U]
+      val allSubClasses = hierarchy[U]
+      if (allSubClasses.size == 1) { // `U` is a leaf in the type hierarchy
+        val members = listMembers(U)
+        val objName = U.typeSymbol.name
+        val paramsDef = for(member <- members) yield q"val ${member.term}: Rep[${member.tpe}]"
+        val paramsConstruct = for(member <- members) yield q"${member.name} -> ${member.term}"
+        val paramsType = for(member <- members) yield tq"Rep[${member.tpe}]"
+        val variants = wholeHierarchy[U].filter(isConcrete)
+        if (variants.size == 1) {
+          q"""
+          new ${newTypeName("Function" + paramsType.length)}[..$paramsType, Rep[$objName]] {
+            def apply(..$paramsDef) = adt_construct[$objName](..$paramsConstruct)
+          }
+         """
+        } else {
+          val variant = variants.indexOf(U.typeSymbol)
+          q"""
+          new ${newTypeName("Function" + paramsType.length)}[..$paramsType, Rep[$objName]] {
+            def apply(..$paramsDef) = adt_construct[$objName](..$paramsConstruct, "$$variant" -> unit($variant))
+          }
+         """
+        }
+      } else { // `U` is a sum type
+        c.abort(c.enclosingPosition, s"$U is a sum type")
       }
     }
   }

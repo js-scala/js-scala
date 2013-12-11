@@ -2,20 +2,20 @@ function main(x0) {
 var x1 = {'effect' : "web"};
 var x2 = {'effect' : "spider sens"};
 var x5 = [x1,x2];
-var x6 = {'name' : "SpiderMan",'saveTheWorld' : true,'powers' : x5,'$variant' : 0};
+var x6 = {'name' : "SpiderMan",'saveTheWorld' : true,'powers' : x5,'$variant' : 3};
 var x7 = console.log(x6);
 var x8 = x6.powers;
-var x9 = {'name' : "Venom",'saveTheWorld' : false,'powers' : x8,'$variant' : 0};
+var x9 = {'name' : "Venom",'saveTheWorld' : false,'powers' : x8,'$variant' : 3};
 var x10 = (x9.name==x6.name)&&(x9.saveTheWorld==x6.saveTheWorld)&&(x9.powers==x6.powers)&&(x9.$variant==x6.$variant);
 var x11 = console.log(x10);
 var x3 = {'effect' : "all"};
 var x12 = [x3];
-var x13 = {'name' : "Zeus",'good' : true,'religion' : true,'powers' : x12,'$variant' : 2};
+var x13 = {'name' : "Zeus",'good' : true,'religion' : true,'powers' : x12,'$variant' : 1};
 var x4 = {'effect' : "judge of the dead"};
 var x14 = [x4];
-var x15 = {'name' : "Minos",'bad' : false,'cult' : false,'powers' : x14,'$variant' : 3};
-var x16 = {'name' : "Europe",'age' : 36,'husband' : x13,'children' : x15,'$variant' : 2};
-var x17 = {'name' : "Asterion",'age' : 42,'wife' : x16,'$variant' : 1};
+var x15 = {'name' : "Minos",'bad' : false,'cult' : false,'powers' : x14,'$variant' : 0};
+var x16 = {'name' : "Europe",'age' : 36,'husband' : x13,'children' : x15,'$variant' : 4};
+var x17 = {'name' : "Asterion",'age' : 42,'wife' : x16,'$variant' : 2};
 var x18 = x17.wife;
 var x19 = console.log(x18);
 var x24 = function(x20) {

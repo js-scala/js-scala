@@ -105,7 +105,6 @@ class TestAdts extends FileDiffSuite {
     assertFileEqualsCheck(prefix + "adt/sum")
   }
 
-
   def testHierarchy(): Unit = {
     trait DSL extends Adts {
 
@@ -140,14 +139,14 @@ class TestAdts extends FileDiffSuite {
 
       def fold1(t: Rep[Top]) = t.fold(
         (o: Rep[One]) => unit("one"),
-        (t: Rep[Two]) => unit("two"),
-        (t: Rep[Three]) => unit("three")
+        (t: Rep[Three]) => unit("three"),
+        (t: Rep[Two]) => unit("two")
       )
 
-      def fold2(m: Rep[Middle]) = m.fold(
-        (t: Rep[Two]) => unit("two"),
-        (t: Rep[Three]) => unit("three")
-      )
+      /*def fold2(m: Rep[Middle]) = C.Middle.fold(m)(
+        (t: Rep[Three]) => unit("three"),
+        (t: Rep[Two]) => unit("two")
+      )*/
 
     }
 
@@ -161,7 +160,8 @@ class TestAdts extends FileDiffSuite {
       gen.emitSource2(prog.equal, "equal", out)
       out.println("ERROR === is not correct")
       gen.emitSource(prog.fold1, "fold1", out)
-      gen.emitSource(prog.fold2, "fold2", out)
+      /*gen.emitSource(prog.fold2, "fold2", out)
+      out.println("ERROR generated array for fold is not correct")*/
     }
     assertFileEqualsCheck(prefix + "adt/hierarchy")
   }
@@ -205,7 +205,7 @@ class TestAdts extends FileDiffSuite {
       
       
       def main(n: Rep[String]) = {
-        
+
         val Power = adt[Power]
         val spideyWeb = Power(unit("web"))
         val spideySens = Power(unit("spider sens"))
@@ -234,10 +234,10 @@ class TestAdts extends FileDiffSuite {
         log(asterion.wife)
 
         def hello(p: Rep[Person]) = p.fold(
-          (m: Rep[Mutant]) => log(m.name),
-          (g: Rep[God]) => log(g.name),
           (d: Rep[Devil]) => log(d.name),
+          (g: Rep[God]) => log(g.name),
           (m: Rep[Man]) => log(m.name),
+          (m: Rep[Mutant]) => log(m.name),
           (w: Rep[Woman]) => log(w.name)
         )
         
