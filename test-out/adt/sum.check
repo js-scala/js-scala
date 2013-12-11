@@ -1,0 +1,35 @@
+function construction1(x0) {
+var x1 = {'x' : x0,'$variant' : 0};
+return x1
+}
+function construction2(x2) {
+var x3 = {'s' : x2,'$variant' : 1};
+return x3
+}
+function selection(x4) {
+var x5 = x4.x;
+return x5
+}
+function equal1(x6, x7) {
+var x8 = x6==x7;
+return x8
+}
+function equal2(x9, x10) {
+var x11 = x9==x10;
+return x11
+}
+ERROR === is not correct
+function copy(x12, x13) {
+var x14 = {'x' : x13,'$variant' : 0};
+return x14
+}
+function fold(x15) {
+var x17 = function(x16) {
+return "left"
+};
+var x19 = function(x18) {
+return "right"
+};
+var x20 = [x17,x19][x15.$variant](x15);
+return x20
+}

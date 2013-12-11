@@ -7,7 +7,8 @@ object BuildSettings {
     version := "0.4-SNAPSHOT",
     scalaVersion := "2.10.2-RC1",
     scalaOrganization := "org.scala-lang.virtualized",
-    resolvers += Resolver.sonatypeRepo("snapshots")
+    resolvers += Resolver.sonatypeRepo("snapshots"),
+    addCompilerPlugin("org.scala-lang.virtualized.plugins" % "macro-paradise_2.10.2-RC1" % "2.0.0-SNAPSHOT")
   )
 }
 
@@ -27,9 +28,7 @@ object JsScalaBuild extends Build {
     file("macros"),
     settings = buildSettings ++ Seq(
       name := "js-scala-macros",
-      scalaVersion := "2.10.3-SNAPSHOT",
-      scalaOrganization := "org.scala-lang.macro-paradise",
-      libraryDependencies <+= (scalaVersion)("org.scala-lang.macro-paradise" % "scala-reflect" % _),
+      libraryDependencies <+= (scalaVersion)("org.scala-lang.virtualized" % "scala-reflect" % _),
       libraryDependencies ++= Seq(
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
         "EPFL" %% "lms" % "0.3-SNAPSHOT"

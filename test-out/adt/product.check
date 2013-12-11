@@ -1,0 +1,18 @@
+function construction(x0, x1, x2) {
+var x3 = {'x' : x0,'s' : x1};
+var x4 = {'p' : x3,'b' : x2};
+return x4
+}
+function selection(x5) {
+var x6 = x5.p;
+return x6
+}
+function equal(x7, x8) {
+var x9 = (x7.p.x==x8.p.x)&&(x7.p.s==x8.p.s)&&(x7.b==x8.b);
+return x9
+}
+function copy(x10, x11) {
+var x12 = x10.p;
+var x13 = {'p' : x12,'b' : x11};
+return x13
+}
