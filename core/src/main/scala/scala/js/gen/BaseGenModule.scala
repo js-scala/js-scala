@@ -33,4 +33,14 @@ trait BaseGenModule extends GenericCodegen {
     val args = List(s1, s2, s3)
     Function(args, body)
   }
+  def fun[T1 : Manifest, T2 : Manifest, T3 : Manifest, T4 : Manifest, R : Manifest](f: ((IR.Exp[T1], IR.Exp[T2], IR.Exp[T3], IR.Exp[T4]) => IR.Exp[R])): Function[R] = {
+    val s1 = IR.fresh[T1]
+    val s2 = IR.fresh[T2]
+    val s3 = IR.fresh[T3]
+    val s4 = IR.fresh[T4]
+    val body = reifyBlock(f(s1, s2, s3, s4))
+    val args = List(s1, s2, s3, s4)
+    Function(args, body)
+  }
+
 }
