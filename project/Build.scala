@@ -21,20 +21,7 @@ object JsScalaBuild extends Build {
     settings = buildSettings ++ Seq(
       publishLocal := ()
     )
-  ) aggregate (macros, core, examples)
-
-  lazy val macros = Project(
-    "macros",
-    file("macros"),
-    settings = buildSettings ++ Seq(
-      name := "js-scala-macros",
-      libraryDependencies <+= (scalaVersion)("org.scala-lang.virtualized" % "scala-reflect" % _),
-      libraryDependencies ++= Seq(
-        "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
-        "EPFL" %% "lms" % "0.3-SNAPSHOT"
-      )
-    )
-  )
+  ) aggregate (core, examples)
 
   lazy val core = Project(
     "core",
@@ -43,8 +30,6 @@ object JsScalaBuild extends Build {
       scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics"/*, "-Ymacro-debug-lite"*/),
 
       name := "js-scala",
-      mappings in (Compile, packageBin) <++= mappings in (macros, Compile, packageBin),
-      mappings in (Compile, packageSrc) <++= mappings in (macros, Compile, packageSrc),
 
       //Our tests are not threadsafe so disabling parallel execution for now
       parallelExecution in Test := false,
@@ -55,11 +40,12 @@ object JsScalaBuild extends Build {
     
       libraryDependencies ++= Seq(
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
-        "EPFL" %% "lms" % "0.3-SNAPSHOT"
-      ),
-      libraryDependencies <<= (scalaVersion, libraryDependencies) { (ver, deps) => deps :+ compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % ver)}
+        "EPFL" %% "lms" % "0.3-SNAPSHOT",
+        "org.scala-lang.virtualized" % "scala-reflect" % scalaVersion.value,
+        compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % scalaVersion.value)
+      )
     )
-  ) dependsOn (macros)
+  )
 
   lazy val examples = Project(
     "examples",
@@ -67,10 +53,10 @@ object JsScalaBuild extends Build {
     settings = buildSettings ++ Seq(
       publishLocal := (),
       autoCompilerPlugins := true,
-      libraryDependencies <<= (scalaVersion, libraryDependencies) { (ver, deps) => deps :+ compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % ver)},
+      libraryDependencies += compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % scalaVersion.value),
       scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics")
     )
-  ) dependsOn (core)
+  ) dependsOn core
 
 }
 
