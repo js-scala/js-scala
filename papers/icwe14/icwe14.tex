@@ -70,16 +70,18 @@ then, types, while, use},%
  \maketitle
 
 \begin{abstract}
-Encoding dynamically typed APIs in statically typed languages can be challenging. We present new ways to encode them in order to preserve type safety and to keep the same expression power.
+Encoding dynamically typed APIs in statically typed languages can be challenging. Incidentally, existing statically typed languages compiling to JavaScript expose its native API in ways that either are not type safe or give less expression power to developers. We present two new ways to encode the challenging parts of the Web browser API such that type safety and expression power are preserved. Our first encoding relies on type parameters and can be implemented in most mainstream languages but drags phantom types up to the use sites. The second encoding does not suffer from this inconvenience but requires dependent types.
 \end{abstract}
 
 \section{Introduction}
 
 We recently observed the emergence of several statically typed programming languages compiling to JavaScript (\emph{e.g.} Java/GWT~\cite{Kereki09_GWT}, Dart~\cite{Griffith11_Dart}, TypeScript~\cite{fenton2012typescript}, Kotlin\footnote{\href{http://kotlin.jetbrains.org}{http://kotlin.jetbrains.org}}, Opa\footnote{\href{http://opalang.org}{http://opalang.org}}, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Haxe~\cite{Cannasse08_HaXe}, Idris~\cite{Brady13_Idris}, Elm~\cite{czaplicki2012elm}). Developers can use them to write the client-side part of their Web applications, relying on a \emph{foreign function interface} mechanism to call the Web browser native API.
 
-However we observe that, despite these languages are statically typed, their integration of the browser API either is not type safe or gives less expression power to the developers. Indeed, integrating an API designed for a dynamically typed language into a statically typed language can be challenging. For instance, the \jscode{createElement(name)} function return type depends on the value of its \jscode{name} parameter: \jscode{createElement('div')} returns a \jscode{DivElement}, \jscode{createElement('input')} returns an \jscode{InputElement}, \emph{etc}. Existing languages expose this function by making it return an \jscode{Element} (the least upper bound of the types of all the possible returned values), though a more precise type could be known at compile-time. Another way to expose this function consists in exposing several functions, each one fixing the value of the \jscode{name} parameter along with its return type. The first solution is not type safe and the second solution does not scale.
+However we observe that, despite these languages are statically typed, their integration of the browser API either is not type safe or gives less expression power. Indeed, integrating an API designed for a dynamically typed language into a statically typed language can be challenging. For instance, the \jscode{createElement} function return type depends on the value of its parameter: \jscode{createElement('div')} returns a \jscode{DivElement}, \jscode{createElement('input')} returns an \jscode{InputElement}, \emph{etc}.
 
-This paper reviews some common functions of the browser API, identifies those which are not well encoded in statically typed programming languages and shows new ways to encode them with more type safety while keeping the native API expression power. We find that type parameters are sufficient to achieve this goal and that \emph{path-dependent types} provide an even more convenient encoding for the end developers.
+Existing languages expose this function by making it return an \jscode{Element}, the least upper bound of the types of all the possible returned values, thus loosing type information and requiring users to explicitly downcast the returned value to its expected more precise type. Another way to expose this function consists in exposing several functions, each one fixing the value of the parameter along with its return type: \jscode{createDivElement}, \jscode{createInputElement}, \emph{etc} would be parameterless functions returning a \jscode{DivElement} and an \jscode{InputElement}, respectively. This encoding forces to hard-code the name of the element to create: it can not anymore be a parameter. The first solution is not type safe and the second solution reduces the expression power.
+
+This paper reviews some common functions of the browser API, identifies the patterns that are difficult to encode in static type systems and shows new ways to encode them such that type safety and expression power are preserved. We find that type parameters are sufficient to achieve this goal and that \emph{path-dependent types} provide an even more convenient encoding for the end developers.
 
 The remainder of the paper is organized as follows. The next section reviews the most common functions of the browser API and how they are integrated in statically typed languages. Section \ref{sec-contribution} shows ways to improve their integration. Section \ref{sec-validation} validates our contribution. Section \ref{sec-related} discusses some related works and section \ref{sec-conclusion} concludes.
 
@@ -115,7 +117,7 @@ For instance, functions \jscode{getElementsByTagName(name)}, \jscode{getElementB
 
 In the case of \jscode{getElementById(id)}, the \jscode{id} parameter gives no clue on the possible type of the searched element so it is hard to infer more precisely the return type of this function. Hence, most implementations define a return type of \jscode{Element}. The drawback of this approach is that developers may get a value with a type weaker than they need and may require to explicitly downcast it, thus loosing type safety.
 
-However, in the case of \jscode{getElementsByTagName(name)} and \jscode{createElement(name)}, there is exactly one possible return type for each value of the \jscode{name} parameter: \emph{e.g.} \jscode{getElementsByTagName('input')} always returns a list of \jscode{InputElement} and \jscode{createElement('div')} always returns a \jscode{DivElement}. This characteristic makes it possible to encode each of these functions by defining as many parameterless functions as there are possible tag names, where each function fixes the initial \jscode{name} parameter to be one of the possible values and exposes the corresponding specialized return type. Listing~\ref{lst-create-element-overload} illustrates such an encoding in the Java language.
+However, in the case of \jscode{getElementsByTagName(name)} and \jscode{createElement(name)}, there is exactly one possible return type for each value of the \jscode{name} parameter: \emph{e.g.} \jscode{getElementsByTagName('input')} always returns a list of \jscode{InputElement} and \jscode{createElement('div')} always returns a \jscode{DivElement}. This characteristic makes it possible to encode each of these functions by defining as many parameterless functions as there are possible tag names, where each function fixes the initial \jscode{name} parameter to be one of the possible values and exposes the corresponding specialized return type. Listing~\ref{lst-create-element-overload} illustrates such an encoding in the Java language. Note that the listing gives only the type signature of the functions visible to the end developers. The implementation of the functions is not relevant for our purpose.
 
 \begin{figure}
 \begin{lstlisting}[label=lst-create-element-overload,language=Java,caption={Encoding of the \jscode{createElement(name)} function in Java using parameterless functions fixing the initial \jscode{name} parameter value}]
@@ -157,7 +159,7 @@ void logClicks(EventTarget target) {
 \end{lstlisting}
 \end{figure}
 
-Table~\ref{table-existing-encodings} summarizes, for each statically typed language, which approach is used to encode each function of the browser API.
+Table~\ref{table-existing-encodings} summarizes, for each studied statically typed language, which approach is used to encode each function of the browser API.
 
 \begin{table}
 \centering
@@ -180,18 +182,19 @@ Table~\ref{table-existing-encodings} summarizes, for each statically typed langu
 
 \subsection{Limitations of existing encoding approaches}
 
-We distinguished three approaches to integrate the challenging parts of the browser API into statically typed languages. This section compares these approaches in terms of type safety, expression power and convenience to use from the end developer point of view.
+We distinguished three approaches to integrate the challenging parts of the browser API into statically typed languages. This section compares these approaches in terms of type safety and expression power.
 
 The first approach, consisting in using the least upper bound of all the possible types is not type safe because it sometimes requires developers to explicitly downcast values to their expected specialized type.
 
-The second approach, consisting in defining as many functions as there are possible return types of a function, is completely type safe but can lead to combinatorial explosion in some situations. Consider for instance listing~\ref{lst-js-comb} defining a JavaScript function that both creates an element and registers an event listener when a given event occurs on it. Note that the event listener is passed both the event and the element. Encoding such a function in a statically typed language using this approach would require to create one function for each combination of tag name and event name.
+The second approach, consisting in defining as many functions as there are possible return types of the encoded function, is type safe but leads to a less general API: each function fixes a parameter value of the encoded function, hence being less general. The limits of this approach are better illustrated when one tries to combine several functions. Consider for instance listing~\ref{lst-js-comb} defining a JavaScript function that both find elements and registers an event listener when a given event occurs on them. Note that the event listener is passed both the event and the element: its type depends on both the tag name and the event name. This function could not be implemented if the general \jscode{getElementsByTagName} and \jscode{addEventListener} functions were not available. The best that could be done would be to create one function for each combination of tag name and event name.
 
 \begin{figure}
-\begin{lstlisting}[label=lst-js-comb,language=JavaScript]
-var createAndListenTo = function (tagName, eventName, listener) {
-  var element = document.createElement(tagName);
-  element.addEventListener(eventName, function (event) {
-    listener(event, element);
+\begin{lstlisting}[label=lst-js-comb,language=JavaScript,caption={Combination of use of \jscode{getElementsByTagName} and \jscode{addEventListener}}]
+var findAndListenTo = function (tagName, eventName, listener) {
+  document.getElementsByTagName(tagName).forEach(function (element) {
+    element.addEventListener(eventName, function (event) {
+      listener(event, element);
+    });
   });
 };
 \end{lstlisting}
@@ -200,7 +203,7 @@ var createAndListenTo = function (tagName, eventName, listener) {
 The third approach, consisting in combining two parameters into one parameter carrying all the required information, is type safe too, but reduces the expression power because it forbids developers to partially apply the function by supplying only one parameter. Consider for instance listing~\ref{lst-js-react} that defines a function partially applying the \jscode{addEventListener} function\footnote{This pattern is often used by functional reactive programming libraries like Rx.js~\cite{liberty2011reactive}}. Such a function is impossible to encode using this approach, in a statically typed language.
 
 \begin{figure}
-\begin{lstlisting}[label=lst-js-react,language=JavaScript]
+\begin{lstlisting}[label=lst-js-react,language=JavaScript,caption={Partial application of \jscode{addEventListener} parameters}]
 var observe = function (target, name) {
   return function (listener) {
     target.addEventListener(name, listener);
@@ -209,12 +212,14 @@ var observe = function (target, name) {
 \end{lstlisting}
 \end{figure}
 
-In summary, browser API integration by existing statically typed languages compiling to JavaScript is either not type safe or not as modular or expressive as the underlying JavaScript API.
+[FIXME En fait les deux dernieres approches sont deux cas particuliers d'une meme approche, plus generale, qui consiste a fixer la valeur d'un parametre. Je regroupe ou pas ?]
+
+In summary, browser API integration by existing statically typed languages compiling to JavaScript is either not type safe or not as expressive as the underlying JavaScript API.
 
 \section{Contribution}
 \label{sec-contribution}
 
-In this section we show how we can encode the functions presented previously, in a type safe and convenient way for developers while keeping the same expression power.
+In this section we show how we can encode the functions presented previously, in a type safe way while keeping the same expression power.
 
 We first propose a solution in the Java mainstream language, using \emph{generics}, and show how we can improve it using \emph{path-dependent types}, in Scala.
 
@@ -228,10 +233,10 @@ In all the cases where a type \scalacode{T} involved in a function depends on th
  \item Use type \scalacode{U} instead of type \scalacode{T}
 \end{enumerate}
 
-Listing~\ref{lst-generics-dom} shows this approach applied to the \jscode{createElement} function: we created a type \scalacode{ElementName<E>}, the \scalacode{name} parameter is not a \scalacode{String} but a \scalacode{ElementName<E>}, and the function returns an \scalacode{E} instead of an \scalacode{Element}. The \scalacode{ElementName<E>} type encodes the relationship between the name of an element and the type of this element\footnote{The type parameter \scalacode{E} is also called a \emph{phantom type}~\cite{leijen1999domain} because \scalacode{ElementName} values never hold a \scalacode{E} value}. For instance, we created a value \scalacode{Input} of type \scalacode{ElementName<InputElement>}. The last two lines shows how this API is used by end developers: by passing the \scalacode{Input} value as parameter to the function, it fixes the type parameter \scalacode{E} to \scalacode{InputElement} so the returned value has the most possible precise type.
+Listing~\ref{lst-generics-dom} shows this approach applied to the \jscode{createElement} function which return type depends on its \jscode{name} parameter value: a type \scalacode{ElementName<E>} has been created, the type of the \scalacode{name} parameter has been set to \scalacode{ElementName<E>} instead of \scalacode{String}, and the return type of the function is \scalacode{E} instead of \scalacode{Element}. The \scalacode{ElementName<E>} type encodes the relationship between the name of an element and the type of this element\footnote{The type parameter \scalacode{E} is also called a \emph{phantom type}~\cite{leijen1999domain} because \scalacode{ElementName} values never hold a \scalacode{E} value}. For instance, we created a value \scalacode{Input} of type \scalacode{ElementName<InputElement>}. The last two lines shows how this API is used by end developers: passing the \scalacode{Input} value as parameter to the function fixes the type parameter \scalacode{E} to \scalacode{InputElement} so the returned value has the most possible precise type.
 
 \begin{figure}
-\begin{lstlisting}[label=lst-generics-dom,language=java]
+\begin{lstlisting}[label=lst-generics-dom,language=java,caption={Encoding of the \jscode{createElement} function using type parameters}]
 // --- API Definition
 class ElementName<E> {}
 
@@ -249,7 +254,7 @@ ImageElement img = createElement(Img);
 \scalacode{getElementsByTagName} can be encoded in very similar way, and listing~\ref{lst-generics-events} shows the encoding of the \jscode{addEventListener} function.
 
 \begin{figure}
-\begin{lstlisting}[label=lst-generics-events,language=java]
+\begin{lstlisting}[label=lst-generics-events,language=java,caption={Encoding of the \jscode{addEventListener} function using type parameters}]
 // --- API Definition
 class EventName<E> {}
 
@@ -265,25 +270,25 @@ btn.addEventListener(Click, e -> console.log(e.button))
 \end{lstlisting}
 \end{figure}
 
-
 We show that our encodings support the challenging functions defined in listings \ref{lst-js-comb} and \ref{lst-js-react}.
 
 Listing \ref{lst-generics-comb} and \ref{lst-generics-react} show how these functions can be implemented. They are basically a direct translation from JavaScript to Java.
 
 \begin{figure}
-\begin{lstlisting}[label=lst-generics-comb,language=java]
-<A, B> void createAndListenTo(
+\begin{lstlisting}[label=lst-generics-comb,language=java,caption={Combination of \scalacode{getElementsByTagName} and \scalacode{addEventListener} functions encoded using type parameters}]
+<A, B> void findAndListenTo(
     ElementName<A> tagName,
     EventName<B> eventName,
     Function2<A, B, Void> listener) {
-  A element = document.createElement(tagName);
-  element.addEventListener(eventName, event -> listener.apply(event, element));
+  for (A element : document.getElementsByTagName(tagName)) {
+    element.addEventListener(eventName, event -> listener.apply(event, element));
+  }
 }
 \end{lstlisting}
 \end{figure}
 
 \begin{figure}
-\begin{lstlisting}[label=lst-generics-react,language=java]
+\begin{lstlisting}[label=lst-generics-react,language=java,caption={Partial application of \scalacode{addEventListener} encoded with type parameters}]
 <A> Function<Function<A, Void>, Void> observe(EventTarget target, EventName<A> name) {
   return listener -> {
     target.addEventListener(name, listener);
@@ -292,16 +297,16 @@ Listing \ref{lst-generics-comb} and \ref{lst-generics-react} show how these func
 \end{lstlisting}
 \end{figure}
 
-Our encoding makes it possible to implement exactly the same functions as we are able to implement in plain JavaScript, but with type safety.
+Our encoding is type safe and gives as much expression power as the native API since it makes it possible to implement exactly the same functions as we are able to implement in plain JavaScript.
 
-However, every function taking an element name or an event name as parameter must have type parameters too, making its type signature harder to read.
+However, every function taking an element name or an event name as parameter has its type signature cluttered with phantom types (extra type parameters).
 
 \subsection{Path-Dependent Types}
 
 This section shows how we can remove the extra type parameters needed in the previous section by using \emph{path-dependent types}. Essentially, the idea is that, instead of using a type parameter, we use a type member. Listings \ref{lst-dt-dom} and \ref{lst-dt-events} show this encoding in Scala. The return type of the \scalacode{createElement} function is \scalacode{name.Element}: it refers to the \scalacode{Element} type member of its \scalacode{name} parameter.
 
 \begin{figure}
-\begin{lstlisting}[label=lst-dt-dom]
+\begin{lstlisting}[label=lst-dt-dom,caption={Encoding of \jscode{createElement} using path-dependent types}]
 trait ElementName {
   type Element
 }
@@ -314,7 +319,7 @@ def createElement(name: ElementName): name.Element
 
 
 \begin{figure}
-\begin{lstlisting}[label=lst-dt-events]
+\begin{lstlisting}[label=lst-dt-events,caption={Encoding of \jscode{addEventListener} using path-dependent types}]
 trait EventName {
   type Event
 }
@@ -329,22 +334,23 @@ trait EventTarget {
 Implementing listings \ref{lst-js-comb} and \ref{lst-js-react} using this encoding is straightforward, as shown by listings \ref{lst-dt-comb} and \ref{lst-dt-react}, respectively.
 
 \begin{figure}
-\begin{lstlisting}[label=lst-dt-comb]
-def createAndListenTo(tagName: ElementName, eventName: EventName, listener: (eventName.Event, tagName.Element) => Unit) = {
-  val element = document.createElement(tagName)
-  element.addEventListener(eventName)(event => listener(event, element))
+\begin{lstlisting}[label=lst-dt-comb,caption={Combination of \scalacode{getElementsByTagName} and \scalacode{addEventListener} using path-dependent types}]
+def findAndListenTo(tagName: ElementName, eventName: EventName, listener: (eventName.Event, tagName.Element) => Unit) = {
+  for (element <- document.getElementsByTagName(tagName) {
+    element.addEventListener(eventName)(event => listener(event, element))
+  }
 }
 \end{lstlisting}
 \end{figure}
 
 \begin{figure}
-\begin{lstlisting}[label=lst-dt-react]
+\begin{lstlisting}[label=lst-dt-react,caption={Partial application of \scalacode{addEventListener} using path-dependent types}]
 def observe(target: EventTarget, name: EventName) =
   (listener: (name.Event => Unit)) => target.addEventListener(name)(listener)
 \end{lstlisting}
 \end{figure}
 
-With this encoding, the functions using event names or element names are not anymore cluttered with type parameters.
+With this encoding, the functions using event names or element names are not anymore cluttered with phantom types, and type safety is still preserved.
 
 \section{Validation}
 \label{sec-validation}
@@ -367,7 +373,9 @@ Ravi Chugh \emph{et. al.}~\cite{Chugh12_DJS} showed how to make a subset of Java
 \section{Conclusion}
 \label{sec-conclusion}
 
-We presented two ways to encode dynamically typed browser functions in mainstream statically typed languages like Java and Scala, using \emph{generics} or path-dependent types. Our encoding gives more type safety than existing solutions, while keeping the same expression power and modularity level as the native API.
+We presented two ways to encode dynamically typed browser functions in mainstream statically typed languages like Java and Scala, using type parameters or path-dependent types. Our encoding gives more type safety than existing solutions, while keeping the same expression power as the native API.
+
+We argue that, if industry shippers want to write their Web applications in statically typed languages, dependent types are going to be the most desired feature of these languages.
 
 \bibliographystyle{plain}
 \bibliography{references.bib}
