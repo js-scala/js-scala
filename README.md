@@ -1,4 +1,4 @@
-# js.scala: JavaScript as an embedded DSL in Scala #
+# js-scala: JavaScript as an embedded DSL in Scala #
 
 ### Documentation
 
@@ -33,31 +33,6 @@
   - `scalaOrganization := "org.scala-lang.virtualized"`
 3. Set the `-Yvirtualize` compiler option
   - `scalacOptions += "-Yvirtualize"`
-
-### Use it in Play! 2.1
-
-Tweak your `project/Build.scala` file to look like the following:
-```scala
-object ApplicationBuild extends Build {
-
-    val appName         = "foo"
-    val appVersion      = "1.0-SNAPSHOT"
-
-    val appDependencies = Seq(
-      "EPFL" %% "js-scala" % "0.3-SNAPSHOT"
-    )
-
-    val main = play.Project(appName, appVersion, appDependencies).settings(
-      scalaOrganization := "org.scala-lang.virtualized",
-      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-Yvirtualize")
-    )
-
-}
-```
-
-### Use it in Play! 2.0.2
-
-* [build-play20](http://github.com/js-scala/build-play20) builds Play 2! and all its transitive Scala dependencies with Scala-Virtualized, for compatibility with this DSL. Deployment on [dotcloud](http://github.com/js-scala/play2-on-dotcloud) is an option.
 
 ### Further projects
 
