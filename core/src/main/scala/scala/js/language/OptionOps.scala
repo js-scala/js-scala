@@ -2,6 +2,9 @@ package scala.js.language
 
 import scala.virtualization.lms.common.Base
 
+/**
+ * Language unit for optional values manipulation (similar to [[scala.Option]] type).
+ */
 trait OptionOps extends Base {
 
   val none: Rep[None.type]

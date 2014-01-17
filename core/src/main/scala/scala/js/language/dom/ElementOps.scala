@@ -2,6 +2,9 @@ package scala.js.language.dom
 
 import scala.virtualization.lms.common.Base
 
+/**
+ * [[org.w3c.dom.Element]] manipulation.
+ */
 trait ElementOps extends Base with EventOps with SelectorOps with Core {
 
   trait CSSStyleDeclaration

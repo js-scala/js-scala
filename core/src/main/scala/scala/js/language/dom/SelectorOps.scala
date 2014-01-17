@@ -2,6 +2,9 @@ package scala.js.language.dom
 
 import scala.virtualization.lms.common.Base
 
+/**
+ * Selector API.
+ */
 trait SelectorOps extends Base with NodeListOps { this: ElementOps =>
 
   class Selectable[A]
@@ -15,8 +18,10 @@ trait SelectorOps extends Base with NodeListOps { this: ElementOps =>
     def find[A : Selectable : Manifest](selector: Rep[String]) = selector_find[A](s, selector)
     def findAll[A : Selectable : Manifest](selector: Rep[String]) = selector_findAll(s, selector)
   }
+  /** querySelector */
   // Note that selector_find[A](…)(implicit ev: A <:< Element) was simpler but sometimes didn’t make the type inferencer happy
   def selector_find[A : Selectable : Manifest](s: Rep[Selector], selector: Rep[String]): Rep[Option[A]]
+  /** querySelectorAll */
   def selector_findAll[A : Selectable : Manifest](s: Rep[Selector], selector: Rep[String]): Rep[NodeList[A]]
 
 }

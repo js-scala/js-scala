@@ -2,6 +2,9 @@ package scala.js.language
 
 import scala.virtualization.lms.common.Base
 
+/**
+ * Add more operations on lists than those provided by LMS.
+ */
 trait ListOps2 extends Base {
   implicit class ListOps2[A](l: Rep[List[A]]) {
     def mkString2(sep: Rep[String]) = list_mkString2(l, sep)

@@ -2,6 +2,9 @@ package scala.js.language.dom
 
 import scala.virtualization.lms.common.Base
 
+/**
+ * Web browser related API.
+ */
 trait Browser extends Base with SelectorOps with EventOps with ElementOps {
 
   trait Window extends EventTarget

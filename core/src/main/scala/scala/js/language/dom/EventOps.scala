@@ -1,7 +1,10 @@
 package scala.js.language.dom
 
 import scala.virtualization.lms.common.Base
- 
+
+/**
+ * [[org.w3c.dom.events.Event]] manipulation.
+ */
 trait EventOps extends Base {
 
   trait EventTarget
