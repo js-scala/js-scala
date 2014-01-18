@@ -13,19 +13,7 @@ trait JavaScriptGreet extends JS {
 }
 ```
 
-`greet` is a JavaScript program generator that produces a program that prints a message in the console. The JavaScript code can be produced as follows:
-
-```scala
-import scala.js.exp.JSExp
-import scala.js.gen.js.GenJS
-object Generator extends App {
-  val javaScriptGreet = new JavaScriptGreet with JSExp
-  val codeGen = new GenJS { val IR: javaScriptGreet.type = javaScriptGreet }
-  codeGen.emitSource(javaScriptGreet.greet, "greet", new java.io.PrintWriter(System.out))
-}
-```
-
-Running the above Scala program will print the following on the standard output:
+`greet` is a JavaScript program generator producing a program that prints a message in the console:
 
 ```javascript
 function greet(x0) {
@@ -34,6 +22,8 @@ function greet(x0) {
   var x3 = console.log(x2);
 }
 ```
+
+Note: some language units also support server-side code generation (see the [Quick start](#quick-start) section below), allowing code sharing between client and server sides.
 
 ## Publications and talks
 
@@ -57,10 +47,7 @@ function greet(x0) {
   - `> test`
 4. Publish it (if you want to use it in your project):
   - `> publish-local`
-5. Generate the API documentation:
-  - `> doc`
-  - The documentation is generated in the `core/target/scala-2.10/api/` directory.
-6. Run the examples:
+5. Run the examples:
   - `> project examples`
   - `> run`
 
@@ -84,4 +71,98 @@ function greet(x0) {
 
 First, be sure to be familiar with [LMS tutorials](http://scala-lms.github.io/tutorials).
 
-(More to come!)
+### Write a program generator
+
+Write your program generator in a trait extending the language units you want to use:
+
+```scala
+import scala.js.language.JS // JavaScript-like language unit
+import scala.js.language.dom.Dom // DOM API
+
+trait Program extends JS with Dom {
+
+  def printClicks() = {
+    for (target <- document.find("#target")) {
+      target.on(Click) { click =>
+        println("click at (" + click.offsetX + ", " + click.offsetY + ")")
+      }
+    }
+  }
+
+}
+```
+
+The `Program` trait contains a method `printClicks` that describes a JavaScript program searching for an element with id “target”, attaching it a “click” event listener and printing the mouse coordinates on each click.
+
+### Generate JavaScript code
+
+To generate a JavaScript program from the above program description, write a Scala application instantiating your program generator and creating a code generator with the corresponding language unit implementations:
+
+```scala
+import scala.js.exp.JSExp // JS language unit implementation
+import scala.js.exp.dom.DomExp // Dom language unit implementation
+import scala.js.gen.js.GenJS // JS JavaScript code generator
+import scala.js.gen.js.dom.GenDom // Dom JavaScript code generator
+
+object Generator extends App {
+  // instantiate the program generator with language unit implementations
+  val program = new Program with JSExp with DomExp
+  // create a code generator for these language units and pass it the program as a parameter
+  val gen = new GenJS with GenDom { val IR: program.type = program }
+
+  // emit the code of the program described by the printClicks method
+  gen.emitExecution(program.printClicks(), new java.io.PrintWriter("printclicks.js"))
+}
+```
+
+The above code generator will print the following JavaScript program in file `printclicks.js`:
+
+```javascript
+(function () {
+  var x0 = document.querySelector("#target");
+  if (x0 !== null) {
+    var x1 = x0;
+    x1.addEventListener('click', function (x2) {
+      var x3 = x2.offsetX;
+      var x4 = "click at ("+x3;
+      var x5 = x4+", ";
+      var x6 = x2.offsetY;
+      var x7 = x5+x6;
+      var x8 = x7+")";
+      var x9 = console.log(x8);
+    }, false);
+  }
+  var x13 = undefined;
+}
+```
+
+### Go a bit further
+
+Some language unit implementations also have a trait defining optimizations. When such a trait exists it is named like the language unit implementation trait with the additional suffix `Opt`. For instance, there is a `DomExpOpt` trait for the `Dom` language unit. If you use it in the above example instead of `DomExp`, it will generate `document.getElementById("target")` instead of `document.querySelector("#target")`.
+
+Some language units also have Scala code generators, allowing code using them to be shared by the client-side and the server-side (see next section for more details on this).
+
+The browser API is not exactly the same as the native API. It tries to be as most type safe as possible and sometimes uses shorter names (e.g. `on` instead of `addEventListener`).
+
+### js-scala modules layout
+
+The modules defined by js-scala generally stick to the following conventions:
+
+- *language units* are defined under the `scala.js.language` package (though some language units are already provided by LMS under the `scala.virtualization.lms.common` package) ;
+- *implementations* are defined under the `scala.js.exp` package. A language unit `Foo` is implemented by a module named `FooExp` (another module defining optimizations can also be defined under the name `FooExpOpt`) ;
+- *code generators* are defined under the `scala.js.gen.js` and `scala.js.gen.scala` packages, for JavaScript and Scala, respectively. A code generator for a language unit `Foo` has name `GenFoo`.
+
+A language unit is a trait usually named according to a concept (e.g. `Arrays`, `Adts`, etc.) or to a type suffixed by “Ops” (e.g. `OptionOps`, `ListOps`, etc.). Mix such traits in your code to import their *vocabulary*. This vocabulary can consist of top-level functions (e.g. `fun`, provided by the `Functions` language unit, or `array`, provided by `Arrays`), or methods implicitly added to `Rep[X]` values where “X” is (generally) the name of the language unit without the trailing `Ops` (e.g. the `ElementOps` trait implicitly adds methods on `Rep[Element]` values, the `BooleanOps` trait implicitly adds methods on `Rep[Boolean]` values).
+
+The `JsScala` language unit defines a core language supporting the following concepts or types:
+
+- `if`, `while`, `==`, `var`, tuples (using Scala syntax) ;
+- “primitive types” (`Int`, `Long`, `Double`, `Float`, `Boolean`), `String`, `List` ;
+- functions (using the term `fun` instead of Scala’s `def`) ;
+- `println`.
+
+This trait has code generators for both Scala and JavaScript, meaning that you can generate Scala and JavaScript programs from the same code.
+
+The `JS` trait extends `JsScala` with JavaScript specific language units: arrays, dynamic typing, regexps.
+
+The `Dom` trait provides Web browsers APIs (e.g. the `window` and `document` objects, a selector API, etc.).
