@@ -234,6 +234,7 @@ trait GenListOps extends GenEffect {
     case ListPrepend(l, e) => emitValDef(sym, "[" + quote(e) + "].concat(" + quote(l) + ")")
     case ListConcat(l1, l2) => emitValDef(sym, quote(l1) + ".concat(" + quote(l2) + ")")
     case ListMkString(l) => emitValDef(sym, quote(l) + ".join('')")
+    case ListMkString2(l, sep) => emitValDef(sym, quote(l) + ".join(" + quote(sep) + ")")
     case ListHead(l) => emitValDef(sym, quote(l) + "[0]")
     case ListTail(l) => emitValDef(sym, quote(l) + ".slice(1)")
     case ListIsEmpty(l) => emitValDef(sym, quote(l) + ".length == 0")

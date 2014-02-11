@@ -8,8 +8,6 @@ trait GenListOps2 extends GenEffect with QuoteGen {
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
-    case ListMkString2(l, sep) =>
-      emitValDef(sym, q"$l.join($sep)")
     case ListForeach(l, a, b) =>
       stream.println(q"$l.forEach(function ($a) {")
       emitBlock(b)

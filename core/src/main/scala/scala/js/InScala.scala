@@ -141,6 +141,9 @@ trait StringOpsInScala extends StringOps with InScala {
   override def string_todouble(s: String)(implicit pos: SourceContext): Double = OriginalOps.string_todouble(s)
   override def string_tofloat(s: String)(implicit pos: SourceContext): Float = OriginalOps.string_tofloat(s)
   override def string_toint(s: String)(implicit pos: SourceContext): Int = OriginalOps.string_toint(s)
+  def string_length(s: String)(implicit pos: SourceContext): Int = s.length
+  def string_substring(s: String,start: Int,end: Int)(implicit pos: SourceContext): String = s.substring(start, end)
+  def string_tolong(s: String)(implicit pos: SourceContext): Long = s.toLong
 }
 
 trait ObjectOpsInScala extends ObjectOps with InScala {
@@ -338,13 +341,13 @@ trait ListOpsInScala extends ListOps with InScala {
   def list_concat[A](xs: List[A], ys: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs ::: ys
   def list_cons[A](x: A, xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = x :: xs
   def list_mkString[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.mkString
+  def list_mkString2[A](l: List[A], sep: String)(implicit mA: Manifest[A], pos: SourceContext) = l.mkString(sep)
   def list_head[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.head
   def list_tail[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.tail
   def list_isEmpty[A](xs: List[A])(implicit mA: Manifest[A], pos: SourceContext) = xs.isEmpty
 }
 
 trait ListOps2InScala extends ListOps2 with InScala {
-  def list_mkString2[A](l: List[A], sep: String) = l.mkString(sep)
   def list_foreach[A : Manifest](l: List[A], f: A => Unit) = l.foreach(f)
   def list_foreachWithIndex[A : Manifest](l: List[A], f: (A, Int) => Unit) =
     l.zipWithIndex.foreach { case (a, i) => f(a, i) }

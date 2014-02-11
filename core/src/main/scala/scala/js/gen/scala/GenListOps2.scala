@@ -9,8 +9,6 @@ trait GenListOps2 extends ScalaGenEffect with QuoteGen {
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
-    case ListMkString2(l, sep) =>
-      emitValDef(sym, q"$l.mkString($sep)")
     case ListForeachWithIndex(l, a, i, b) =>
       stream.println(q"var $sym = $l.zipWithIndex.foreach { case ($a, $i) =>")
       emitBlock(b)
