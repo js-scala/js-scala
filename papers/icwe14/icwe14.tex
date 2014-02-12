@@ -78,7 +78,7 @@ Statically typed programming languages compiling to JavaScript make it worth con
 
 \section{Introduction}
 
-We recently observed the emergence of several statically typed programming languages compiling to JavaScript (\emph{e.g.} Java/GWT~\cite{Kereki09_GWT}, Dart~\cite{Griffith11_Dart}, TypeScript~\cite{fenton2012typescript}, Kotlin\footnote{\href{http://kotlin.jetbrains.org}{http://kotlin.jetbrains.org}}, Opa\footnote{\href{http://opalang.org}{http://opalang.org}}, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Haxe~\cite{Cannasse08_HaXe}, Scala~\cite{Doeraene13_ScalaJs}, Idris~\cite{Brady13_Idris}, Elm~\cite{czaplicki2012elm}). These languages make it possible to benefit from static typing (\emph{e.g.} better refactoring support in IDE, earlier error detection) to write Web applications, usually written in the dynamically typed language JavaScript. Nevertheless, at some point developers need a way to interface with the underlying Web browser dynamically typed native API using a \emph{foreign function interface} mechanism.
+We recently observed the emergence of several statically typed programming languages compiling to JavaScript (\emph{e.g.} Java/GWT~\cite{Kereki09_GWT}, Dart~\cite{Griffith11_Dart}, TypeScript~\cite{fenton2012typescript}, Kotlin\footnote{\href{http://kotlin.jetbrains.org}{http://kotlin.jetbrains.org}}, Opa\footnote{\href{http://opalang.org}{http://opalang.org}}, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Haxe~\cite{Cannasse08_HaXe}, Scala~\cite{Doeraene13_ScalaJs}, Idris~\cite{Brady13_Idris}, Elm~\cite{czaplicki2012elm}). Though dynamic typing has its pros and supporters, these statically typed languages show that there is also a community interested in benefiting from static typing features (\emph{e.g.} better refactoring support in IDE, earlier error detection) to write Web applications. Nevertheless, at some point developers need a way to interface with the underlying Web browser dynamically typed native API using a \emph{foreign function interface} mechanism.
 
 We observe that, despite these languages are statically typed, their integration of the browser API either is not type safe or gives less expression power. Indeed, integrating an API designed for a dynamically typed language into a statically typed language can be challenging. For instance, the \jscode{createElement} function return type depends on the value of its parameter: \jscode{createElement('div')} returns a \jscode{DivElement}, \jscode{createElement('input')} returns an \jscode{InputElement}, \emph{etc}.
 
@@ -227,7 +227,7 @@ Most of the studied languages expose the browser API following the standard spec
 \subsection{Limitations of existing encoding approaches}
 \label{sec-limitations}
 
-We distinguished three approaches to integrate the challenging parts of the browser API into statically typed languages. This section compares these approaches in terms of type safety and expression power.
+We distinguished three approaches to integrate the challenging parts of the browser API into statically typed languages. This section shows that each approach favours either type safety or expression power but none provides both type safety \emph{and} the same expression power as the native browser API. We consider that an API requiring users to do type casts is not type safe and that an API making it impossible implement a function that can yet be implemented using the native API gives less expression power.
 
 The first approach, consisting in using the least upper bound of all the possible types has the same expression power as the native browser API, but is not type safe because it sometimes requires developers to explicitly downcast values to their expected specialized type.
 
@@ -268,7 +268,7 @@ This article aims to answer the following questions: is it possible to expose th
 
 In this section we show how we can encode the challenging main functions of the DOM API in a type safe way while keeping the same expression power.
 
-Our listings use the Scala language, though our first solution could be implemented in any language with basic type parameters support, such as Java's \emph{generics}. Our second solution is an improvement of the first one, using \emph{path-dependent types}.
+The listings in the paper use the Scala language, though our first solution could be implemented in any language with basic type parameters support, such as Java's \emph{generics}\footnote{Java versions of all the Scala listings (excepted those using type members) are available online at \href{http://github.com/js-scala/js-scala/wiki/ICWE'14}{http://github.com/js-scala/js-scala/wiki/ICWE'14}}. Our second solution is an improvement of the first one, using \emph{path-dependent types}.
 
 \subsection{Parametric Polymorphism}
 
@@ -332,7 +332,9 @@ def slideshow(sources: Array[String]) {
 \end{lstlisting}
 \end{figure}
 
-Listing \ref{lst-slideshow-generics} illustrates the usage of such an encoding by implementing our \texttt{slideshow} program presented in the introduction. Passing the \scalacode{Img} value as a parameter to the \scalacode{createElement} function fixes its \scalacode{E} type parameter to \scalacode{ImageElement} so the returned value has the most possible precise type and the \scalacode{src} property can be used on it. Similarly, passing the \scalacode{Click} value to the \scalacode{addEventListener} function fixes its \scalacode{E} type parameter to \scalacode{MouseEvent}, so the event listener has the most possible precise type and the \scalacode{button} property can be used on the \scalacode{event} parameter. It is worth noting that there is no type cast in the listing because the browser API is exposed in a way that preserves enough type information.
+Listing \ref{lst-slideshow-generics} illustrates the usage of such an encoding by implementing our \texttt{slideshow} program presented in the introduction. Passing the \scalacode{Img} value as a parameter to the \scalacode{createElement} function fixes its \scalacode{E} type parameter to \scalacode{ImageElement} so the returned value has the most possible precise type and the \scalacode{src} property can be used on it. Similarly, passing the \scalacode{Click} value to the \scalacode{addEventListener} function fixes its \scalacode{E} type parameter to \scalacode{MouseEvent}, so the event listener has the most possible precise type and the \scalacode{button} property can be used on the \scalacode{event} parameter.
+
+It is worth noting that this code is actually exactly the same as in listing \ref{lst-problem-cast} excepted that type casts are not anymore required because the browser API is exposed in a way that preserves enough type information. Our way to encode the browser API is more type safe, but is it as expressive as the native API?
 
 \begin{figure}
 \begin{lstlisting}[label=lst-generics-comb,language=Scala,caption={Combination of \scalacode{getElementsByTagName} and \scalacode{addEventListener} functions encoded using type parameters}]
@@ -359,15 +361,17 @@ def observe[A](target: EventTarget, name: EventName[A]) = {
 \end{lstlisting}
 \end{figure}
 
-Finally, listing \ref{lst-generics-comb} and \ref{lst-generics-react} show how the challenging functions of section \ref{sec-limitations}, \jscode{findAndListenTo} and \jscode{observe}, can be implemented with our encoding. They are basically a direct translation from JavaScript syntax to Scala syntax, with additional type annotations. Our encoding is type safe and gives as much expression power as the native API since it is possible to implement exactly the same functions as we are able to implement in plain JavaScript.
+Listings \ref{lst-generics-comb} and \ref{lst-generics-react} show how the challenging functions of section \ref{sec-limitations}, \jscode{findAndListenTo} and \jscode{observe}, can be implemented with our encoding. They are basically a direct translation from JavaScript syntax to Scala syntax, with additional type annotations.
 
-However, every function taking an element name or an event name as parameter has its type signature cluttered with phantom types (extra type parameters): the \scalacode{observe} function takes a phantom type parameter \scalacode{A} and the \scalacode{findAndListenTo} function takes two phantom type parameters, \scalacode{A} and \scalacode{B}.
+In summary, our encoding is type safe and gives as much expression power as the native API since it is possible to implement exactly the same functions as we are able to implement in plain JavaScript.
+
+However, every function taking an element name or an event name as parameter has its type signature cluttered with phantom types (extra type parameters): the \scalacode{observe} function takes a phantom type parameter \scalacode{A} and the \scalacode{findAndListenTo} function takes two phantom type parameters, \scalacode{A} and \scalacode{B}. These extra type parameters are redundant with their corresponding value parameters and they make type signatures harder to read and reason about.
 
 \subsection{Path-Dependent Types}
 
 This section shows how we can remove the extra type parameters needed in the previous section by using \emph{path-dependent types}~\cite{Odersky03_vObj}. Essentially, the idea is to model type parameters using \emph{type members}, as suggested in~\cite{odersky2005scalable}.
 
-Usually, in object oriented programming languages, a type \scalacode{T} can have abstract methods. In Scala it can also have abstract type members. Such a type \scalacode{T} is abstract and its concrete subtypes have to define their type members (like abstract methods have to be implemented).
+Programming languages generally support two means of abstraction: parametrization and abstract members. For instance Java supports parametrization for values (method parameters) and types (\emph{generics}), and member abstraction for values (abstract methods). Scala also supports member abstraction for types through type members~\cite{cremet2006core,Odersky03_vObj}. An abstract type member of a class is an inner abstract type that can be used to qualify values. Subclasses can implement and override their methods, and similarly they can define or refine their type members. A concrete subclass must provide a concrete implementation of its type members. Outside of the class, type members can be referred to using a type selection on an instance of the class: the type designator \scalacode{p.C} refers to the \scalacode{C} type member of the value \scalacode{p} and expands to the \scalacode{C} type member implementation of the singleton type of \scalacode{p}.
 
 \begin{figure}
 \begin{lstlisting}[label=lst-dt-dom,caption={Encoding of \jscode{createElement} using path-dependent types}]
