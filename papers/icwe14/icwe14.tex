@@ -1,6 +1,5 @@
 \documentclass{llncs}
 
-\usepackage[utf8]{inputenc}
 \usepackage[unicode=true,hidelinks]{hyperref}
 \usepackage{listings}
 \usepackage{lmodern}
@@ -66,7 +65,7 @@ then, types, while, use},%
 
  \author{Julien Richard-Foy \and Olivier Barais \and Jean-Marc J\'ez\'equel}
 
- \institute{IRISA, Universite de Rennes, France}
+ \institute{IRISA, Universit\'e de Rennes, France}
 
  %\email{\{first\}.\{last\}@irisa.fr}
 
@@ -78,7 +77,8 @@ The popularity of statically typed programming languages compiling to JavaScript
 
 \section{Introduction}
 
-We recently observed the emergence of several statically typed programming languages compiling to JavaScript (\emph{e.g.} Java/GWT~\cite{Kereki09_GWT}, Dart~\cite{Griffith11_Dart}, TypeScript~\cite{fenton2012typescript}, Kotlin\footnote{\href{http://kotlin.jetbrains.org}{http://kotlin.jetbrains.org}}, Opa\footnote{\href{http://opalang.org}{http://opalang.org}}, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Haxe~\cite{Cannasse08_HaXe}, Scala~\cite{Doeraene13_ScalaJs}, Idris~\cite{Brady13_Idris}, Elm~\cite{czaplicki2012elm}). Though dynamic typing has its merits and supporters, the mere existence of these statically typed languages shows that there is also a community interested in benefiting from static typing features (allowing \emph{e.g.} better refactoring support in IDE, earlier error detection, etc.) to write Web applications. Nevertheless, at some point developers need a way to interface with the underlying Web browser dynamically typed native API using a \emph{foreign function interface} mechanism.
+We recently observed the emergence of several statically typed programming languages compiling to JavaScript (\emph{e.g.} Java/GWT~\cite{Kereki09_GWT}, Dart~\cite{Griffith11_Dart}, TypeScript~\cite{fenton2012typescript}, Kotlin\footnote{\href{http://kotlin.jetbrains.org}{http://kotlin.jetbrains.org}}, Opa\footnote{\href{http://opalang.org}{http://opalang.org}}, SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Haxe~\cite{Cannasse08_HaXe}, Scala~\cite{Doeraene13_ScalaJs}, Idris~\cite{Brady13_Idris}, Elm~\cite{czaplicki2012elm}). Though dynamic typing has its merits and supporters, the mere existence of these statically typed languages shows that there is also a community interested in benefiting from static typing features (allowing \emph{e.g.} better refactoring support in IDE, earlier error detection, etc.) to write Web applications. Nevertheless, at some point developers need a way to interface with the underlying Web browser dynamically typed native API using a \emph{foreign function 
+interface} mechanism.
 
 We observe that, despite these languages are statically typed, their integration of the browser API either is not type safe or over constrain the programmers. Indeed, integrating an API designed for a dynamically typed language into a statically typed language can be challenging. For instance, the \jscode{createElement} function return type depends on the value of its parameter: \jscode{createElement('div')} returns a \jscode{DivElement}, \jscode{createElement('input')} returns an \jscode{InputElement}, \emph{etc}.
 
@@ -446,6 +446,8 @@ With this encoding, the functions using event names or element names are not any
 We implemented our encoding in js-scala~\cite{Kossakowski12_JsDESL}, a Scala library providing composable JavaScript code generators\footnote{Source code is available at \href{http://github.com/js-scala}{http://github.com/js-scala}}. On top of that we implemented various samples, including non trivial ones like a realtime chat application and a poll application.
 
 We have shown in this paper that our encoding leverages types as precisely as possible (our \scalacode{slideshow} program is free of type casts) while being expressive enough to implement the challenging \jscode{findAndListenTo} and \jscode{observe} functions that were impossible to implement with other approaches.
+
+For comparison, our single function \scalacode{addEventListener} is as type safe as the about thirty functions defined in GWT for event handling while giving more expression power to users.
 
 \subsection{Convenience for end developers}
 
