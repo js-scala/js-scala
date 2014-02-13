@@ -72,7 +72,7 @@ then, types, while, use},%
  \maketitle
 
 \begin{abstract}
-The popularity of statically typed programming languages compiling to JavaScript show that there exists a fringe of the programmer population interested in leveraging the benefits of static typing to write Web applications. To be of any use, these languages need to statically expose the Web browser dynamically typed native API, which seems to be a contradiction in terms. Indeed, we observe that existing statically typed languages compiling to JavaScript expose the browser API in ways that either are not type safe, or when they are, typically over constrain the programmers. This article presents new ways to encode the challenging parts of the Web browser API in static type systems such that both type safety and expressive power are preserved. Our first encoding relies on type parameters and can be implemented in most mainstream languages but drags phantom types up to the usage sites. The second encoding does not suffer from this inconvenience but requires the support of dependent types in the language.
+The popularity of statically typed programming languages compiling to JavaScript shows that there exists a fringe of the programmer population interested in leveraging the benefits of static typing to write Web applications. To be of any use, these languages need to statically expose the Web browser dynamically typed native API, which seems to be a contradiction in terms. Indeed, we observe that existing statically typed languages compiling to JavaScript expose the browser API in ways that either are not type safe, or when they are, typically over constrain the programmers. This article presents new ways to encode the challenging parts of the Web browser API in static type systems such that both type safety and expressive power are preserved. Our first encoding relies on type parameters and can be implemented in most mainstream languages but drags phantom types up to the usage sites. The second encoding does not suffer from this inconvenience but requires the support of dependent types in the language.
 \end{abstract}
 
 \section{Introduction}
@@ -84,7 +84,7 @@ We observe that, despite these languages are statically typed, their integration
 
 Most of the aforementionned languages expose this function by making it return an \jscode{Element}, the least upper bound of the types of all the possible returned values, thus loosing type information and requiring users to explicitly downcast the returned value to its expected, more precise type. Another way to expose this function consists in exposing several functions, each one fixing the value of the initial parameter along with its return type: \jscode{createDivElement}, \jscode{createInputElement}, \emph{etc.} are parameterless functions returning a \jscode{DivElement} and an \jscode{InputElement}, respectively. This encoding forces to hard-code the name of the to-be created element: it cannot anymore be a parameter. In summary, the first solution is not type safe and the second solution reduces the expressive power of the API.
 
-This paper reviews some common functions of the browser API, identifies the patterns that are difficult to encode in static type systems and shows new ways to encode them in such a way that both type safety and expression power are preserved. We show that type parameters are sufficient to achieve this goal and that \emph{path-dependent types} provide an even more convenient encoding of the browser API.
+This paper reviews some common functions of the browser API, identifies the patterns that are difficult to encode in static type systems and shows new ways to encode them in such a way that both type safety and expressive power are preserved. We show that type parameters are sufficient to achieve this goal and that \emph{path-dependent types} provide an even more convenient encoding of the browser API.
 
 The remainder of the paper is organized as follows. The next section reviews the most common functions of the browser API and how they are typically integrated into statically typed languages. Section \ref{sec-contribution} shows two ways to improve their integration such that type safety and expressivity are preserved. Section \ref{sec-validation} validates our contribution and discusses its limits. Section \ref{sec-related} discusses some related works and section \ref{sec-conclusion} concludes.
 
@@ -137,7 +137,7 @@ function slideshow(sources) {
 
 The most common way to encode the DOM API in statically typed languages is to follow the standard interface specifications of HTML~\cite{Raggett99_HTML} and DOM~\cite{w3c2004document}. 
 
-The main challenge comes from the fact that the parameter types and return types of these function are often too general. Indeed, functions \jscode{getElementsByTagName(name)}, \jscode{getElementById(id)} and \jscode{createElement(name)} can return values of type \jscode{DivElement} or \jscode{InputElement} or any other subtype of \jscode{Element} (their least upper bound). The interface of \jscode{Element} is more general and provides less features than its subtypes. For instance, the \jscode{ImageElement} type (representing images) has a \jscode{src} property that does not exist at the \jscode{Element} level. Similarly, the \jscode{MouseEvent} type has a \jscode{button} property that does not exist at the (more general) \jscode{Event} level, used by the function \jscode{addEventListener}.
+The main challenge comes from the fact that the parameter types and return types of these functions are often too general. Indeed, functions \jscode{getElementsByTagName(name)}, \jscode{getElementById(id)} and \jscode{createElement(name)} can return values of type \jscode{DivElement} or \jscode{InputElement} or any other subtype of \jscode{Element} (their least upper bound). The interface of \jscode{Element} is more general and provides less features than its subtypes. For instance, the \jscode{ImageElement} type (representing images) has a \jscode{src} property that does not exist at the \jscode{Element} level. Similarly, the \jscode{MouseEvent} type has a \jscode{button} property that does not exist at the (more general) \jscode{Event} level, used by the function \jscode{addEventListener}.
 
 \begin{figure}
 \begin{lstlisting}[label=lst-problem-cast,language=Scala,caption={Scala implementation of \texttt{slideshow} using the standard HTML and DOM API}]
@@ -227,9 +227,9 @@ Most of the studied languages expose the browser API following the standard spec
 \subsection{Limitations of existing encoding approaches}
 \label{sec-limitations}
 
-We distinguished three approaches to integrate the challenging parts of the browser API into statically typed languages. This section shows that each approach favours either type safety or expression power but none provides both type safety \emph{and} the same expression power as the native browser API. We indeed  consider that an API requiring users to do type casts is not type safe, while an API making it impossible to implement a function that can readily be implemented using the native API gives less expressive power to the programmer.
+We distinguished three approaches to integrate the challenging parts of the browser API into statically typed languages. This section shows that each approach favours either type safety or expressive power but none provides both type safety \emph{and} the same expressive power as the native browser API. We indeed  consider that an API requiring users to do type casts is not type safe, while an API making it impossible to implement a function that can readily be implemented using the native API gives less expressive power to the programmer.
 
-The first approach, consisting in using the least upper bound of all the possible types has the same expression power as the native browser API, but is not type safe because it sometimes requires developers to explicitly downcast values to their expected specialized type.
+The first approach, consisting in using the least upper bound of all the possible types has the same expressive power as the native browser API, but is not type safe because it sometimes requires developers to explicitly downcast values to their expected specialized type.
 
 The second approach, consisting in defining as many functions as there are possible return types of the encoded function, is type safe but leads to a less general API: each function fixes a parameter value of the encoded function, hence being less general. The limits of this approach are better illustrated when one tries to combine several functions. Consider for instance listing~\ref{lst-js-comb} defining a JavaScript function \jscode{findAndListenTo} that both finds elements and registers an event listener when a given event occurs on them. Note that the event listener is passed both the event and the element: its type depends on both the tag name and the event name. This function cannot be implemented if the general functions \jscode{getElementsByTagName} and \jscode{addEventListener} are not available. The best that could be done would be to create one function for each combination of tag name and event name, leading to an explosion of the number of functions to implement. Thus, this approach gives less 
 expressive power than the native browser API.
@@ -247,7 +247,7 @@ function findAndListenTo(tagName, eventName, listener) {
 \end{lstlisting}
 \end{figure}
 
-The third approach, consisting in combining two parameters into one parameter carrying all the required information, is type safe too, but reduces the expression power because it forbids developers to partially apply the function by supplying only one parameter. Consider for instance listing~\ref{lst-js-react} that defines a function \jscode{observe} partially applying the \jscode{addEventListener} function\footnote{The code of this function has been taken (and simplified) from the existing functional reactive programming libraries Rx.js~\cite{liberty2011reactive} and Bacon.js~(\href{http://baconjs.github.io/}{http://baconjs.github.io/}).}. Such a function cannot be implemented with this approach because the name of the event and the code of the listener cannot be decoupled. Thus, this one gives less expressive power than the native browser API.
+The third approach, consisting in combining two parameters into one parameter carrying all the required information, is type safe too, but reduces the expressive power because it forbids developers to partially apply the function by supplying only one parameter. Consider for instance listing~\ref{lst-js-react} that defines a function \jscode{observe} partially applying the \jscode{addEventListener} function\footnote{The code of this function has been taken (and simplified) from the existing functional reactive programming libraries Rx.js~\cite{liberty2011reactive} and Bacon.js~(\href{http://baconjs.github.io/}{http://baconjs.github.io/}).}. Such a function cannot be implemented with this approach because the name of the event and the code of the listener cannot be decoupled. Thus, this one gives less expressive power than the native browser API.
 
 \begin{figure}
 \begin{lstlisting}[label=lst-js-react,language=JavaScript,caption={Partial application of \jscode{addEventListener} parameters}]
@@ -259,9 +259,9 @@ function observe(target, name) {
 \end{lstlisting}
 \end{figure}
 
-In summary, the current integration of the browser API by statically typed languages compiling to JavaScript is either not type safe or not as expressive as the underlying JavaScript API. Indeed, we showed that our simple \jscode{slideshow} program requires type casts if the browser API is exposed according to the standard specification. We are able to get rid of type casts on this program by using modified browser APIs, but we presented two functions that we were not able to implement using these APIs, showing that they give less expression power than the native API.
+In summary, the current integration of the browser API by statically typed languages compiling to JavaScript is either not type safe or not as expressive as the underlying JavaScript API. Indeed, we showed that our simple \jscode{slideshow} program requires type casts if the browser API is exposed according to the standard specification. We are able to get rid of type casts on this program by using modified browser APIs, but we presented two functions that we were not able to implement using these APIs, showing that they give less expressive power than the native API.
 
-This article aims to answer the following questions: is it possible to expose the browser API in statically typed languages in a way that both reduces the need for type casts and preserves the same expression power? What typing mechanisms do we need to achieve this? Would it be convenient to be used by end developers?
+This article aims to answer the following questions: is it possible to expose the browser API in statically typed languages in a way that both reduces the need for type casts and preserves the same expressive power? What typing mechanisms do we need to achieve this? Would it be convenient to be used by end developers?
 
 \section{Contribution}
 \label{sec-contribution}
@@ -363,7 +363,7 @@ def observe[A](target: EventTarget, name: EventName[A]) = {
 
 Listings \ref{lst-generics-comb} and \ref{lst-generics-react} show how the challenging functions of section \ref{sec-limitations}, \jscode{findAndListenTo} and \jscode{observe}, can be implemented with our encoding. They are basically a direct translation from JavaScript syntax to Scala syntax, with additional type annotations.
 
-In summary, our encoding is type safe and gives as much expression power as the native API since it is possible to implement exactly the same functions as we are able to implement in plain JavaScript.
+In summary, our encoding is type safe and gives as much expressive power as the native API since it is possible to implement exactly the same functions as we are able to implement in plain JavaScript.
 
 However, every function taking an element name or an event name as parameter has its type signature cluttered with phantom types (extra type parameters): the \scalacode{observe} function takes a phantom type parameter \scalacode{A} and the \scalacode{findAndListenTo} function takes two phantom type parameters, \scalacode{A} and \scalacode{B}. These extra type parameters are redundant with their corresponding value parameters and they make type signatures harder to read and reason about.
 
@@ -447,7 +447,7 @@ We implemented our encoding in js-scala~\cite{Kossakowski12_JsDESL}, a Scala lib
 
 We have shown in this paper that our encoding leverages types as precisely as possible (our \scalacode{slideshow} program is free of type casts) while being expressive enough to implement the challenging \jscode{findAndListenTo} and \jscode{observe} functions that were impossible to implement with other approaches.
 
-For comparison, our single function \scalacode{addEventListener} is as type safe as the about thirty functions defined in GWT for event handling while giving more expression power to users.
+For comparison, our single function \scalacode{addEventListener} is as type safe as the about thirty functions defined in GWT for event handling while giving more expressive power to users.
 
 \subsection{Convenience for end developers}
 
@@ -475,7 +475,7 @@ TypeScript supports overloading on constant values: the type of the expression \
 \section{Conclusion}
 \label{sec-conclusion}
 
-We presented two ways to encode dynamically typed browser functions in mainstream statically typed languages like Java and Scala, using type parameters or path-dependent types. Our encodings give more type safety than existing solutions, while keeping the same expression power as the native API.
+We presented two ways to encode dynamically typed browser functions in mainstream statically typed languages like Java and Scala, using type parameters or path-dependent types. Our encodings give more type safety than existing solutions, while keeping the same expressive power as the native API.
 
 We argue that, if industry shippers want to write their Web applications in statically typed languages, dependent types are going to be the most desired feature of these languages.
 
