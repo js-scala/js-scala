@@ -86,7 +86,7 @@ Most of the aforementionned languages expose this function by making it return a
 
 This paper reviews some common functions of the browser API, identifies the patterns that are difficult to encode in static type systems and shows new ways to encode them in such a way that both type safety and expressive power are preserved. We show that type parameters are sufficient to achieve this goal and that \emph{path-dependent types} provide an even more convenient encoding of the browser API.
 
-The remainder of the paper is organized as follows. The next section reviews the most common functions of the browser API and how they are typically integrated into statically typed languages. Section \ref{sec-contribution} shows two ways to improve their integration such that type safety and expressiveness are preserved. Section \ref{sec-validation} validates our contribution and discusses its limits. Section \ref{sec-related} discusses some related works and section \ref{sec-conclusion} concludes.
+The remainder of the paper is organized as follows. The next section reviews the most common functions of the browser API and how they are typically integrated into statically typed languages. Section \ref{sec-contribution} shows two ways to improve their integration such that type safety and expressiveness are preserved. Section \ref{sec-validation} validates our contribution and discusses its limits. Section \ref{sec-related} discusses some related works and Section \ref{sec-conclusion} concludes.
 
 \section{Background}
 \label{sec-background}
@@ -159,9 +159,9 @@ def slideshow(sources: Array[String]): ImageElement = {
 
 Listing \ref{lst-problem-cast} shows a Scala implementation of the \jscode{slideshow} program using an API following the standard specifications of HTML and DOM. The listing contains two type casts, needed to use the \scalacode{src} property on the \scalacode{img} value and the \scalacode{button} property on the \scalacode{event} value, respectively.
 
-These type casts make the code more fragile and less convenient to read and write. That's why some statically typed languages attempt to provide an API preserving types as precisly as possible.
+These type casts make the code more fragile and less convenient to read and write. That's why some statically typed languages attempt to provide an API preserving types as precisely as possible.
 
-Of course, in the case of \jscode{getElementById(id)}, the \jscode{id} parameter does not give any clue on the possible type of the searched element, so it is hard to more precisely infer the return type of this function. Hence, most implementations define a return type of \jscode{Element}.
+Of course, in the case of \jscode{getElementById(id)}, the \jscode{id} parameter does not give any clue on the possible type of the searched element, so it is hard to more precisely infer the return type of this function. Hence, most implementations use \jscode{Element} as their return type.
 
 However, in the case of \jscode{getElementsByTagName(name)} and \jscode{createElement(name)}, there is exactly one possible return type for each value of the \jscode{name} parameter: \emph{e.g.} \jscode{getElementsByTagName('input')} always returns a list of \jscode{InputElement} and \jscode{createElement('div')} always returns a \jscode{DivElement}. This feature makes it possible to encode these two functions by defining as many parameterless functions as there are possible tag names, where each function fixes the initial \jscode{name} parameter to be one of the possible values and exposes the corresponding specialized return type.
 
@@ -184,7 +184,7 @@ def slideshow(sources: Array[String]): ImageElement = {
 \end{lstlisting}
 \end{figure}
 
-Listing~\ref{lst-problem-comb} shows what would our \scalacode{slideshow} implementation look like using such an encoding. There are two modifications compared to listing \ref{lst-problem-cast}: we use \scalacode{document.createImageElement} instead of \scalacode{document.createElement}, and we use \scalacode{img.addClickEventListener} instead of \scalacode{img.addEventListener}.
+Listing~\ref{lst-problem-comb} shows what would our \scalacode{slideshow} implementation look like using such an encoding. There are two modifications compared to Listing \ref{lst-problem-cast}: we use \scalacode{document.createImageElement} instead of \scalacode{document.createElement}, and we use \scalacode{img.addClickEventListener} instead of \scalacode{img.addEventListener}.
 
 The \scalacode{createImageElement} function takes no parameter and returns a value of type \scalacode{ImageElement}, and the \scalacode{addClickEventListener} function takes as parameter a function that takes a \scalacode{MouseEvent} value as parameter, ruling out the need for type casts.
 
@@ -231,7 +231,7 @@ We distinguished three approaches to integrate the challenging parts of the brow
 
 The first approach, consisting in using the least upper bound of all the possible types has the same expressive power as the native browser API, but is not type safe because it sometimes requires developers to explicitly downcast values to their expected specialized type.
 
-The second approach, consisting in defining as many functions as there are possible return types of the encoded function, is type safe but leads to a less general API: each function fixes a parameter value of the encoded function, hence being less general. The limits of this approach are better illustrated when one tries to combine several functions. Consider for instance listing~\ref{lst-js-comb} defining a JavaScript function \jscode{findAndListenTo} that both finds elements and registers an event listener when a given event occurs on them. Note that the event listener is passed both the event and the element: its type depends on both the tag name and the event name. This function cannot be implemented if the general functions \jscode{getElementsByTagName} and \jscode{addEventListener} are not available. The best that could be done would be to create one function for each combination of tag name and event name, leading to an explosion of the number of functions to implement. Thus, this approach gives less 
+The second approach, consisting in defining as many functions as there are possible return types of the encoded function, is type safe but leads to a less general API: each function fixes a parameter value of the encoded function, hence being less general. The limits of this approach are better illustrated when one tries to combine several functions. Consider for instance Listing~\ref{lst-js-comb} defining a JavaScript function \jscode{findAndListenTo} that both finds elements and registers an event listener when a given event occurs on them. Note that the event listener is passed both the event and the element: its type depends on both the tag name and the event name. This function cannot be implemented if the general functions \jscode{getElementsByTagName} and \jscode{addEventListener} are not available. The best that could be done would be to create one function for each combination of tag name and event name, leading to an explosion of the number of functions to implement. Thus, this approach gives less 
 expressive power than the native browser API. Moreover, we find that defining many functions for the same task (creating a DOM element or listening to an event) clutters the API documentation: functions serving other purposes are hidden by these \emph{same-purpose-functions}.
 
 \begin{figure}
@@ -247,7 +247,7 @@ function findAndListenTo(tagName, eventName, listener) {
 \end{lstlisting}
 \end{figure}
 
-The third approach, consisting in combining two parameters into one parameter carrying all the required information, is type safe too, but reduces the expressive power because it forbids developers to partially apply the function by supplying only one parameter. Consider for instance listing~\ref{lst-js-react} that defines a function \jscode{observe} partially applying the \jscode{addEventListener} function\footnote{The code of this function has been taken (and simplified) from the existing functional reactive programming libraries Rx.js~\cite{liberty2011reactive} and Bacon.js~(\href{http://baconjs.github.io/}{http://baconjs.github.io/}).}. Such a function cannot be implemented with this approach because the name of the event and the code of the listener cannot be decoupled. Thus, this one gives less expressive power than the native browser API.
+The third approach, consisting in combining two parameters into one parameter carrying all the required information, is type safe too, but reduces the expressive power because it forbids developers to partially apply the function by supplying only one parameter. Consider for instance Listing~\ref{lst-js-react} that defines a function \jscode{observe} partially applying the \jscode{addEventListener} function\footnote{The code of this function has been taken (and simplified) from the existing functional reactive programming libraries Rx.js~\cite{liberty2011reactive} and Bacon.js~(\href{http://baconjs.github.io/}{http://baconjs.github.io/}).}. Such a function cannot be implemented with this approach because the name of the event and the code of the listener cannot be decoupled. Thus, this one gives less expressive power than the native browser API.
 
 \begin{figure}
 \begin{lstlisting}[label=lst-js-react,language=JavaScript,caption={Partial application of \jscode{addEventListener} parameters}]
@@ -275,7 +275,7 @@ The listings in this paper use the Scala language, though our first solution cou
 In all the cases where a type \scalacode{T} involved in a function depends on the value of a parameter \scalacode{p} of this function (all the aforementionned functions of the DOM API are in this case), we can encode this relationship in the type system using type parameters as follows:
 
 \begin{enumerate}
- \item Define a parametrized class \scalacode{P[U]}
+ \item Define a parameterized class \scalacode{P[U]}
  \item Set the type of \scalacode{p} to \scalacode{P[U]}
  \item Use type \scalacode{U} instead of type \scalacode{T}
  \item Define as many values of type \scalacode{P[U]} as there are possible values for \scalacode{p}, each one fixing its \scalacode{U} type parameter to the corresponding more precise type
@@ -334,7 +334,7 @@ def slideshow(sources: Array[String]) {
 
 Listing \ref{lst-slideshow-generics} illustrates the usage of such an encoding by implementing our \texttt{slideshow} program presented in the introduction. Passing the \scalacode{Img} value as a parameter to the \scalacode{createElement} function fixes its \scalacode{E} type parameter to \scalacode{ImageElement} so the returned value has the most possible precise type and the \scalacode{src} property can be used on it. Similarly, passing the \scalacode{Click} value to the \scalacode{addEventListener} function fixes its \scalacode{E} type parameter to \scalacode{MouseEvent}, so the event listener has the most possible precise type and the \scalacode{button} property can be used on the \scalacode{event} parameter.
 
-It is worth noting that this code is actually exactly the same as in listing \ref{lst-problem-cast} excepted that type casts are not anymore required because the browser API is exposed in a way that preserves enough type information. Our way to encode the browser API is more type safe, but is it as expressive as the native API?
+It is worth noting that this code is actually exactly the same as in Listing~\ref{lst-problem-cast} excepted that type casts are not anymore required because the browser API is exposed in a way that preserves enough type information. Our way to encode the browser API is more type safe, but is it as expressive as the native API?
 
 \begin{figure}
 \begin{lstlisting}[label=lst-generics-comb,language=Scala,caption={Combination of \scalacode{getElementsByTagName} and \scalacode{addEventListener} functions encoded using type parameters}]
@@ -361,7 +361,7 @@ def observe[A](target: EventTarget, name: EventName[A]) = {
 \end{lstlisting}
 \end{figure}
 
-Listings \ref{lst-generics-comb} and \ref{lst-generics-react} show how the challenging functions of section \ref{sec-limitations}, \jscode{findAndListenTo} and \jscode{observe}, can be implemented with our encoding. They are basically a direct translation from JavaScript syntax to Scala syntax, with additional type annotations.
+Listings \ref{lst-generics-comb} and \ref{lst-generics-react} show how the challenging functions of Section \ref{sec-limitations}, \jscode{findAndListenTo} and \jscode{observe}, can be implemented with our encoding. They are basically a direct translation from JavaScript syntax to Scala syntax, with additional type annotations.
 
 In summary, our encoding is type safe and gives as much expressive power as the native API since it is possible to implement exactly the same functions as we are able to implement in plain JavaScript.
 
@@ -371,7 +371,7 @@ However, every function taking an element name or an event name as parameter has
 
 This section shows how we can remove the extra type parameters needed in the previous section by using \emph{path-dependent types}~\cite{Odersky03_vObj}. Essentially, the idea is to model type parameters using \emph{type members}, as suggested in~\cite{odersky2005scalable}.
 
-Programming languages generally support two means of abstraction: parametrization and abstract members. For instance Java supports parametrization for values (method parameters) and types (\emph{generics}), and member abstraction for values (abstract methods). Scala also supports member abstraction for types through type members~\cite{cremet2006core,Odersky03_vObj}. An abstract type member of a class is an inner abstract type that can be used to qualify values. Subclasses can implement and override their methods, and similarly they can define or refine their type members. A concrete subclass must provide a concrete implementation of its type members. Outside of the class, type members can be referred to using a type selection on an instance of the class: the type designator \scalacode{p.C} refers to the \scalacode{C} type member of the value \scalacode{p} and expands to the \scalacode{C} type member implementation of the singleton type of \scalacode{p}.
+Programming languages generally support two means of abstraction: parameterization and abstract members. For instance Java supports parameterization for values (method parameters) and types (\emph{generics}), and member abstraction for values (abstract methods). Scala also supports member abstraction for types through type members~\cite{cremet2006core,Odersky03_vObj}. An abstract type member of a class is an inner abstract type that can be used to qualify values. Subclasses can implement and override their methods, and similarly they can define or refine their type members. A concrete subclass must provide a concrete implementation of its type members. Outside of the class, type members can be referred to using a type selection on an instance of the class: the type designator \scalacode{p.C} refers to the \scalacode{C} type member of the value \scalacode{p} and expands to the \scalacode{C} type member implementation of the singleton type of \scalacode{p}.
 
 \begin{figure}
 \begin{lstlisting}[label=lst-dt-dom,caption={Encoding of \jscode{createElement} using path-dependent types}]
@@ -457,7 +457,7 @@ Our encoding preserves a one to one mapping with browser API functions whereas e
 
 Statically typed languages are often criticized for the verbosity of the information they add compared to dynamically typed languages~\cite{meijer2004static}. In our case, what is the price to pay to get accurate type ascriptions?
 
-The first encoding, using type parameters, can be implemented in most programming languages because it only requires a basic support of type parameters (for instance Java, Dart, TypeScript, Kotlin, HaXe, Opa, Idris and Elm can implement it). However this encoding leads to cluttered type signatures and forces functions parametrized by event or element names to also take phantom type parameters.
+The first encoding, using type parameters, can be implemented in most programming languages because it only requires a basic support of type parameters (for instance Java, Dart, TypeScript, Kotlin, HaXe, Opa, Idris and Elm can implement it). However this encoding leads to cluttered type signatures and forces functions parameterized by event or element names to also take phantom type parameters.
 
 However, the second encoding, using type members, leads to type signatures that are not more verbose than those of the standard specifications of the HTML and DOM APIs, so we argue that there is no price to pay. However, this encoding can only be implemented in language supporting type members or dependent types (Scala and Idris).
 
