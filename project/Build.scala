@@ -9,6 +9,7 @@ object BuildSettings {
     scalaOrganization := "org.scala-lang.virtualized",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     addCompilerPlugin("org.scala-lang.virtualized.plugins" % "macro-paradise_2.10.2-RC1" % "2.0.0-SNAPSHOT")
+    // addCompilerPlugin("org.scalamacros" % "paradise_2.10.2" % "2.0.0-SNAPSHOT")
   )
 }
 
@@ -27,7 +28,7 @@ object JsScalaBuild extends Build {
     "core",
     file("core"),
     settings = buildSettings ++ Seq(
-      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics"/*, "-Ymacro-debug-lite"*/),
+      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics", "-Ymacro-debug-lite"),
 
       name := "js-scala",
 

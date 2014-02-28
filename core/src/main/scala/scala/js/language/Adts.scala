@@ -2,289 +2,150 @@ package scala.js.language
 
 import scala.language.experimental.macros
 import scala.virtualization.lms.common.Functions
+import scala.annotation.StaticAnnotation
 
 /**
- * Reifies case classes as staged adts
+ * Turns case class hierarchies into staged data types with support for smart constructors,
+ * members selection, structural comparison, copy method “a la” case classes, and fold over sum types.
  * 
- * Example
+ * Example of a record type (a product type with labelled members):
  * 
  * {{{
- *   case class Point(x: Int, y: Int) extends Adt
- *   // Smart constructor
- *   val Point = adt[Point]
- *   // Members
- *   implicit def pointOps(p: Rep[Point]) = adtOps(p)
- *   
- *   // Usage
- *   def add(p1: Rep[Point], p2: Rep[Point]) =
- *     Point(p1.x + p2.x, p1.y + p2.y)
+ *   // --- Definition
+ *   @adt case class Point(x: Int, y: Int) // regular case class annotated with `@adt`
+ *
+ *   // --- Usage
+ *   def add(p1: Rep[Point], p2: Rep[Point]): Rep[Point] =
+ *     Point(p1.x + p2.x, p1.y + p2.y) // smart constructor and members selection
+ *
+ *   def check(p1: Rep[Point], p2: Rep[Point]): Rep[Boolean] =
+ *     p1 === p2 // structural equality (`==` can not be overridden on Rep values)
+ *
+ *   def verticalProjection(p: Rep[Point]): Rep[Point] =
+ *     p.copy(x = 0) // similar to case classes `copy` method
+ * }}}
+ *
+ * Another example with a sum type:
+ *
+ * {{{
+ *   // --- Definition
+ *   @adt sealed trait CoProduct
+ *   @adt case class Left(x: Int) extends CoProduct // the annotation *must* be repeated on each variant of `CoProduct`
+ *   @adt case class Right(s: String) extends CoProduct
+ *
+ *   // --- Usage
+ *   def foo(c: Rep[CoProduct]) = c.fold( // poor man’s pattern matching (see SI-7077)
+ *     (l: Rep[Left]) => "left",
+ *     (r: Rep[Right]) => "right"
+ *   )
+ *
+ *   def check(c1: Rep[CoProduct], c2: Rep[CoProduct]): Rep[Boolean] = {
+ *     c1 === c2 // you can compare Rep[Left] and Rep[Right] values with Rep[CoProduct] values but you can not compare Rep[Right] values with Rep[Left] values
+ *   }
  * }}}
  */
 trait Adts extends Functions {
 
-  type Adt = AdtsImpl.Adt
-
   def adt_construct[A : Manifest](fields: (String, Rep[_])*): Rep[A]
   def adt_select[A : Manifest, B : Manifest](obj: Rep[A], label: String): Rep[B]
-  def adt_equal[A : Manifest](obj: Rep[A], bis: Rep[A], fieldsObj: Seq[String], fieldsBis: Seq[String]): Rep[Boolean]
-  def adt_fold[R <: Adt : Manifest, A : Manifest](obj: Rep[R], fs: Seq[Rep[_ <: R => A]]): Rep[A]
-
-  /**
-   * {{{
-   *   case class Point(x: Int, y: Int) extends Adt
-   *   val Point = adt[Point]
-   *   // Point is a staged smart constructor taking two Rep[Int] and returning a Rep[Point]
-   *
-   *   val p1: Rep[Point] = Point(unit(1), unit(2))
-   * }}}
-   * 
-   * @return a staged smart constructor for the data type T
-   */
-  def adt[T <: Adt] = macro AdtsImpl.adt[T]
-  
-  /**
-   * {{{
-   *   def show(point: Rep[Point]) = {
-   *     implicit def pointOps(p: Rep[Point]) = adtOps(p)
-   *     // Now you can select members of a Rep[Point]:
-   *     "Point(x = " + point.x + ", y = " + point.y + ")"
-   *   }
-   *   // You also have a `copy` and an `===` method
-   *   def copyAndEqual(point: Rep[Point]) = {
-   *     point.copy(y = 0) === Point(42, 0)
-   *   }
-   * }}}
-   *
-   * @return an object with staged members for the type T
-   */
-  def adtOps[T <: Adt](o: Rep[T]) = macro AdtsImpl.ops[T, Rep]
+  def adt_equal[A : Manifest](a1: Rep[A], a2: Rep[A], fields: Seq[Rep[Boolean]]): Rep[Boolean]
+  def adt_field_equal[A](a1: Rep[A], a2: Rep[A], field: String): Rep[Boolean] // FIXME Compare several fields at once?
+  def adt_fold[R : Manifest, A : Manifest](obj: Rep[R], fs: Seq[Rep[_ <: R => A]]): Rep[A]
 
 }
 
-object AdtsImpl {
+object Adts {
 
   import scala.reflect.macros.Context
 
-  trait Adt
+  /**
+   * On a case class Foo(bar: String, baz: Int), expands to the following companion object:
+   *
+   * {{{
+   *   object Foo {
+   *     // smart constructor
+   *     def apply(bar: Rep[String], baz: Rep[Int]): Rep[Foo] = ???
+   *     // pimped ops
+   *     implicit class FooOps(self: Rep[Foo]) {
+   *       // members selection
+   *       def bar: Rep[String] = ???
+   *       def baz: Rep[Int] = ???
+   *       // copy
+   *       def copy(bar: Rep[String] = self.bar, baz: Rep[Int] = self.baz): Rep[Foo] = Foo.apply(bar, baz)
+   *       // structural equality
+   *       def === (that: Rep[Foo]): Rep[Boolean] = ???
+   *     }
+   *   }
+   * }}}
+   */
+  class adt extends StaticAnnotation {
+    def macroTransform(annottees: Any*) = macro impl
+  }
 
-  def adt[U <: Adt : c.WeakTypeTag](c: Context) =
-    c.Expr[Any](new Generator[c.type](c).construct[U])
-
-
-  def ops[U <: Adt : c.WeakTypeTag, R[_]](c: Context)(o: c.Expr[R[U]]) =
-    c.Expr[Any](new Generator[c.type](c).ops(o))
-
-
-  class Generator[C <: Context](val c: C) {
+  def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 
-    /**
-     * @return The whole class hierarchy the type `A` belongs to. Works only with closed class hierarchies.
-     *         The symbols are sorted by alphabetic order.
-     */
-    def wholeHierarchy[A <: Adt : WeakTypeTag]: Seq[ClassSymbol] = {
+    val Rep = tq"Rep" // TODO Take it as a parameter (see https://github.com/scalamacros/paradise/issues/2 and https://github.com/scalamacros/paradise/issues/8)
+    // Annottees must be sealed traits, case classes or a case objects
+    val outputs = annottees.head.tree match {
+      case t @ q"sealed trait $name" =>
+        List(t)
+      case clazz @ q"case class $className (..$members)" =>
 
-      val rootClass: ClassSymbol =
-        weakTypeOf[A].baseClasses
-          // Take up to `Adt` super type
-          .takeWhile(_.asClass.toType != typeOf[Adt])
-          // Filter out type ancestors automatically added to case classes
-          .filterNot { s =>
-          val tpe = s.asClass.toType
-          tpe =:= typeOf[Equals] || tpe =:= typeOf[Serializable] || tpe =:= typeOf[java.io.Serializable] || tpe =:= typeOf[Product]
-        }.last.asClass // We know there is at least one element in the list because of `baseClasses`
+        // Smart constructor
+        val liftedArgs = for (q"$mods val $name: $tpe = $rhs" <- members) yield q"val $name: $Rep[$tpe] = $rhs"
+        val effectiveArgs = for (q"$mods val $name: $tpe = $rhs" <- members) yield q"(${name.decoded}, $name)"
+        val constructor = q"""def apply(..$liftedArgs): $Rep[$className] = adt_construct[$className](..$effectiveArgs)"""
 
-      def subHierarchy(base: ClassSymbol): List[ClassSymbol] = {
-        base.typeSignature // Needed before calling knownDirectSubclasses (SI-7046)
-        base.knownDirectSubclasses.foldLeft(List(base)) { (result, symbol) =>
-          val clazz = symbol.asClass
-          if (clazz.isCaseClass) clazz :: result
-          else if (clazz.isSealed && (clazz.isTrait || clazz.isAbstractClass)) subHierarchy(clazz) ++ result
-          else c.abort(c.enclosingPosition, "A class hierarchy may only contain case classes, sealed traits and sealed abstract classes")
+        val self = newTermName(c.fresh())
+
+        // Members selection
+        val membersSelection =
+          for (q"$mods val $name: $tpe = $rhs" <- members)
+          yield q"def $name: $Rep[$tpe] = adt_select[$className, $tpe]($self, ${name.decoded})"
+
+        // Copy
+        val copyArgs =
+          for (q"$mods val $name: $tpe = $rhs" <- liftedArgs)
+          yield q"val $name: $tpe = $self.$name"
+        val copyEffectiveArgs = for (q"$mods val $name: $tpe = $rhs" <- liftedArgs) yield q"$name"
+        val copy = q"def copy(..$copyArgs): $Rep[$className] = ${className.toTermName}.apply(..$copyEffectiveArgs)"
+
+        // Equals
+        val that = newTermName(c.fresh())
+        val memberNames = for (q"$mods val $name: $tpe = $rhs" <- members) yield {
+          // FIXME `tpe.symbol` is always `NoSymbol`
+          if (tpe.symbol.annotations.exists(_.tpe =:= typeOf[adt])) q"$self.$name === $that.$name"
+          else q"adt_field_equal($self, $that, ${name.decoded})"
         }
-      }
+        val equal = q"""
+          def === ($that: $Rep[$className]): $Rep[Boolean] =
+            adt_equal($self, $that, Seq(..$memberNames))
+        """
 
-      subHierarchy(rootClass)
-        .sortBy(_.name.decoded)
-        .ensuring(_.nonEmpty, s"Oops: whole hierarchy of $rootClass is empty")
-    }
-
-    /**
-     * @return The class hierarchy of the type `A`, meaning, `A` and all its subclasses
-     */
-    def hierarchy[A <: Adt : WeakTypeTag]: Seq[ClassSymbol] =
-      wholeHierarchy[A]
-        .filter(_.toType <:< weakTypeOf[A])
-        .ensuring(_.nonEmpty, s"Oops: hierarchy of ${weakTypeOf[A].typeSymbol.asClass} is empty! (whole hierarchy is: ${wholeHierarchy[A]})")
-
-    case class Member(name: String, term: TermName, tpe: Type)
-
-    object Member {
-      def apply(symbol: Symbol) = {
-        // Trim because case classes members introduce a trailing space
-        val nameStr = symbol.name.decoded.trim
-        new Member(nameStr, newTermName(nameStr), symbol.typeSignature)
-      }
-    }
-
-    /** @return The members of the type `tpe` */
-    def listMembers(tpe: Type): List[Member] =
-      tpe.typeSymbol.typeSignature.declarations.toList.collect { case x: TermSymbol if x.isVal && x.isCaseAccessor => Member(x) }
-
-    /**
-     * Expands to a value providing staged operations on algebraic data types.
-     *
-     * Applied to an object `r` of a record type `R`, it expands to the following:
-     *
-     * {{{
-     *   class $1 {
-     *     // `f1`, `f2`, ... are fields of `r`
-     *     def f1: Rep[F1] = ...
-     *     def f2: Rep[F2] = ...
-     *     def copy(f1: Rep[F1] = r.f1, f2: Rep[F2] = r.f2, ...): Rep[R] = ...
-     *   }
-     *   new $1
-     * }}}
-     *
-     * Applied to an object `s` of a sum type `S`, it expands to the following:
-     *
-     * {{{
-     *   class $1 {
-     *     def === (that: Rep[S]): Rep[Boolean] = ...
-     *     // `R1`, `R2`, ... are variants of `S`
-     *     def fold[A](r1: Rep[R1] => Rep[A], r2: Rep[R2] => Rep[A], ...): Rep[A] = ...
-     *   }
-     *   new $1
-     * }}}
-     */
-    // TODO Simplify the expansion
-    def ops[U <: Adt : c.WeakTypeTag, R[_]](obj: c.Expr[R[U]]) = {
-      val anon = newTypeName(c.fresh)
-      val wrapper = newTypeName(c.fresh)
-      val ctor = newTermName(c.fresh)
-
-      val U = weakTypeOf[U]
-      val members = listMembers(U)
-      if (!U.typeSymbol.isClass) {
-        c.abort(c.enclosingPosition, s"$U must be a sealed trait, an abstract class or a case class")
-      }
-      val typeSymbol = U.typeSymbol.asClass
-      if (!(typeSymbol.isCaseClass || (typeSymbol.isSealed && (typeSymbol.isTrait || typeSymbol.isAbstractClass)))) {
-        c.abort(c.enclosingPosition, s"$U must be a sealed trait, an abstract class or a case class")
-      }
-
-      val objName = typeSymbol.name
-
-      val defGetters = for(member <- members) yield q"def ${member.term}: Rep[${member.tpe}] = adt_select[$U, ${member.tpe}]($obj , ${member.name})"
-
-      val paramsCopy = for(member <- members) yield q"val ${member.term}: Rep[${member.tpe}] = adt_select[$U, ${member.tpe}]($obj , ${member.name})"
-
-      val paramsConstruct = for(member <- members) yield q"${member.term}"
-
-      val defCopy = q"""
-        def copy(..$paramsCopy): Rep[$objName] = $ctor(..$paramsConstruct)
-      """
-
-      val variants = U.baseClasses.drop(1).filter(bc => bc.asClass.toType <:< typeOf[Adt] && bc.asClass.toType != typeOf[Adt])
-
-      // TODO Review this code
-      def getFields(params: Seq[Member], root: String, list: List[Tree]): List[Tree] = params match {
-        case Nil =>
-          if(!variants.isEmpty){
-            val variant = root+"$variant"
-            q"$variant" :: list
-          }else{
-            list
-          }
-        case param +: tail =>
-          if (param.tpe <:< typeOf[Adt]) {
-            val paramMembers = listMembers(param.tpe)
-            val l = getFields(paramMembers, root + param.name + ".", list)
-            getFields(tail, root, l)
-          } else {
-            val name = root + param.name
-            getFields(tail, root, q"""$name""" :: list)
-          }
-      }
-
-      val fieldsObj = getFields(members, "", List())
-
-      val defEqual =
-        q"""
-          def === (bis: Rep[$objName]): Rep[Boolean] = {
-            adt_equal($obj, bis, Seq(..$fieldsObj), Seq(..$fieldsObj))
+        // Ops
+        val ops = q"""
+          implicit class ${newTypeName(c.fresh())}($self: $Rep[$className]) {
+            ..$membersSelection
+            $copy
+            $equal
           }
         """
 
-      val variants2 = wholeHierarchy[U].filter(_.isCaseClass).map(s => s -> newTermName(c.fresh()))
+        // Companion
+        val companion = q"""object ${className.toTermName} {
+          $constructor
+          $ops
+        }"""
 
-      val paramsFold = for((param, symbol) <- variants2) yield q"val $symbol: (Rep[$param] => Rep[A])"
-
-      val paramsFoldLambda = for((_, symbol) <- variants2) yield q"doLambda($symbol)"
-
-      val paramsFoldName = for(param <- paramsFoldLambda) yield q"$param.asInstanceOf[Rep[$U => A]]"
-
-      val defFold = q"""def fold[A : Manifest](..$paramsFold): Rep[A] = {
-            adt_fold($obj, Seq(..$paramsFoldName))
-          }
-          """
-
-      if (typeSymbol.isCaseClass) {
-        q"""
-          class $anon {
-            val $ctor = adt[$objName]
-            ..$defGetters
-            $defCopy
-            $defEqual
-          }
-          class $wrapper extends $anon{}
-          new $wrapper
-        """
-      } else {
-        q"""
-          class $anon {
-            $defFold
-            $defEqual
-          }
-          class $wrapper extends $anon{}
-          new $wrapper
-        """
-      }
+        List(clazz, companion)
+      case o @ q"case object $name" =>
+        List(o)
+      case _ => c.abort(c.enclosingPosition, "The @adt annotation must be used only on sealed traits, case classes and case objects")
     }
 
-    /**
-     * Expands to a staged smart constructor.
-     *
-     * Applied to a record type (case class) `C` it expands to the following smart constructor:
-     *
-     * {{{
-     *    (f1: Rep[F1], f2: Rep[F2], ...) => ...: Rep[C]
-     * }}}
-     */
-    // TODO Simplify the expansion
-    def construct[U <: Adt : c.WeakTypeTag]: c.Tree = {
-      val U = weakTypeOf[U]
-      if (U.typeSymbol.asClass.isCaseClass) {
-        val members = listMembers(U)
-        val objName = U.typeSymbol.name
-        val paramsDef = for(member <- members) yield q"val ${member.term}: Rep[${member.tpe}]"
-        val paramsConstruct = for(member <- members) yield q"${member.name} -> ${member.term}"
-        val paramsType = for(member <- members) yield tq"Rep[${member.tpe}]"
-        val allParams = {
-          val variants = wholeHierarchy[U].filter(_.isCaseClass)
-          if (variants.size == 1) paramsConstruct else {
-            val variant = variants.indexOf(U.typeSymbol)
-            paramsConstruct :+ q""""$$variant" -> unit($variant)"""
-          }
-        }
-        q"""
-        new ${newTypeName("Function" + paramsType.length)}[..$paramsType, Rep[$objName]] {
-          def apply(..$paramsDef) = adt_construct[$objName](..$allParams)
-        }
-       """
-      } else {
-        c.abort(c.enclosingPosition, s"$U must be a case class")
-      }
-    }
+    // Expansion of an annotation must be a block returning Unit and containing the sequence of all the annottees expansions
+    c.Expr[Any](q"{ ..$outputs; () }")
   }
+
 }
