@@ -11,7 +11,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[unicode=true,hidelinks]{hyperref}
 \usepackage{graphicx}
-\usepackage{moresize}
+%\usepackage{moresize}
 
 \usepackage{listings}
 %\usepackage[scaled]{luximono}
@@ -309,94 +309,11 @@ Defining a DSL with LMS consists in the following steps:
  \item defining a code generator visiting IR nodes and generating the corresponding code.
 \end{itemize}
 
-\subsection{LMS technical overview}
-
-In LMS, a DSL is split into two parts, its
-interface and its implementation. Both parts can be assembled from
-components in the form of Scala traits. DSL programs are written in
-terms of the DSL interface only, without knowledge of the
-implementation.
-
-Part of each DSL interface is an abstract type constructor
-\code{Rep[_]} that is used to wrap types in the DSL programs. The DSL
-implementation provides a concrete instantiation of \code{Rep} as IR
-nodes. When the DSL program is staged, it produces an intermediate
-representation (IR), from which the final code can be generated. In
-the DSL program, wrapped types such as \code{Rep[Int]} represent
-staged computations while expressions of plain unwrapped types
-(\code{Int}, \code{Bool}, etc.) are evaluated at staging time as
-in~\cite{finally-tagless,polymorphic-embedding}.
-
-Consider the difference between these two programs:
-\begin{lstlisting}
-def prog1(b: Bool, x: Rep[Int]) = if (b) x else x+1
-def prog2(b: Rep[Bool], x: Rep[Int]) = if (b) x else x+1
-\end{lstlisting}
-
-The only difference in these two programs is the type of the parameter
-\code{b}, illustrating that staging is purely type-driven with no
-syntactic overhead as the body of the programs are identical.
-
-In \code{prog1}, \code{b} is a simple boolean, so it must be provided
-at staging time, and the \code{if} is evaluated at staging time. For
-example, \code{prog1(true, x)} evaluates to \code{x}. In \code{prog2},
-\code{b} is a staged value, representing a computation which yields a
-boolean. So \code{prog2(b, x)} evaluates to an IR node for the \code{if}:
-{\tt\small If(b, x, Plus(x, Const(1)))}.
-
-For \code{prog2}, notice that the \code{if} got transformed into an IR
-node. To achieve this, LMS uses
-Scala-Virtualized~\cite{scala-virtualized}, a suite of minimal
-extensions to the regular Scala compiler, in which control
-structures such as \code{if} can be reified into method calls, so that
-alternative implementations can be provided. In our case, we provide an
-implementation of \code{if} that constructs an IR node instead of
-acting as a conditional. In addition, the \code{+} operation is
-overloaded to act on both staged and unstaged expressions. This is
-achieved by an implicit conversion from \code{Rep[Int]} to a class
-\code{IntOps}, which defines a \code{+} method that creates an IR node
-\code{Plus} when executed. Both of \code{Plus}'s arguments must be
-staged. We use an implicit conversion to stage constants when needed
-by creating a \code{Const} IR node.
-
-\subsection{Example: a DSL program and its generated JavaScript code}
-
-The following DSL snippet creates an array representing a table of
-multiplications:
-\begin{lstlisting}
-def test(n: Rep[Int]): Rep[Array[Int]] =
-  for (i <- range(0, n); j <- range(0, n)) yield i*j
-\end{lstlisting}
-
-Here is the JavaScript code generated for this snippet:
-\begin{lstlisting}[language=JavaScript]
-function test(x0) {
-  var x6 = []
-  for(var x1=0;x1<x0;x1++){
-    var x4 = []
-    for(var x2=0;x2<x0;x2++){
-      var x3 = x1 * x2
-      x4[x2]=x3
-    }
-    x6.splice.apply(x6, [x6.length,0].concat(x4))
-  }
-  return x6
-}
-\end{lstlisting}
-
-The generated code resembles single-assignment form. The nested
-\code{for}-loop is desugared into a \code{flatMap} which generates the
-nested \code{for}-loop and the \code{splice} pattern concatenating the
-inner \code{x4} arrays into one \code{x6} array in the JavaScript
-code.\footnote{Obviously, the generated code can be optimized further.}
-
 \subsection{Walkthrough: defining a DSL component}\label{sec:defineDslComponent}
 
-To conclude the introduction to LMS, we show how to add a component
-for logging in a DSL, generating JavaScript code which calls
-\code{console.log}.
+For readers who are new to LMS, this section shows how to implement a language unit for logging.
 
-We start by defining the interface:
+We start by defining the language unit vocabulary in an abstract trait:
 \begin{lstlisting}
 trait Debug extends Base {
   def log(msg: Rep[String]): Rep[Unit]
@@ -406,7 +323,9 @@ trait Debug extends Base {
 The \code{Base} trait is part of the core LMS framework and provides
 the abstract type constructor \code{Rep}.
 
-Now, we define the implementation:
+The trait contains just one method, \code{log}, representing the action of appending a message to the log.
+
+Then we define the language unit implementation:
 \begin{lstlisting}
 trait DebugExp extends Debug with EffectExp {
   case class Log(msg: Exp[String]) extends Def[Unit]
@@ -415,32 +334,16 @@ trait DebugExp extends Debug with EffectExp {
 \end{lstlisting}
 
 The \code{EffectExp} trait is part of the core LMS framework. It
-inherits from \code{BaseExp} which instantiates \code{Rep} as
+inherits from \code{BaseExp} which aliases \code{Rep} to
 \code{Exp}. \code{Exp} represents an IR via two subclasses:
-\code{Const} for constants and \code{Sym} for named values defining a
-\code{Def}. \code{Def} is the base class for all IR nodes. In our
-\code{DebugExp} trait, we extend \code{Def} to support a new IR node:
-\code{Log}.
+\code{Const} for constants and \code{Sym} for symbols referring to a composite expression. Composite expressions are represented by type
+\code{Def}.
 
-IR nodes are defined as \code{Def}s but they are never referenced
-explicitly as such. Instead each \code{Def} has a corresponding symbol
-(an instance of \code{Sym}). IR nodes refer to each other using their
-symbols. This is why, in the code shown, the \code{msg} parameter is
-of type \code{Exp} (not \code{Def}). The method \code{log} 
-returns an \code{Exp}. Calling \code{reflectEffect} is what creates
-this symbol from the \code{Def}.
+In our
+\code{DebugExp} trait, we extend \code{Def} to define a new IR node:
+\code{Log}. This node represents a statement appending a message to the log.
 
-In general, the framework provides an implicit conversion from
-\code{Def} to \code{Exp}, which performs common subexpression
-elimination by re-using the same symbol for identical definitions. We
-do not use the automatic conversion here, because \code{log} is a 
-side-effecting operation, and we do not want 
-to (re)move any such calls even if their message
-is the same.
-
-The framework schedules the code generation from the graph of
-\code{Exp}s and their dependencies through \code{Def}s. It chooses
-which \code{Sym}/\code{Def} pairs to emit and in which order. To
+An LMS program returns a value of type \code{Rep[_]}, a graph of IR nodes, representing the staged program. This graph is traversed and a code generator is invoked to transform each node into the corresponding code in the target language. To
 implement code generation to JavaScript for our logging IR node, we
 simply override \code{emitNode} to handle \code{Log}:
 \begin{lstlisting}
@@ -449,16 +352,13 @@ trait JSGenDebug extends JSGenEffect {
   import IR._
   override def emitNode(sym: Sym[Any], rhs: Def[Any])(
     implicit stream: PrintWriter) = rhs match {
-      case Log(s) => emitValDef(sym, "console.log(" + quote(s) + ")")
+      case Log(s) => emitValDef(sym, q"console.log($s)")
       case _ => super.emitNode(sym, rhs)
     }
 }
 \end{lstlisting}
-Notice that in order to compose nicely with other traits, the
-overridden method just handles the case it knows and delegates to
-other traits, via \code{super}, the emitting of nodes it doesn't know
-about.
 
+We chose to implement the logging action by using the standard \code{console.log} Web browser's function.
 
 \section{Efficient High-Level Abstractions for Web Programming}
 \label{sec:contribution}
