@@ -1,0 +1,99 @@
+% LLNCStmpl.tex
+% Template file to use for LLNCS papers prepared in LaTeX
+%websites for more information: http://www.springer.com
+%http://www.springer.com/lncs
+
+\documentclass{llncs}
+%Use this line instead if you want to use running heads (i.e. headers on each page):
+%\documentclass[runningheads]{llncs}
+
+
+\begin{document}
+\title{Title Goes Here}
+
+%If you're using runningheads you can add an abreviated title for the running head on odd pages using the following
+%\titlerunning{abreviated title goes here}
+%and an alternative title for the table of contents:
+%\toctitle{table of contents title}
+
+\subtitle{Subtitle Goes Here}
+
+%For a single author
+%\author{Author Name}
+
+%For multiple authors:
+\author{First Author Name\inst{1} \and Second Author Name\inst{2}}
+
+
+%If using runnningheads you can abbreviate the author name on even pages:
+%\authorrunning{abbreviated author name}
+%and you can change the author name in the table of contents
+%\tocauthor{enhanced author name}
+
+%For a single institute
+%\institute{Institute Name \email{email address}}
+
+% If authors are from different institutes 
+\institute{First Institute Name \email{email address} \and Second Institute Name\thanks{Thank you to...} \email{email address}}
+
+%to remove your email just remove '\email{email address}'
+% you can also remove the thanks footnote by removing '\thanks{Thank you to...}'
+
+
+\maketitle
+
+\begin{abstract}
+abstract text goes here - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+\end{abstract}
+
+\section{First Section}
+
+\subsection{First Subsection}
+\subsubsection{First Subsubsection}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+
+\subsubsection{Second Subsubsection}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+%Example of a numbered list
+\begin{enumerate}
+\item First item in list
+\begin{enumerate}
+\item First sub item
+\item Second sub item
+\end{enumerate}
+\item Second item in list
+\end{enumerate}
+
+\subsection{Second Subsection}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud\cite{reference1} exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\begin{proposition}
+Insert proposition here
+\end{proposition}
+
+\begin{proof}
+Insert proof here
+\end{proof}
+
+%The bibliography, done here without a bib file
+%This is the old BibTeX style for use with llncs.cls
+\bibliographystyle{splncs}
+
+%Alternative bibliography styles:
+%the following does the same as above except with alphabetic sorting
+%\bibliographystyle{splncs_srt}
+%the following is the current LNCS BibTex with alphabetic sorting
+%\bibliographystyle{splncs03}
+%If you want to use a different BibTex style include [oribibl] in the document class line
+
+\begin{thebibliography}{1}
+%add each reference in here like this:
+\bibitem[RE1]{reference1}
+Author:
+Article/Book:
+Other info: (date) page numbers.
+\end{thebibliography}
+
+\end{document}
+

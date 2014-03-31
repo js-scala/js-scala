@@ -1,0 +1,1070 @@
+\documentclass{llncs}
+
+% The following \documentclass options may be useful:
+%
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[unicode=true,hidelinks]{hyperref}
+\usepackage{graphicx}
+\usepackage{moresize}
+
+\usepackage{listings}
+%\usepackage[scaled]{luximono}
+
+%\usepackage{natbib}
+
+% ----- begin macros
+
+\lstdefinelanguage{Scala}%
+{morekeywords={abstract,%
+  case,catch,char,class,%
+  def,else,extends,final,for,%
+  if,import,implicit,%
+  match,module,%
+  new,null,%
+  object,override,%
+  package,private,protected,public,%
+  for,public,return,super,%
+  this,throw,trait,try,type,%
+  val,var,%
+  with,%
+  yield,%
+  lazy%
+  },%
+  sensitive,%
+  morecomment=[l]//,%
+  morecomment=[s]{/*}{*/},%
+  morestring=[b]",%
+  morestring=[b]',%
+  showstringspaces=false%
+}[keywords,comments,strings]%
+
+\lstdefinelanguage{JavaScript}%
+{morekeywords={for, var, attributes, class, classend, do, else, empty, endif, endwhile, fail, function,
+functionend, if, implements, in, inherit, inout, not, of, operations, out, return,
+then, types, while, use},%
+  sensitive,%
+  morecomment=[l]//,%
+  morecomment=[s]{/*}{*/},%
+  morestring=[b]",%
+  morestring=[b]',%
+  showstringspaces=false%
+}[keywords,comments,strings]%
+
+\lstset{language=Scala,%
+  mathescape=false,%
+%  columns=[c]fixed,%
+  aboveskip=\smallskipamount,
+  belowskip=\smallskipamount,
+%  basewidth={0.5em, 0.4em},%
+  basicstyle=\footnotesize,%
+  captionpos=b,
+  keywordstyle=\bfseries%\sffamily\bfseries,%
+%  keywordstyle=\sffamily\bfseries,%
+%  xleftmargin=0.5cm
+}
+
+\newcommand{\commentstyle}[1]{\slseries{#1}}
+\newcommand{\keywordstyle}[1]{\bfseries{#1}}
+
+\lstnewenvironment{slisting}{\lstset{language=Scala}}{}
+
+\newcommand{\code}[1]{\lstinline[language=Scala,columns=fixed,basicstyle=\footnotesize]|#1|}
+
+\def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
+\let\endchangemargin=\endlist
+
+\newcommand{\ie}{\emph{i.e.}}
+\newcommand{\eg}{\emph{e.g.}}
+\newcommand{\cf}{\emph{cf.~}}
+\newcommand{\etal}{\emph{et al.~}}
+\newcommand{\etc}{\emph{etc.}}
+\newcommand{\aka}{\emph{a.k.a.}}
+
+
+\begin{document}
+
+%\conferenceinfo{GPCE~'13}{October 27--28, 2013, Indianapolis, Indiana, USA} 
+%\copyrightyear{2013} \copyrightdata{978-1-4503-2373-4/13/10} \doi{2517208.2517227}
+
+%\titlebanner{banner above paper title}        % These are ignored unless
+%\preprintfooter{short description of paper}   % 'preprint' option specified.
+
+\title{Efficient High-Level Abstractions for Web Programming}
+%\subtitle{You don’t have to trade abstraction for control}
+
+\author{Richard-Foy\and Olivier Barais\and Jean-Marc Jézéquel}
+          
+\institute{ IRISA, Université de Rennes 1
+           {\email{\{first\}.\{last\}@irisa.fr}}}
+
+\maketitle
+
+\begin{abstract}
+%\vspace{0.2cm}
+
+
+Writing large Web applications is known to be difficult. One challenge comes from the fact that the
+application's logic is scattered into heterogeneous clients and servers, making it difficult to
+share code between both sides or to move code from one side to the other. Another challenge is
+performance: while Web applications rely on ever more code on the client-side, they may run on smart
+phones with limited hardware capabilities. These two challenges raise the following problem: how to
+benefit from high-level languages and libraries making code complexity easier to manage and
+abstracting over the clients and servers differences without trading this ease of engineering for
+performance? This article presents high-level abstractions defined as deep embedded DSLs in Scala that can generate efficient code leveraging the characteristics of both client and server environments. We compare performance on client-side against other candidate technologies and against hand written low-level JavaScript code. Though code written with our DSL has a high level of abstraction, our
+benchmark on a real world application reports that it runs as fast as hand tuned low-level
+JavaScript code.
+\end{abstract}
+
+%\category{D.3.3}{Programming Languages}{Language Constructs and Features}
+
+%\terms Languages, Software Engineering
+
+\keywords Heterogeneous code generation, Domain-specific languages, Scala, Web
+
+\section{Introduction}
+
+%\vspace{0.2cm}
+
+Web applications are attractive because they require no installation or deployment steps on clients
+and enable large scale collaborative experiences. However, writing large Web applications is known
+to be difficult~\cite{Mikkonen08_SpaghettiJs,Preciado05_RIAMethodologyNecessity}. One challenge
+comes from the fact that the business logic is scattered into heterogeneous client-side and
+server-side environments~\cite{Echeverria09_RIA,Kuuskeri09_PartitioningClientServer}. This gives
+less flexibility in the engineering process and requires a higher maintenance effort: there is no
+way to move a piece of code targeting the server-side to target the client-side -- the code has to
+be rewritten. Even worse, logic parts that run on both client-side and server-side need to be
+duplicated. For instance, HTML fragments may be built from the server-side when a page is requested
+by a client, but they may also be built from the client-side to perform an incremental update
+subsequent to a user action. How could developers write HTML fragment definitions once and render
+them on both client-side and server-side?
+
+The more interactive the application is, the more logic needs to be duplicated between the
+server-side and the client-side, and the higher is the complexity of the client-side code.
+Developers can use libraries and frameworks to get high-level abstractions on client-side, making
+their code easier to reason about and to maintain, but also making their code run less efficiently
+due to \emph{abstraction penalty}.
+
+Performance is a primary concern in many Web applications, because they are expected to run on a
+broad range of devices, from the powerful desktop personal computer to the less powerful smart
+phone~\cite{Souders08_Perf,Huang10_Perf}.
+
+Using the same programming language on both server-side and client-side could improve the software
+engineering process by enabling code reuse between both sides. Incidentally, the JavaScript language
+-- which is currently the most supported action language on Web clients -- can be used on
+server-side. Conversely, an increasing number of programming languages or compiler back-ends can
+generate JavaScript code (\eg{} Java/GWT~\cite{Chaganti07_GWT},
+SharpKit\footnote{\href{http://sharpkit.net}{http://sharpkit.net}}, Dart~\cite{Griffith11_Dart},
+Kotlin\footnote{\href{http://kotlin.jetbrains.org/}{http://kotlin.jetbrains.org/}},
+ClojureScript~\cite{McGranaghan11_ClojureScript},
+Fay\footnote{\href{http://fay-lang.org/}{http://fay-lang.org/}},
+Haxe~\cite{Cannasse08_HaXe} or Opa\footnote{\href{http://opalang.org/}{http://opalang.org/}}).
+
+However, using the same programming language is not enough because the client and server programming
+environments are not the same. For instance, DOM fragments can be defined on client-side using the
+standard DOM API, but this API does not exist on server-side. How to define a common vocabulary for
+such concepts? And how to make the executable code leverage the native APIs, when possible, for
+performance reasons?
+
+Generating efficient code for heterogeneous platforms is hard to achieve in an extensible way: the
+translation of common abstractions like collections into their native counterpart (JavaScript arrays
+on client-side and standard library's collections on server-side) may be hard-coded in the compiler,
+but that approach would not scale to handle all the abstractions a complete application may use
+(\eg{} HTML fragment definitions, form validation rules, or even some business data type that may be
+represented differently).
+
+On one hand, for engineering reasons, developers want to write Web applications using a single
+high-level language, abstracting over the target platforms differences and reducing code complexity.
+But on the other hand, for performance reasons, they want to keep control on the way their code is
+compiled to each target platform. We propose to solve this dilemma by providing high-level
+abstractions in compiled domain-specific embedded languages (DSELs)~\cite{Hudak96_DSEL,Elliott2003_Compiling}. Compiled DSELs allow the definition of domain-specific languages (DSLs) as
+libraries on top of a host language, and to compile them to a target platform. Their deep embedding
+gives the opportunity to control the code generation scheme for a given abstraction and target
+platform.
+
+Kossakowski \etal introduced \emph{js-scala}, a compiled embedded DSL defined in Scala that
+generates JavaScript code, making it possible to write the client-side code of Web applications
+using Scala~\cite{Kossakowski12_JsDESL}. However, the authors did not discuss any specific optimization and did not consider performance issues of their approach. Our paper shows how js-scala has been extended to support a set of specific optimizations allowing our high-level abstractions for Web programming to be efficiently compiled on both client and server sides\footnote{The code is available at \href{http://github.com/js-scala}{http://github.com/js-scala}}.
+
+% \begin{itemize}
+%  \item we define high-level abstractions, typically used in Web programming, that generate low-level code leveraging native Web browser APIs;
+%  \item in the case of abstractions shared between servers and clients, we specialize the code generation in order to leverage the target platform native environments.
+% \end{itemize}
+
+We validate our approach with a case study implemented with various candidate technologies and
+discuss the relative pro and cons of them. We also measured the individual impact of each of our optimizations using micro-benchmarks. Though the code written in our DSL is high-level and can
+be shared between clients and servers, it has the same runtime performance on client-side as
+hand-tuned low-level JavaScript code.
+
+The remainder of this paper is organized as follows. The next section overviews the
+existing approaches defining high-level languages for Web programming. Section \ref{sec:lms}
+presents the framework we used to define our DSLs. Section \ref{sec:contribution} presents our
+contribution. Section \ref{sec:validation} compares our solution to common approaches. Section
+\ref{sec:discussion} discusses our results and section \ref{sec:conclusion} concludes.
+
+\section{Related Work}
+\label{sec:related-work}
+
+
+%\vspace{0.1cm}
+
+We classified existing approaches providing high-level abstractions for Web programming in four
+categories, as shown in Figure \ref{fig:langs}.
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=7.5cm]{gpce19c-foy-langs.pdf}
+\end{center}
+\caption{Language engineering processes}
+\vspace{-0.5cm}
+\label{fig:langs}
+\end{figure}
+
+\paragraph{Fat Languages}
+
+\enlargethispage{0.3cm}
+%\vspace{0.1cm}
+
+The first approach for defining a cross-platform language consists in hard-coding, in the compiler,
+the code generation scheme of each language feature to each target platform. Figure \ref{fig:langs}
+(a) depicts this process. In order to support a feature related to a specific domain, the whole
+compiler pipeline (parser, code generator, \etc) may have to be adapted. This approach gives
+\emph{fat} languages because a lot of concepts are defined at the language level: general
+programming concepts such as naming, functions, classes, as well as more domain-specific concepts
+such as HTML fragment definition. Thus, implementing a fat language may require a high effort and adding support for these languages in development environments may require a even higher effort.
+Examples of such languages for Web programming are Links~\cite{Cooper07_Links}, Opa, Dart~\cite{Griffith11_Dart}.
+
+\paragraph{Domain-Specific Languages}
+
+%\vspace{0.1cm}
+
+Another approach consists in defining several independent domain-specific
+languages~\cite{Van00_DSL}, each one focusing on concerns specific to a given problem domain, and
+then to combine all the source artifacts written with these language into one executable program, as
+shown in Figure~\ref{fig:langs} (b). Defining such languages requires a minimal effort compared to
+the previous approach because each language has a limited set of features. On the other hand, it is
+difficult to have interoperability between DSLs. \cite{Visser07} gave an example of such
+a domain-specific language for defining Web applications.
+
+\paragraph{Thin Languages}
+
+\enlargethispage{0.3cm}
+
+%\vspace{0.1cm}
+
+Alternatively, one can define concepts relative to a specific domain as a library on top of a thin
+general purpose language (it is also referred to as a domain-specific \emph{embedded}
+language~\cite{Hudak96_DSEL}). Figure \ref{fig:langs} (c) depicts this approach. Defining such a
+library requires minimal effort (though the syntax of the DSL is limited by the syntax flexibility
+of the host language) and several DSLs can interoperate freely within the host language. However,
+this approach gives no opportunity to efficiently translate a concept according to the target
+platform characteristics because the compiler has no domain-specific knowledge (though some
+compilers hard-code the translation of some common abstractions such as arrays to leverage the
+target platform characteristics). Examples of languages following this approach are Java/GWT,
+Kotlin, HaXe and SharpKit. Libraries written in JavaScript (\eg{} jQuery~\cite{Bibeault08_jQuery}) also match this category though most of them do not support both client and server sides.
+
+\paragraph{Deeply Embedded Languages}
+
+%\vspace{0.1cm}
+The last approach, shown in Figure \ref{fig:langs} (d), can be seen as a middle-ground between the
+two previous approaches: DSLs are embedded in a host language but use a code generation process.
+This approach shares the same benefits and limitations as embedded DSLs for defining language units.
+However, the code generation process is specific to each DSL and gives the opportunity to perform
+domain-specific optimizations. In other words deeply embedded DSLs bring domain-specific knowledge
+to the compiler. Js-scala~\cite{Kossakowski12_JsDESL} is an example of deeply embedded DSL in Scala
+for Web programming. It makes it possible to produce JavaScript programs from Scala code that uses
+basic language concepts like arrays and control structures (\code{if} and \code{while}) as well as
+mechanisms specific to the Scala compiler like delimited continuations to handle asynchronous
+computations. Paper \cite{Kossakowski12_JsDESL} presented the implementation of js-scala using staging, but did not discuss any specific optimization and did not consider performance issues of this approach. In this paper, we show how js-scala has been extended to support a set of specific optimizations allowing our high-level abstractions for Web programming to be efficiently compiled on heterogeneous platforms.
+
+\section{Lightweight Modular Staging}
+\label{sec:lms}
+
+This section gives background material on the framework used to define js-scala.
+
+Lightweight Modular Staging~\cite{Rompf12_LMSThesis,Rompf12_LMS} (LMS) is a framework for defining
+deeply embedded DSLs in Scala. It has been used to define high-performance DSLs for parallel
+computing~\cite{Brown11_Parallel} and to define JavaScript as an embedded DSL in
+Scala~\cite{Kossakowski12_JsDESL}.
+
+LMS is based on staging~\cite{Jorring1986_Staging}: a program using LMS is a regular Scala program
+that evaluates to an intermediate representation (IR) of a final program. This IR is a graph of
+expressions that can be traversed by code generators to produce the final program code. Expressions
+evaluated in the initial program and those evaluated in the final program (namely, staged
+expressions) are distinguished by their type: a \code{Rep[Int]} value in the initial program is a
+staged expression that generates code evaluating to an \code{Int} value in the final program. An
+\code{Int} computation in the initial program is evaluated during the initial program evaluation and
+becomes a constant in the final program.
+
+Defining a DSL with LMS consists in the following steps:
+
+\begin{itemize}
+ \item writing a Scala module providing the DSL vocabulary as an abstract API,
+ \item implementing the API in terms of IR nodes,
+ \item defining a code generator visiting IR nodes and generating the corresponding code.
+\end{itemize}
+
+\subsection{LMS technical overview}
+
+In LMS, a DSL is split into two parts, its
+interface and its implementation. Both parts can be assembled from
+components in the form of Scala traits. DSL programs are written in
+terms of the DSL interface only, without knowledge of the
+implementation.
+
+Part of each DSL interface is an abstract type constructor
+\code{Rep[_]} that is used to wrap types in the DSL programs. The DSL
+implementation provides a concrete instantiation of \code{Rep} as IR
+nodes. When the DSL program is staged, it produces an intermediate
+representation (IR), from which the final code can be generated. In
+the DSL program, wrapped types such as \code{Rep[Int]} represent
+staged computations while expressions of plain unwrapped types
+(\code{Int}, \code{Bool}, etc.) are evaluated at staging time as
+in~\cite{finally-tagless,polymorphic-embedding}.
+
+Consider the difference between these two programs:
+\begin{lstlisting}
+def prog1(b: Bool, x: Rep[Int]) = if (b) x else x+1
+def prog2(b: Rep[Bool], x: Rep[Int]) = if (b) x else x+1
+\end{lstlisting}
+
+The only difference in these two programs is the type of the parameter
+\code{b}, illustrating that staging is purely type-driven with no
+syntactic overhead as the body of the programs are identical.
+
+In \code{prog1}, \code{b} is a simple boolean, so it must be provided
+at staging time, and the \code{if} is evaluated at staging time. For
+example, \code{prog1(true, x)} evaluates to \code{x}. In \code{prog2},
+\code{b} is a staged value, representing a computation which yields a
+boolean. So \code{prog2(b, x)} evaluates to an IR node for the \code{if}:
+{\tt\small If(b, x, Plus(x, Const(1)))}.
+
+For \code{prog2}, notice that the \code{if} got transformed into an IR
+node. To achieve this, LMS uses
+Scala-Virtualized~\cite{scala-virtualized}, a suite of minimal
+extensions to the regular Scala compiler, in which control
+structures such as \code{if} can be reified into method calls, so that
+alternative implementations can be provided. In our case, we provide an
+implementation of \code{if} that constructs an IR node instead of
+acting as a conditional. In addition, the \code{+} operation is
+overloaded to act on both staged and unstaged expressions. This is
+achieved by an implicit conversion from \code{Rep[Int]} to a class
+\code{IntOps}, which defines a \code{+} method that creates an IR node
+\code{Plus} when executed. Both of \code{Plus}'s arguments must be
+staged. We use an implicit conversion to stage constants when needed
+by creating a \code{Const} IR node.
+
+\subsection{Example: a DSL program and its generated JavaScript code}
+
+The following DSL snippet creates an array representing a table of
+multiplications:
+\begin{lstlisting}
+def test(n: Rep[Int]): Rep[Array[Int]] =
+  for (i <- range(0, n); j <- range(0, n)) yield i*j
+\end{lstlisting}
+
+Here is the JavaScript code generated for this snippet:
+\begin{lstlisting}[language=JavaScript]
+function test(x0) {
+  var x6 = []
+  for(var x1=0;x1<x0;x1++){
+    var x4 = []
+    for(var x2=0;x2<x0;x2++){
+      var x3 = x1 * x2
+      x4[x2]=x3
+    }
+    x6.splice.apply(x6, [x6.length,0].concat(x4))
+  }
+  return x6
+}
+\end{lstlisting}
+
+The generated code resembles single-assignment form. The nested
+\code{for}-loop is desugared into a \code{flatMap} which generates the
+nested \code{for}-loop and the \code{splice} pattern concatenating the
+inner \code{x4} arrays into one \code{x6} array in the JavaScript
+code.\footnote{Obviously, the generated code can be optimized further.}
+
+\subsection{Walkthrough: defining a DSL component}\label{sec:defineDslComponent}
+
+To conclude the introduction to LMS, we show how to add a component
+for logging in a DSL, generating JavaScript code which calls
+\code{console.log}.
+
+We start by defining the interface:
+\begin{lstlisting}
+trait Debug extends Base {
+  def log(msg: Rep[String]): Rep[Unit]
+}
+\end{lstlisting}
+
+The \code{Base} trait is part of the core LMS framework and provides
+the abstract type constructor \code{Rep}.
+
+Now, we define the implementation:
+\begin{lstlisting}
+trait DebugExp extends Debug with EffectExp {
+  case class Log(msg: Exp[String]) extends Def[Unit]
+  def log(msg: Exp[String]): Exp[Unit] = reflectEffect(Log(msg))
+}
+\end{lstlisting}
+
+The \code{EffectExp} trait is part of the core LMS framework. It
+inherits from \code{BaseExp} which instantiates \code{Rep} as
+\code{Exp}. \code{Exp} represents an IR via two subclasses:
+\code{Const} for constants and \code{Sym} for named values defining a
+\code{Def}. \code{Def} is the base class for all IR nodes. In our
+\code{DebugExp} trait, we extend \code{Def} to support a new IR node:
+\code{Log}.
+
+IR nodes are defined as \code{Def}s but they are never referenced
+explicitly as such. Instead each \code{Def} has a corresponding symbol
+(an instance of \code{Sym}). IR nodes refer to each other using their
+symbols. This is why, in the code shown, the \code{msg} parameter is
+of type \code{Exp} (not \code{Def}). The method \code{log} 
+returns an \code{Exp}. Calling \code{reflectEffect} is what creates
+this symbol from the \code{Def}.
+
+In general, the framework provides an implicit conversion from
+\code{Def} to \code{Exp}, which performs common subexpression
+elimination by re-using the same symbol for identical definitions. We
+do not use the automatic conversion here, because \code{log} is a 
+side-effecting operation, and we do not want 
+to (re)move any such calls even if their message
+is the same.
+
+The framework schedules the code generation from the graph of
+\code{Exp}s and their dependencies through \code{Def}s. It chooses
+which \code{Sym}/\code{Def} pairs to emit and in which order. To
+implement code generation to JavaScript for our logging IR node, we
+simply override \code{emitNode} to handle \code{Log}:
+\begin{lstlisting}
+trait JSGenDebug extends JSGenEffect {
+  val IR: DebugExp
+  import IR._
+  override def emitNode(sym: Sym[Any], rhs: Def[Any])(
+    implicit stream: PrintWriter) = rhs match {
+      case Log(s) => emitValDef(sym, "console.log(" + quote(s) + ")")
+      case _ => super.emitNode(sym, rhs)
+    }
+}
+\end{lstlisting}
+Notice that in order to compose nicely with other traits, the
+overridden method just handles the case it knows and delegates to
+other traits, via \code{super}, the emitting of nodes it doesn't know
+about.
+
+
+\section{Efficient High-Level Abstractions for Web Programming}
+\label{sec:contribution}
+
+This section presents some tasks typically performed in Web applications, either on client-side or
+server-side or on both, generalizes them in terms of high-level abstractions, and shows how they are
+implemented in js-scala to generate efficient code.
+
+\subsection{Selectors API}
+\label{sec:selectors}
+
+In a Web application, the user interface is defined by a HTML document that can be updated by the
+JavaScript code. A typical operation consists in searching some "interesting" element in the
+document, in order to extract its content, replace it or listen to user events triggered on it (such
+as mouse clicks). The standard API provides several functions to search elements in a HTML document
+according to their name or attribute values. Figure~\ref{selectors-api} summarizes the available
+functions and their differences.
+
+\begin{figure}[htb]
+\begin{center}
+\begin{tabular}{| l | p{3cm} |}
+\hline
+Function & Description \\
+\hline
+\code{querySelector(s)} & First element matching the CSS selector \code{s} \\
+\hline
+\code{getElementById(i)} & Element which attribute \code{id} equals to \code{i} \\
+\hline
+\code{querySelectorAll(s)} & All elements matching the CSS selector \code{s} \\
+\hline
+\code{getElementsByTagName(n)} & All elements of type \code{n} \\
+\hline
+\code{getElementsByClassName(c)} & All elements which \code{class} attribute contains \code{c} \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Standard selectors API. The \code{querySelector} and \code{querySelectorAll} are the most
+general functions while the others handle special cases.}
+\label{selectors-api}
+\end{figure}
+
+\begin{figure}[htb]
+\begin{lstlisting}[language=JavaScript,label=vanilla-selectors,caption=Searching elements using the
+native selectors API]
+function getWords() {
+  var form = document.getElementById('add-user');
+  var sections =
+    form.getElementsByTagName('fieldset');
+  var results = [];
+  for (var i = 0 ; i < sections.length ; i++) {
+    var words = sections[i]
+      .getElementsByClassName('word');
+    results[i] = words;
+  }
+  return results
+}
+\end{lstlisting}
+\end{figure}
+
+Listing \ref{vanilla-selectors} gives an example of use of various functions from the native
+selectors API to retrieve a list of input fields within a form. The \code{getWords} function first finds in the document the HTML element with id \code{add-user}, then collects all its \code{fieldset} children elements, and for each one returns the list of its children elements having class \code{word}. The existence of several specialized functions in the API makes it possible to write efficient code, but forces users to think at a low abstraction level.
+
+\begin{figure}[htb]
+\begin{lstlisting}[language=JavaScript,label=jquery-selectors,caption=Searching elements using jQuery]
+function getWords() {
+  var form = $('#add-user');
+  var sections = $('fieldset', form);
+  return sections.map(function () {
+    return $('.word', this)
+  })
+}
+\end{lstlisting}
+\end{figure}
+
+A high-level abstraction for searching elements in a document could be just one function
+finding all elements matching a given CSS selector. In fact, most JavaScript
+developers\footnote{According to
+\href{http://trends.builtwith.com/javascript}{http://trends.builtwith.com/javascript}, jQuery is
+used by more than 40\% of the top million sites.} use the jQuery library
+that actually provides only one function to search for elements. Listing \ref{jquery-selectors}
+shows an equivalent JavaScript program as Listing \ref{vanilla-selectors}, but using jQuery. The
+code is both shorter and simpler, thanks to its higher level of abstraction. jQuery provides an API
+that is simpler to master because it has fewer functions, but this benefit comes at the price of a
+decrease in runtime performance.
+
+Instead, we propose a solution that has a high-level API but generates JavaScript code using the
+specialized native API, when possible, in order to get both ease of engineering and performance.
+We achieve this by analyzing, during the first evaluation step, the selector that is
+passed as parameter and, when appropriate, by producing JavaScript code using the specialized API,
+and otherwise producing code using \code{querySelector} and \code{querySelectorAll}.
+
+\begin{figure}[htb]
+\begin{lstlisting}[label=selector-impl,caption=Selectors optimization]
+def find(selector: Rep[String]) =
+  getConstIdCss(selector) match {
+    case Some(id) if receiver == document =>
+      DocumentGetElementById(Const(id))
+    case _ =>
+      SelectorFind(receiver, selector)
+  }
+\end{lstlisting}
+\end{figure}
+
+Our API has two functions: \code{find} to find the first element matching a selector and
+\code{findAll} to find all the matching elements. Listing \ref{selector-impl} gives the
+implementation of the \code{find} function. It is a Scala function that returns an IR node
+representing the JavaScript computation that will search the element in the final program. The
+\code{getConstIdCss} function analyzes the selector: if it is a constant \code{String} value
+containing a CSS ID selector, it returns the value of the identifier. So, if the \code{find}
+function is applied to the \code{document} and to an ID selector, it returns a
+\code{DocumentGetElementById} IR node (that is translated to a \code{document.getElementById} call
+by the code generator), otherwise it returns a \code{SelectorFind} IR node (that is translated to a
+\code{querySelector} call).
+
+The same applies to the implementation of \code{findAll}: the selector passed as parameter is
+analyzed and the function returns a \code{SelectorGetElementsByClassName} in case of a CSS class
+name selector, a \code{SelectorGetElementsByTagName} in case of a CSS tag name selector, and a
+\code{SelectorFindAll} otherwise.
+
+\begin{figure}[htb]
+\begin{lstlisting}[label=js-scala-selectors,caption=Searching elements in js-scala]
+def getWords() = {
+  val form = document.find("#add-user")
+  val sections = form.findAll("fieldset")
+  sections map (_.findAll(".word"))
+}
+\end{lstlisting}
+\end{figure}
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=5cm]{gpce19c-foy-ir.pdf}
+\end{center}
+\caption{Intermediate representations returned by the evaluation of (a)
+\code{document.find("\#add-user button")} and (b) \code{document.find("\#add-user")}}
+\label{fig:ir}
+\end{figure}
+
+\vspace{1 cm}
+
+Figure \ref{fig:ir} shows the IRs returned by the evaluation of \small{
+$document\\.find("\#add-user button")$} \normalsize{and}  \small{$ document.find("\#add-user")$}.
+
+\normalsize{}
+
+\sloppy
+In the former case, the selector is parsed and does not match an ID selector (it is a composite
+selector matching button elements within the element having the \code{add-user} id), so a
+\code{SelectorFind} node is returned, then translated into a call to the general
+\code{querySelector} function. In the latter case, the selector matches an ID selector so a
+\code{DocumentGetElementById} node is returned, then translated into a call to the specialized
+\code{getElementById} function.
+
+Finally, Listing~\ref{js-scala-selectors} shows how to implement Listing~\ref{jquery-selectors} in
+Scala using js-scala. The code has the same abstraction level as with jQuery, however it
+generates a JavaScript program identical to Listing~\ref{vanilla-selectors}: the high-level
+abstractions (the \code{find} and \code{findAll} functions) exist only in the initial program, not
+in the final JavaScript program.
+
+\subsection{Monads Sequencing}
+\label{sec:option}
+
+This section presents an abstraction to handle \code{null} references and shows how this
+abstraction can be shared between client and server code.
+
+\code{null} references are a known source of problems in programming
+languages~\cite{Hoare09_Null,Nanda09_Null}. For example, consider Listing \ref{null-unsafe} finding
+a particular widget in the page and then a particular button within the widget. The native
+\code{querySelector} method returns \code{null} if no node matched the given selector in the
+document. If we run this code in a page where the widget is not present, it will throw an error
+and stop further JavaScript execution. Defensive code can be written to handle \code{null}
+references, but leads to very cumbersome code, as shown in Listing \ref{null-defensive}.\footnote{However, one could alleviate the syntax burden by using a language such as CoffeeScript~\cite{Ashkenas2011_CoffeeScript}, that suppports a special notation for optional values dereferencing and desugars directly to JavaScript.}
+
+\begin{figure}[htb]
+\begin{lstlisting}[language=JavaScript,label=null-unsafe,caption=Unsafe code]
+var loginWidget =
+  document.querySelector("div.login");
+var loginButton =
+  loginWidget.querySelector("button.submit");
+loginButton.addEventListener("click", handler);
+\end{lstlisting}
+\end{figure}
+
+
+\begin{figure}[htb]
+\begin{lstlisting}[language=JavaScript,label=null-defensive,caption=Defensive programming to handle
+null references]
+var loginWidget =
+  document.querySelector("div.login");
+if (loginWidget !== null) {
+  var loginButton =
+    loginWidget.querySelector("button.submit");
+  if (loginButton !== null) {
+    loginButton.
+      addEventListener("click", handler);
+  }
+}
+\end{lstlisting}
+\end{figure}
+
+Some programming languages encode optional values with a monad (\eg{} \code{Maybe} in Haskell and
+\code{Option} in Scala). In that case, sequencing over the monad encodes optional value
+dereferencing. If the language supports a convenient syntax for monad sequencing, it brings a
+convenient syntax for optional value dereferencing, alleviating developers from the burden of
+defensive programming.
+
+In our DSL, we encode an optional value of type \code{Rep[A]} using a \code{Rep[Option[A]]} value,
+which can either be a \code{Rep[Some[A]]} (if there is a value) or a \code{Rep[None.type]} (if
+there is no value). An optional value can be dereferenced using the \code{for} notation, as shown
+in Listing \ref{null-js-scala}, that implements in js-scala a program equivalent to Listing
+\ref{null-defensive}. The \code{find} function returns a \code{Rep[Option[Element]]}. The \code{for}
+expression contains a sequence of statements that are executed in order, as long as the previous
+statement returned a \code{Rep[Some[Element]]} value.
+
+\begin{figure}[htb]
+\begin{lstlisting}[label=null-js-scala,caption=Handling null references in js-scala]
+for {
+  loginWidget <- document.find("div.login")
+  loginButton <- loginWidget.find("submit.button")
+} loginButton.on(Click)(handler)
+\end{lstlisting}
+\end{figure}
+
+Such a monadic API brings both safety and expressiveness to developers manipulating optional values
+but usually involves the creation of an extra container object holding the optional value. In our
+case, the monadic API is used in the initial program but generates code that does not wrap values in
+container objects but instead checks if they are \code{null} or not when dereferenced. So the extra
+container object exists only in the initial program and is removed during code generation: Listing
+\ref{null-js-scala} produces a code equivalent to Listing~\ref{null-defensive}.
+
+\begin{figure}[htb]
+\begin{lstlisting}[caption=JavaScript code generator for null references handling
+DSL,label=option-codegen,captionpos=b]
+override def emitNode(sym: Sym[Any], rhs: Def[Any]) =
+  rhs match {
+    case OptionIsEmpty(o) =>
+      emitValDef(sym, q" $o === null")
+    case OptionForeach(o, b) =>
+      stream.println(q"if ($o !== null) {")
+      emitBlock(b)
+      stream.println("}")
+    case _ =>
+      super.emitNode(sym, rhs)
+  }
+\end{lstlisting}
+\end{figure}
+
+Listing \ref{option-codegen} shows the JavaScript code generator for methods \code{isEmpty} (that
+checks if the optional value contains a value) and \code{foreach} (that is called when the
+\code{for} notation is used, as in Listing \ref{null-js-scala}). The \code{emitNode} method handles
+\code{OptionIsEmpty} and \code{OptionForeach} nodes returned by the implementations of
+\code{isEmpty} and \code{foreach}, respectively. In the case of the \code{OptionIsEmpty} node, it
+simply generates an expression testing if the value is \code{null}. In the case of the
+\code{OptionForeach} node, it wraps the code block dereferencing the value within a \code{if}
+checking that the value is not \code{null}.
+
+The IR nodes are not tied to the JavaScript code generator, so we are able to make this abstraction
+available on server-side by writing a code generator similar to the JavaScript code generator, but
+targeting Scala. So the same abstraction is efficiently translated on both server and client sides.
+
+\subsection{DOM Fragments Definition}
+\label{sec:forest}
+
+This section shows how we define an abstraction shared between clients and servers, as in the
+previous section, but that has different native counterparts on client and server sides. The
+challenge is to define an API providing a common vocabulary that generates code using the target
+platform native APIs.
+
+\begin{figure}[htb]
+\begin{lstlisting}[language=JavaScript,caption=JavaScript DOM creation native API,label=dom-api]
+var articleUi = function (article) {
+  var div = document.createElement('div');
+  div.setAttribute('class', 'article');
+  var span = document.createElement('span');
+  var name =
+    document.createTextNode(article.name + ': ');
+  span.appendChild(name);
+  div.appendChild(span);
+  var strong = document.createElement('strong');
+  var price = document.createTextNode(article.price);
+  strong.appendChild(price);
+  div.appendChild(strong);
+  return div
+};
+\end{lstlisting}
+\end{figure}
+
+\begin{figure}[htb]
+\begin{lstlisting}[caption=Scala XML API,label=scala-xml-api]
+def articleUi(article: Article) =
+  <div class="article">
+    <span>{ article.name + ": " }</span>
+    <strong>{ article.price }</strong>
+  </div>
+\end{lstlisting}
+\end{figure}
+
+A common task in Web applications consists in computing HTML fragments representing a part of the
+page content. This task can be performed either from the server-side (to initially respond to a
+request) or from the client-side (to update the current page). As an example, Listing \ref{dom-api}
+defines a JavaScript function \code{articleUi} that builds a DOM tree containing an article
+description. Listing \ref{scala-xml-api} shows how one could implement a similar function on server-side using the standard Scala XML library. The reader may notice that the client-side and server-side APIs are very different and that the client-side native API is very low-level and inconvenient to use. We could use a library on client-side to get a higher level API for DOM fragment creation, but that would decrease the runtime performance. Instead, we want to define a high-level API that compiles to code as efficient as if it was written using the native APIs on both platforms.
+
+Our first step consists in capturing, in a high-level API, the concepts common to the JavaScript and
+Scala APIs. Though they are different, both APIs define HTML elements with attributes and content.
+We propose to have a function \code{el} to define an HTML element, eventually containing attributes
+and children elements. Any children of an element that is not an element itself is converted into a
+text node. Listing \ref{forest} shows how to implement our example with our DSL. The children
+elements of an element can also be obtained dynamically from a collection, as shown in Listing
+\ref{forest-loops}.
+
+\begin{figure}[htb]
+\begin{lstlisting}[label=forest,caption=DOM definition DSL]
+def articleUi(article: Rep[Article]) =
+    el('div, 'class -> 'article)(
+        el('span)(article.name + ": "),
+        el('strong)(article.price)
+    )
+\end{lstlisting}
+\end{figure}
+
+\begin{figure}[htb]
+\begin{lstlisting}[label=forest-loops,caption=Using loops]
+def articlesUi(articles: Rep[Seq[Article]]) =
+    el('ul)(
+        for (article <- articles)
+        yield el('li)(articleUi(article))
+    )
+\end{lstlisting}
+\end{figure}
+
+The \code{el} function returns an \code{Element} IR node that is a tree composed of other
+\code{Element} and \code{Text} nodes. The JavaScript and Scala code generators traverse this tree
+and produce code building an equivalent DOM tree and XML fragment, respectively. When the children
+of an element are constant values (as in Listing \ref{forest}) rather than dynamically computed (as
+in Listing \ref{forest-loops}), the code generators unroll the loop that adds children to their
+parent, for better performance. As a result, Listing \ref{forest} generates a code equivalent to
+Listing \ref{dom-api} on client-side and equivalent to Listing \ref{scala-xml-api} on server-side.
+
+\begin{figure*}
+\begin{lstlisting}[language=JavaScript,label=js-gen-forest,caption=JavaScript code generator for the
+DOM fragment definition DSL]
+case Tag(name, children, attrs) =>
+  emitValDef(sym, q"document.createElement('$name')")
+  for ((n, v) <- attrs) {
+    stream.println(q"$sym.setAttribute('$n', $v);")
+  }
+  children match {
+    case Left(children) =>
+      for (child <- children) {
+        stream.println(q"$sym.appendChild($child);")
+      }
+    case Right(children) =>
+      val x = fresh[Int]
+      stream.println(q"for (var $x = 0; $x < $children.length; $x++) {")
+      stream.println(q"$sym.appendChild($children[$x]);")
+      stream.println("}")
+  }
+case Text(content) =>
+  emitValDef(sym, q"document.createTextNode($content)")
+\end{lstlisting}
+\end{figure*}
+
+\begin{figure*}
+\begin{lstlisting}[label=scala-gen-forest,caption=Scala code generator for the DOM fragment
+definition DSL]
+case Tag(name, children, attrs) =>
+  val attrsFormatted =
+    (for ((name, value) <- attrs)
+     yield q" $name={ $value }").mkString
+  children match {
+    case Left(children) =>
+      if (children.isEmpty) {
+        emitValDef(sym, q"<$name$attrsFormatted />")
+      } else {
+        emitValDef(sym,
+          q"<name$attrsFormatted>{ ${children.map(quote)} }</$name>"
+        )
+      }
+    case Right(children) =>
+      emitValDef(sym, q"<$name$attrsFormatted>{ $children }</$name>")
+  }
+case Text(content) =>
+  emitValDef(sym, q"{xml.Text(content)}")
+\end{lstlisting}
+\end{figure*}
+
+Listings \ref{js-gen-forest} and \ref{scala-gen-forest} show the relevant parts of the code
+generators for this DSL. They basically follow the same pattern: they visit \code{Tag} and
+\code{Text} IR nodes and produce the corresponding elements in the target language.
+
+
+\section{Evaluation}
+\label{sec:validation}
+
+Our goal is to evaluate the level of abstraction provided by our solution and its performance, by
+comparing it with common approaches. We take the number of lines of code as an inverse approximation
+of the level of abstraction. We also evaluate the ability to share code between client and server
+sides.
+
+We realized two micro-benchmarks involving programs using the selectors DSL and the
+optional value DSL, and we benchmarked a real world program. In each case we have written several
+implementations of the program, using plain JavaScript, Java/GWT, HaXe and js-scala (in each case we
+tried to write the application in an idiomatic way). The performance benchmarks measured the
+execution time of the generated JavaScript code. The tests were executed on a DELL Latitude E6430
+laptop with 8 GB of RAM, on the Google Chrome v27 Web browser.
+
+All our charts show three kinds of measures: the first group is the speed execution in operations
+per second (higher is better), the second group is the number of lines of code (lower is better) and
+the last group is the execution speed to number of lines of code ratio (higher is better). We
+normalized the values so the three groups can be shown within a same chart without scale issue.
+
+\subsection{Micro-Benchmarks}
+
+The micro-benchmarks measure the performance of our implementation of the selectors and optional
+value abstractions\footnote{The source code of the benchmarks is available at
+\href{https://github.com/js-scala/js-scala/tree/master/papers/gpce2013/benchmarks}{
+https://github.com/js-scala/js-scala/tree/master/papers/gpce2013/benchmarks}}.
+
+\subsubsection{Selectors}
+
+We could not implement this abstraction in GWT or HaXe as efficiently as we did in js-scala because
+it relies on the staging mechanism: the best we could do in GWT or Haxe is to expose the native
+high-level API (\code{querySelector} and \code{querySelectorAll}). So we directly compared the
+execution time of the JavaScript code generated by Listing \ref{js-scala-selectors} with a
+JavaScript program equivalent to Listing \ref{vanilla-selectors} but using the high-level native
+API (\code{querySelector} and \code{querySelectorAll}) instead. The code was executed in a Web page
+containing a few elements: 4 \code{fieldset} elements, each containing 0 to 2 elements with class
+\code{word}.
+
+\begin{figure}
+\centering
+\includegraphics[width=8cm]{gpce19c-foy-selectors-benchmark.png}
+\caption{Micro-benchmark on the selectors abstraction}
+\label{fig:selectors-benchmark}
+\end{figure}
+
+Figure \ref{fig:selectors-benchmark} shows the benchmark results. The JavaScript-opt version is
+Listing \ref{vanilla-selectors}, which uses low-level native APIs, the JavaScript version is the
+equivalent listing using the high-level native API, and the jQuery version is Listing
+\ref{jquery-selectors}. The js-scala version is slightly slower than the JavaScript-opt (by 14\%),
+but is 2.88 times faster than the JavaScript version, and 28.6 times faster than the jQuery
+version. Finally, the js-scala version has a performance to lines of code ratio more than 1.72
+times higher than others.
+
+\subsubsection{Optional Value}
+
+We reimplemented the optional value abstraction in plain JavaScript, Java and HaXe and wrote a small
+program manipulating optional values. Listing \ref{lst:option-benchmark} shows the js-scala
+version of this program. The \code{maybe} function is a function partially defined on
+\code{Int} values.
+
+\begin{figure}
+\begin{lstlisting}[label=lst:option-benchmark,caption=Micro-benchmark code for the optional values
+abstraction]
+val maybe = fun { (x: Rep[Int]) =>
+  some(x + 1)
+}
+
+def benchmark = for {
+  a <- maybe(0)
+  b <- maybe(a)
+  c <- maybe(b)
+  d <- maybe(c)
+} yield d
+\end{lstlisting}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=8cm]{gpce19c-foy-microbenchmark.png}
+\caption{Micro-benchmark on the optional values abstraction}
+\label{micro-benchmark}
+\end{figure}
+
+Figure \ref{micro-benchmark} shows the benchmark results. The js-scala version of the program runs
+between 3 to 10 times faster than other approaches. This version also takes less lines of code than
+others (this result is almost due to the special \code{for} notation, that has no equivalent in
+other benchmarked languages). Finally, the js-scala program has a performance to lines of code ratio
+more than 4 times higher than others.
+
+\subsection{Real World Application}
+
+Chooze~\footnote{Source code is available at
+\href{http://github.com/julienrf/chooze}{http://github.com/julienrf/chooze}, under the branches \code{vanilla}, \code{jquery}, \code{gwt}, \code{haxe} and \code{js-scala}} is an existing
+complete application for making polls. It allows users to create a poll, define the choice
+alternatives, share the poll, vote and look at the results. It contains JavaScript code to handle
+the dynamic behavior of the application: double-posting prevention, dynamic form update and rich
+interaction with the document. The size of the whole application (server and client sides) is about one thousand lines of code.
+
+The application was initially written using jQuery. We rewrote it in vanilla JavaScript (low-level
+hand-tuned code without third-party library), js-scala, GWT and HaXe.
+
+\subsubsection{Performance}
+
+The benchmark code simulates user actions on a Web page (2000 clicks on buttons, triggering a
+dynamic update of the page and involving the use of the optional value monad, the selectors API and
+the HTML fragment definition API). Figure \ref{benchmark} shows the benchmark results.
+
+\begin{figure}
+\centering
+\includegraphics[width=8cm]{gpce19c-foy-chooze.png}
+\caption{Benchmarks on a real application}
+\label{benchmark}
+\end{figure}
+
+The runtime performance of the vanilla JavaScript, HaXe and js-scala versions are similar (though
+the js-scala version is slightly slower by 6\%). It is worth noting that the vanilla JavaScript and
+the HaXe versions use low-level code compared to js-scala, as shown in the middle of the figure
+(lines of code): the js-scala version needs only 74 lines of code while the vanilla JavaScript
+version needs 116 lines of code (57\% bigger) and the HaXe version needs 148 lines of code (100\%
+bigger). The jQuery JavaScript version, which code is high-level (54 lines of code, 27\% less
+than js-scala) runs 10 times slower than the js-scala version.
+
+The last part of the figure compares the runtime performance to lines of code ratio. Js-scala shows
+the best score, being 1.48 times better than the vanilla JavaScript version, 1.88 times better than
+the HaXe version, 3.45 times better than the GWT version and 7.82 times better than the jQuery
+JavaScript version.
+
+\subsubsection{Code Reuse}
+
+We were able to share some DOM fragment definitions between server-side and client-side only in
+the js-scala version. In the GWT version we don’t have a choice: dynamic DOM fragments are always
+built only on client-side (a practice that makes it more difficult to make the pages content
+crawlable by search engines and may increase the initial display time). In the other versions the
+code for building the DOM fragment is duplicated between client and server sides, representing 20
+lines of JavaScript code (17\% of the total) and 15 lines of HTML (5\% of the total) in the
+JavaScript version, and 19 lines of HaXe code (13\% of the total) and 15 lines of HTML (5\%
+of the total) in the HaXe version. In the js-scala version the DOM fragment definitions shared
+between clients and servers represent 22 lines of Scala code (30\% of the total) and save 15 lines
+of HTML (5\% of the total).
+
+\subsubsection{Threats to Validity}
+
+Our goal was to put the runtime performance in perspective with the level of abstraction. We are
+aware that the indicator we chose as an inverse approximation of the abstraction level, the number
+of lines of code, is not scientifically established and may be subject to discussion. However, we
+think it is a reasonable approximation in our case because all the candidate languages we use have
+a similar syntax, inherited from the C programming language.
+
+Another weakness of our validation may come from the fact that our application does not make a
+heavy use of client-side code and thus may not be representative of the way large Web applications
+are written. However, we think that a richer application would have more parts of code susceptible
+to be shared between client and server sides, thus giving even better results on the code reuse
+statistics.
+
+Finally, the GWT version may not have been written in an as idiomatic as possible way. 
+Indeed, we mainly catch the events directly on the HTML DOM, as we do in JavaScript, without
+reusing all the GWT widgets. We do not build the application as a blank page with a set of
+widgets. However, this way of developing using GWT has no impact on the performance and a minor
+impact on the number of lines of code.
+
+\section{Discussion}
+\label{sec:discussion}
+
+We implemented our solution as compiled embedded DSLs in Scala. Generating code from our DSLs is a
+two step process: an initial Scala program first evaluates to an intermediate representation of
+the final program that is traversed by code generators to produce the final JavaScript code.
+Domain-specific optimizations can happen during the IR construction (as shown in section
+\ref{sec:selectors}) or during the code generation (as shown in section \ref{sec:option}).
+
+An important consequence of the implementation as compiled embedded DSLs is that defining a DSL
+that can be shared between server and client sides requires a low effort: compiled embedded DSLs are
+simply defined as libraries but let developers specialize the generated code according to each
+target platform (as shown in section \ref{sec:forest}).
+
+In other words, the compiled embedded DSL approach gives us a way to exploit the Scala host language
+to define high-level language units that integrate seamlessly together and bring domain-specific
+knowledge to the code generation scheme to produce efficient code for client and server sides.
+
+These characteristics allowed us to capture some Web programming patterns as high-level
+abstractions, making the code of our application simpler to reason about and making some parts of
+the code reusable between client and server sides, while keeping execution performance on
+client-side as high as if we used hand-tuned low-level JavaScript code.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+High-level abstractions for Web programming, which are useful to decrease the complexity of the code
+and to abstract over the differences between the client and server environments, must be implemented
+in a way to efficiently run on hardware with limited capabilities.
+
+In this paper we showed how to leverage staging to implement high-level abstractions for Web
+programming that are efficiently compiled for heterogeneous platforms such as Web clients and
+servers that differ in their technical API. We also showed how these abstractions can be shared
+between client and server sides. 
+
+Our two kinds of benchmarks, (i) micro-benchmarks to evaluate one abstraction and (ii) a benchmark
+on a real application using these abstractions, show performance similar to hand-optimized
+low-level code.
+
+In a future work we may investigate more coarse-grained optimizations like smart DOM updates
+minimizing the number of browser reflows.
+
+%\appendix
+%\section{Appendix Title}
+%
+%This is the text of the appendix, if you need one.
+%
+%\acks
+%
+%This work was funded by Zenexity.
+
+\bibliographystyle{splncs}
+%\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}
