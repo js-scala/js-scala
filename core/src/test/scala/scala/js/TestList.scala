@@ -34,7 +34,7 @@ class TestList extends FileDiffSuite {
 
   def testMapAndFlatMap() {
     withOutFile(prefix+"map-flatmap") {
-      val prog = new MapAndFlatMap with ListOpsExp with NumericOpsExp
+      val prog = new MapAndFlatMap with ListOpsExp with NumericOpsExp with PrimitiveOpsExp
       val codegen = new GenEffect with GenListOps with GenNumericOps { val IR: prog.type = prog }
       codegen.emitSource(prog.test, "MapAndFlatMap", new PrintWriter(System.out))
     }

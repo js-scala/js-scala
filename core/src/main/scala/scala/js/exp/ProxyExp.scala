@@ -10,7 +10,7 @@ trait ProxyExp extends Proxy with EffectExp {
   case class MethodCall[T](receiver: Exp[Any], method: String, args: List[Exp[Any]]) extends Def[T]
   case class SuperMethodCall[T](receiver: Exp[Any], parentConstructor: Option[Exp[Any]], method: String, args: List[Exp[Any]]) extends Def[T]
   case class FieldAccess[T](receiver: Exp[Any], field: String) extends Def[T]
-  case class FieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
+  case class ProxyFieldUpdate(receiver: Exp[Any], field: String, value: Exp[Any]) extends Def[Unit]
 
   def repProxy[T<:AnyRef](x: Rep[T])(implicit m: Manifest[T]): T = {
     proxy[T](x, None, null)(m)
@@ -66,7 +66,7 @@ trait ProxyExp extends Proxy with EffectExp {
       // finer-granularity? We will need a similar solution for
       // reified new with vars and for dynamic select.
       } else if (isFieldAccess) reflectEffect(FieldAccess[AnyRef](receiver, m.getName)) : Exp[Any]
-      else if (isFieldUpdate) reflectEffect(FieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
+      else if (isFieldUpdate) reflectEffect(ProxyFieldUpdate(receiver, fieldFromUpdateMethod(m.getName), args_(0))) : Exp[Any]
       else reflectEffect(MethodCall[AnyRef](receiver, m.getName, args_.toList)) : Exp[Any]
     }
   }

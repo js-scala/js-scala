@@ -70,7 +70,7 @@ class TestConditional extends FileDiffSuite {
     
       println("-- begin")
 
-      new ConditionalProg with LiftNumeric with NumericOpsExpOpt with EqualExp with PrintExp with IfThenElseExp with CompileScala { self =>
+      new ConditionalProg with LiftNumeric with NumericOpsExpOpt with EqualExp with PrintExp with IfThenElseExp with CompileScala with PrimitiveOpsExp { self =>
         val codegen = new ScalaGenIfThenElse with ScalaGenNumericOps with ScalaGenEqual with ScalaGenPrint { val IR: self.type = self }
         val f = (x: Rep[Double]) => test(x)
         codegen.emitSource(f, "Test", new PrintWriter(System.out))
@@ -78,7 +78,7 @@ class TestConditional extends FileDiffSuite {
         println(g(7.0))
       }
     
-      new ConditionalProg with LiftNumeric with NumericOpsExpOpt with EqualExp with PrintExp with IfThenElseExp { self =>
+      new ConditionalProg with LiftNumeric with NumericOpsExpOpt with EqualExp with PrintExp with IfThenElseExp with PrimitiveOpsExp { self =>
         val codegen = new GenIfThenElse with GenNumericOps with GenEqual with JSGenPrint { val IR: self.type = self }
         val f = (x: Rep[Double]) => test(x)
         codegen.emitSource(f, "main", new PrintWriter(System.out))

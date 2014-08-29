@@ -9,8 +9,8 @@ import gen.js.{GenEffect, GenNumericOps, GenOptionOps, GenEqual, GenIfThenElse, 
 class TestOptionOps extends FileDiffSuite {
   val prefix = "test-out/"
 
-  trait DSL extends Base with OptionOps with NumericOps
-  trait DSLExp extends DSL with OptionOpsExp with NumericOpsExp
+  trait DSL extends Base with OptionOps with NumericOps with PrimitiveOps
+  trait DSLExp extends DSL with OptionOpsExp with NumericOpsExp with PrimitiveOpsExp
   trait DSLJSGen extends GenEffect with GenOptionOps with GenNumericOps { val IR: DSLExp }
 
   def testMapFlatMap() {

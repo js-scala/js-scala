@@ -2,11 +2,11 @@ package scala.js
 
 import java.io.PrintWriter
 import scala.js.gen.js.{ GenEffect, GenNumericOps, GenModule }
-import scala.virtualization.lms.common.{ NumericOps, NumericOpsExp }
+import scala.virtualization.lms.common.{PrimitiveOpsExp, PrimitiveOps, NumericOps, NumericOpsExp}
 
 class TestModule extends FileDiffSuite {
 
-  trait Prog extends NumericOps {
+  trait Prog extends NumericOps with PrimitiveOps {
 
     def id(x: Rep[Int]) = x
 
@@ -19,7 +19,7 @@ class TestModule extends FileDiffSuite {
 
   def testEmitModule() = {
 
-    val prog = new Prog with NumericOpsExp
+    val prog = new Prog with NumericOpsExp with PrimitiveOpsExp
 
     val prefix = "test-out/"
     withOutFile(prefix + "module") {
@@ -37,7 +37,7 @@ class TestModule extends FileDiffSuite {
   }
 
   def testEmitEmptyModule() = {
-    val prog = new Prog with NumericOpsExp
+    val prog = new Prog with NumericOpsExp with PrimitiveOpsExp
 
     val prefix = "test-out/"
     withOutFile(prefix + "module-empty") {

@@ -1,9 +1,9 @@
 package scala.js.exp
 
 import scala.reflect.SourceContext
-import scala.virtualization.lms.common.NumericOpsExp
+import scala.virtualization.lms.common.{NumericOpsExp, PrimitiveOpsExp}
 
-trait NumericOpsExpOpt extends NumericOpsExp {
+trait NumericOpsExpOpt extends NumericOpsExp { this: PrimitiveOpsExp =>
 
   override def numeric_plus[T:Numeric:Manifest](x: Exp[T], y: Exp[T])(implicit pos: SourceContext) = {
     val t = implicitly[Numeric[T]]

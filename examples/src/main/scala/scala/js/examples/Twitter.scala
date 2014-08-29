@@ -6,6 +6,7 @@ import Predef.{any2stringadd => _, _}
 import scala.js.language.{Debug, CPS, Ajax, JS, JSLib, Casts}
 import scala.js.exp.{JSLibExp, CPSExp, AjaxExp, JSExp, DebugExp}
 import scala.js.gen.js.{GenJS, GenJSLib, GenDebug, GenAjax, GenCPS}
+import scala.virtualization.lms.common.Record
 
 trait TwitterApi extends JS with JSLib with CPS with Ajax with Debug {
   def append(loc: Rep[String], html: Rep[String]): Rep[Unit]

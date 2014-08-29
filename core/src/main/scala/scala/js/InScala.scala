@@ -30,7 +30,7 @@ trait ImplicitOpsInScala extends ImplicitOps with InScala {
   override def implicit_convert[X,Y](x: X)(implicit c: X => Y, mX: Manifest[X], mY: Manifest[Y], pos: SourceContext) : Y = c(x)
 }
 
-trait NumericOpsInScala extends NumericOps with VariablesInScala {
+trait NumericOpsInScala extends NumericOps with VariablesInScala { this: PrimitiveOps =>
   override def numeric_plus[T:Numeric:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext) : T = {
     val t = implicitly[Numeric[T]]
     t.plus(lhs, rhs)
@@ -44,8 +44,7 @@ trait NumericOpsInScala extends NumericOps with VariablesInScala {
     t.times(lhs, rhs)
   }
   override def numeric_divide[T:Numeric:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext) : T = {
-    val t = implicitly[Numeric[T]]
-    (t.toDouble(lhs) / t.toDouble(rhs)).asInstanceOf[T]
+    ???
   }
 
 }
@@ -78,6 +77,9 @@ trait OrderingOpsInScala extends OrderingOps with VariablesInScala {
   override def ordering_min[T:Ordering:Manifest](lhs: T, rhs: T)(implicit pos: SourceContext): T = {
     val t = implicitly[Ordering[T]]
     t.min(lhs, rhs)
+  }
+  override def ordering_compare[T](lhs: T,rhs: T)(implicit ev1: scala.math.Ordering[T], ev2: scala.reflect.Manifest[T], pos: scala.reflect.SourceContext): Int = {
+    implicitly[Ordering[T]].compare(lhs, rhs)
   }
 }
 
@@ -135,7 +137,7 @@ trait BooleanOpsInScala extends BooleanOps with InScala {
 trait StringOpsInScala extends StringOps with InScala {
   override def string_plus(s: Any, o: Any)(implicit pos: SourceContext): String = OriginalOps.string_plus(s, o)
   override def string_trim(s: String)(implicit pos: SourceContext) : String = OriginalOps.string_trim(s)
-  override def string_split(s: String, separators: String)(implicit pos: SourceContext) : Array[String] = OriginalOps.string_split(s, separators)
+  override def string_split(s: String, separators: String, limit: Int)(implicit pos: SourceContext) : Array[String] = OriginalOps.string_split(s, separators)
   override def string_valueof(a: Any)(implicit pos: SourceContext) = OriginalOps.string_valueof(a)
   override def string_startswith(s1: String, s2: String)(implicit pos: SourceContext): Boolean = OriginalOps.string_startswith(s1, s2)
   override def string_todouble(s: String)(implicit pos: SourceContext): Double = OriginalOps.string_todouble(s)
@@ -144,6 +146,9 @@ trait StringOpsInScala extends StringOps with InScala {
   def string_length(s: String)(implicit pos: SourceContext): Int = s.length
   def string_substring(s: String,start: Int,end: Int)(implicit pos: SourceContext): String = s.substring(start, end)
   def string_tolong(s: String)(implicit pos: SourceContext): Long = s.toLong
+  def string_charAt(s: String,i: Int)(implicit pos: scala.reflect.SourceContext): Char = ???
+  def string_contains(s1: String,s2: String)(implicit pos: scala.reflect.SourceContext): Boolean = ???
+  def string_endsWith(s: String,e: String)(implicit pos: scala.reflect.SourceContext): Boolean = ???
 }
 
 trait ObjectOpsInScala extends ObjectOps with InScala {
@@ -354,9 +359,10 @@ trait ListOps2InScala extends ListOps2 with InScala {
   def list_size[A](l: List[A]) = l.size
 }
 
-trait StructsInScala extends Structs with InScala {
+trait StructsInScala extends StructOps with InScala {
   def record_new[T](fields: Seq[(String, Boolean, Rep[T] => Rep[_])])(implicit ev: Manifest[T]) = ???
   def record_select[T](record: Record, field: String)(implicit ev: Manifest[T]) = ???
+  def field[T:Manifest](struct: Any, index: String)(implicit pos: SourceContext): T = ???
 }
 
 trait PrimitiveOpsInScala extends PrimitiveOps with InScala {
@@ -369,8 +375,8 @@ trait PrimitiveOpsInScala extends PrimitiveOps with InScala {
   def obj_integer_parse_int(s: String)(implicit pos: SourceContext) = s.toInt
   def obj_int_max_value(implicit pos: SourceContext) = Int.MaxValue
   def obj_int_min_value(implicit pos: SourceContext) = Int.MinValue
-  def int_divide_frac[A:Manifest:Fractional](lhs: Int, rhs: A)(implicit pos: SourceContext) = ???
-  def int_divide(lhs: Int, rhs: Int)(implicit pos: SourceContext) = lhs / rhs
+//  def int_divide_frac[A:Manifest:Fractional](lhs: Int, rhs: A)(implicit pos: SourceContext) = ???
+  def int_divide(lhs: Int, rhs: Int)(implicit pos: SourceContext) = ???
   def int_mod(lhs: Int, rhs: Int)(implicit pos: SourceContext) = lhs % rhs
   def int_binaryor(lhs: Int, rhs: Int)(implicit pos: SourceContext) = lhs | rhs
   def int_binaryand(lhs: Int, rhs: Int)(implicit pos: SourceContext) = lhs & rhs
@@ -384,6 +390,28 @@ trait PrimitiveOpsInScala extends PrimitiveOps with InScala {
   def long_shiftleft(lhs: Long, rhs: Int)(implicit pos: SourceContext) = lhs << rhs
   def long_shiftright_unsigned(lhs: Long, rhs: Int)(implicit pos: SourceContext) = lhs >>> rhs
   def long_toint(lhs: Long)(implicit pos: SourceContext) = lhs.toInt
+  def double_divide(lhs: Double,rhs: Double)(implicit pos: scala.reflect.SourceContext): Double = ???
+  def double_minus(lhs: Double,rhs: Double)(implicit pos: scala.reflect.SourceContext): Double = ???
+  def double_plus(lhs: Double,rhs: Double)(implicit pos: scala.reflect.SourceContext): Double = ???
+  def double_times(lhs: Double,rhs: Double)(implicit pos: scala.reflect.SourceContext): Double = ???
+  def double_to_float(lhs: Double)(implicit pos: scala.reflect.SourceContext): Float = ???
+  def double_to_int(lhs: Double)(implicit pos: scala.reflect.SourceContext): Int = ???
+  def float_divide(lhs: Float,rhs: Float)(implicit pos: scala.reflect.SourceContext): Float = ???
+  def float_minus(lhs: Float,rhs: Float)(implicit pos: scala.reflect.SourceContext): Float = ???
+  def float_plus(lhs: Float,rhs: Float)(implicit pos: scala.reflect.SourceContext): Float = ???
+  def float_times(lhs: Float,rhs: Float)(implicit pos: scala.reflect.SourceContext): Float = ???
+  def float_to_double(lhs: Float)(implicit pos: scala.reflect.SourceContext): Double = ???
+  def float_to_int(lhs: Float)(implicit pos: scala.reflect.SourceContext): Int = ???
+  def int_leftshift(lhs: Int,rhs: Int)(implicit pos: scala.reflect.SourceContext): Int = ???
+  def int_minus(lhs: Int,rhs: Int)(implicit pos: scala.reflect.SourceContext): Int = ???
+  def int_plus(lhs: Int,rhs: Int)(implicit pos: scala.reflect.SourceContext): Int = ???
+  def int_rightshiftarith(lhs: Int,rhs: Int)(implicit pos: scala.reflect.SourceContext): Int = ???
+  def int_rightshiftlogical(lhs: Int,rhs: Int)(implicit pos: scala.reflect.SourceContext): Int = ???
+  def int_times(lhs: Int,rhs: Int)(implicit pos: scala.reflect.SourceContext): Int = ???
+  def int_to_double(lhs: Int)(implicit pos: scala.reflect.SourceContext): Double = ???
+  def int_to_float(lhs: Int)(implicit pos: scala.reflect.SourceContext): Float = ???
+  def obj_float_parse_float(s: String)(implicit pos: scala.reflect.SourceContext): Float = ???
+  def obj_long_parse_long(s: String)(implicit pos: scala.reflect.SourceContext): Long = ???
 }
 
 trait MiscOpsInScala extends MiscOps with InScala {

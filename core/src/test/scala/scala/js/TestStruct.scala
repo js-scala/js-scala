@@ -13,7 +13,7 @@ trait PersonDSL extends Base {
 
 trait PersonExp extends PersonDSL with BaseExp { this: StructExp =>
   override type Person = Map[String, Any]
-  override def newPerson(name: Exp[String]) = struct(ClassTag[Person]("Person"), Map("name"->name))
+  override def newPerson(name: Exp[String]) = struct(ClassTag[Person]("Person"), "name" -> name)
   override def infix_name(person: Rep[Person]) = field[String](person, "name")
 }
 

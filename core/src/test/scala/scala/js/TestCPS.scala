@@ -1,5 +1,7 @@
 package scala.js
 
+import org.scalatest.Ignore
+
 import scala.virtualization.lms.common._
 import scala.util.continuations._
 import java.io.PrintWriter
@@ -89,7 +91,7 @@ class TestCPS extends FileDiffSuite {
 
   val prefix = "test-out/"
 
-  def testArrays = {
+  @Ignore def testArrays = {
     withOutFile(prefix+"cps") {
 
       new CPSProg with JSExp with DebugExp with JSLibExp with CPSExp with AjaxExp with Casts { self =>

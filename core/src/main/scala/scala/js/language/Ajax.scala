@@ -1,5 +1,7 @@
 package scala.js.language
 
+import scala.virtualization.lms.common.Record
+
 trait Ajax extends JS with CPS {
 
   type Request = Record {

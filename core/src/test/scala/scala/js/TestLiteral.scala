@@ -8,7 +8,7 @@ import language.JS
 import exp.JSExp
 import gen.js.{NestedCodegen, GenStruct, GenNumericOps, GenJS}
 
-trait LiteralProg { this: Structs with LiftNumeric with NumericOps =>
+trait LiteralProg { this: StructOps with LiftNumeric with NumericOps =>
   def test(x: Rep[Double]): Rep[Double] = {
     val o = new Record {
       val a = x
@@ -38,7 +38,7 @@ class TestLiteral extends FileDiffSuite {
   // Ignore these tests until self references are handled by structs
   @Ignore def testLiteral = {
     withOutFile(prefix+"literal") {
-      new LiteralProg with StructExp with LiftNumeric with NumericOpsExpOpt { self =>
+      new LiteralProg with StructExp with LiftNumeric with NumericOpsExpOpt with PrimitiveOpsExp { self =>
         val codegen = new NestedCodegen with GenStruct with GenNumericOps { val IR: self.type = self }
         codegen.emitSource(test _, "test", new PrintWriter(System.out))
       }

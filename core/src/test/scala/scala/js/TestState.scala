@@ -8,8 +8,8 @@ import scala.js.exp.{StateOpsExp, DebugExp}
 class TestState extends FileDiffSuite {
   val prefix = "test-out/"
 
-  trait DSL extends Base with StateOps with NumericOps with LiftNumeric with Debug
-  trait DSLExp extends DSL with StateOpsExp with VariablesExp with TupleOpsExp with NumericOpsExp with DebugExp
+  trait DSL extends Base with StateOps with NumericOps with LiftNumeric with Debug with PrimitiveOps
+  trait DSLExp extends DSL with StateOpsExp with VariablesExp with TupleOpsExp with NumericOpsExp with DebugExp with PrimitiveOpsExp
   trait DSLGen extends gen.js.GenVariables with gen.js.GenTupleOps with gen.js.GenStateOps with gen.js.GenNumericOps with gen.js.GenDebug { val IR: DSLExp }
 
   def testModify() {
@@ -76,8 +76,8 @@ class TestState extends FileDiffSuite {
       import State._
 
       val noState = for {
-        x <- state[Int](42)
-        y <- state[Int](0)
+        x <- state[Int](41)
+        y <- state[Int](1)
       } yield x + y
 
       val applyEffect = for {

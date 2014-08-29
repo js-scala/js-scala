@@ -10,7 +10,7 @@ import scala.virtualization.lms.common._
  */
 trait JsScalaBase extends Base with NumericOps with OrderingOps with Equal with IfThenElse
   with While with BooleanOps with StringOps with Variables with ListOps with ObjectOps
-  with TupledFunctions with Structs with PrimitiveOps with MiscOps with TupleOps with ListOps2
+  with TupledFunctions with StructOps with PrimitiveOps with MiscOps with TupleOps with ListOps2
 
 /**
  * Same as [[scala.js.language.JsScala]] but with implicit conversions automatically lifting values to `Rep` values when needed.

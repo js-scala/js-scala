@@ -79,7 +79,7 @@ class TestArrays extends FileDiffSuite {
   def testArrays = {
     withOutFile(prefix+"arrays") {
     
-      new ArraysProg with LiftNumeric with NumericOpsExpOpt with EqualExp with ArraysExp { self =>
+      new ArraysProg with LiftNumeric with NumericOpsExpOpt with EqualExp with ArraysExp with PrimitiveOpsExp { self =>
         val codegen = new GenNumericOps with GenEqual with GenArrays { val IR: self.type = self }
         codegen.emitSource(test1 _, "test1", new PrintWriter(System.out))
         codegen.emitSource(test2 _, "test2", new PrintWriter(System.out))

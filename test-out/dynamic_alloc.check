@@ -1,8 +1,8 @@
 function main(x0) {
 var x1 = function(x2) {
-var x4 = new Foo();
-var x3 = {'a' : x4};
-return x3
+var x3 = new Foo();
+var x4 = {'a' : x3};
+return x4
 };
 var x6 = x1(x0);
 return x6

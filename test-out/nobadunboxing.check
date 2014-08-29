@@ -2,7 +2,7 @@ function main(x0) {
 var x1 = function(x2) {
 return x2
 };
-var x3 = {_1:1,_2:2};
+var x3 = {'_1' : 1,'_2' : 2};
 var x4 = x1(x3);
 return x4
 }

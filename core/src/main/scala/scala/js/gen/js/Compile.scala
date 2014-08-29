@@ -115,8 +115,8 @@ trait GenIfThenElse extends BaseGenIfThenElse with GenEffect { // it's more or l
   }
 }
 
-trait GenNumericOps extends GenBase {
-  val IR: NumericOpsExp
+trait GenNumericOps extends GenPrimitiveOps {
+  val IR: NumericOpsExp with PrimitiveOpsExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
@@ -181,7 +181,7 @@ trait GenStringOps extends GenBase {
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case StringPlus(s1,s2) => emitValDef(sym, "%s+%s".format(quote(s1), quote(s2)))
     case StringTrim(s) => emitValDef(sym, "%s.trim()".format(quote(s)))
-    case StringSplit(s, sep) => emitValDef(sym, "%s.split(%s)".format(quote(s), quote(sep)))
+    case StringSplit(s, sep, Const(0)) => emitValDef(sym, "%s.split(%s)".format(quote(s), quote(sep)))
     case StringValueOf(a) => emitValDef(sym, "String(%s)".format(quote(a)))
     case _ => super.emitNode(sym, rhs)
   }
@@ -258,7 +258,7 @@ trait GenPrimitiveOps extends GenBase with QuoteGen {
     case ObjIntegerParseInt(s) => emitValDef(sym, q"parseInt($s, 10)")
     case ObjIntMaxValue() => emitValDef(sym, "Number.MAX_VALUE")
     case ObjIntMinValue() => emitValDef(sym, "Number.MIN_VALUE")
-    case IntDivideFrac(lhs,rhs) => emitValDef(sym, quote(lhs) + " / " + quote(rhs))
+//    case IntDivideFrac(lhs,rhs) => emitValDef(sym, quote(lhs) + " / " + quote(rhs))
     case IntDivide(lhs,rhs) => emitValDef(sym, "Math.floor(" + quote(lhs) + " / " + quote(rhs) + ")")
     case IntMod(lhs,rhs) => emitValDef(sym, quote(lhs) + " % " + quote(rhs))
     case IntBinaryOr(lhs,rhs) => emitValDef(sym, quote(lhs) + " | " + quote(rhs))
@@ -273,6 +273,9 @@ trait GenPrimitiveOps extends GenBase with QuoteGen {
     case LongShiftLeft(lhs,rhs) => emitValDef(sym, quote(lhs) + " << " + quote(rhs))
     case LongShiftRightUnsigned(lhs,rhs) => emitValDef(sym, quote(lhs) + " >>> " + quote(rhs))
     case LongToInt(lhs) => emitValDef(sym, quote(lhs))
+    case IntPlus(lhs, rhs) => emitValDef(sym, quote(lhs) + " + " + quote(rhs))
+    case IntTimes(lhs, rhs) => emitValDef(sym, quote(lhs) + " * " + quote(rhs))
+    case IntMinus(lhs, rhs) => emitValDef(sym, quote(lhs) + " - " + quote(rhs))
     case _ => super.emitNode(sym, rhs)
   }
 }

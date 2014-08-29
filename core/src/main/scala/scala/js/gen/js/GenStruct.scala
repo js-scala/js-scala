@@ -10,8 +10,8 @@ trait GenStruct extends GenBase {
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case Struct(_, elems) =>
       emitValDef(sym, literalObjectDef(elems.toSeq))
-    case Field(struct, index, _) =>
-      emitValDef(sym, literalObjectSelect(struct, index))
+    case Field(struct, index) =>
+      emitValDef(sym, literalObjectSelect(struct: Rep[Any], index))
     case _ => super.emitNode(sym, rhs)
   }
 

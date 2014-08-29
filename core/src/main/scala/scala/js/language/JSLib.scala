@@ -1,8 +1,8 @@
 package scala.js.language
 
-import scala.virtualization.lms.common.Structs
+import scala.virtualization.lms.common.{Record, StructOps}
 
-trait JSLib extends Proxy with Structs {
+trait JSLib extends Proxy with StructOps {
   val window: Rep[Window]
   trait Window {
     def setTimeout(func: Rep[Unit => Unit], delay: Rep[Int]): Rep[Int]

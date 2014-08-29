@@ -16,7 +16,7 @@ object JsScalaBuild extends Build {
   import BuildSettings._
 
   lazy val root = Project(
-    "root",
+    "js-scala",
     file("."),
     settings = buildSettings ++ Seq(
       publishLocal := ()

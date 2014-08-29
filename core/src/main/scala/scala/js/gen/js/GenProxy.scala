@@ -14,7 +14,7 @@ trait GenProxy extends GenEffect {
       ".prototype." + method + ".call" + (receiver::args).map(quote).mkString("(", ",", ")"))
     case FieldAccess(receiver, field) =>  emitValDef(sym,
       quote(receiver) + "." + field)
-    case FieldUpdate(receiver, field, value) =>  emitValDef(sym,
+    case ProxyFieldUpdate(receiver, field, value) =>  emitValDef(sym,
       quote(receiver) + "." + field + " = " + quote(value))
     case _ => super.emitNode(sym, rhs)
   }
