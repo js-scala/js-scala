@@ -23,3 +23,9 @@ examples/d3/d3_.html
 
 # Tests
 ~test-out/*.check
+
+# Vim swap files
+*.swp
+
+# Mac OS X junk
+.DS_Store
