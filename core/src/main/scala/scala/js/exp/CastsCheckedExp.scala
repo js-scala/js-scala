@@ -1,5 +1,7 @@
 package scala.js.exp
 
+import scala.language.implicitConversions
+
 import scala.js.language.Casts
 import scala.virtualization.lms.common.EffectExp
 

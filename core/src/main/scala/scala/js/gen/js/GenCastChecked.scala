@@ -20,7 +20,7 @@ trait GenCastChecked extends GenEffect {
       m.fields foreach { case (name, manifest) => conformsFieldCheck(v, name, manifest) }
     case m if m == Manifest.classType(classOf[String]) => ()
     case Manifest.Int => ()
-    case m if m.erasure.isArray =>
+    case m if m.runtimeClass.isArray =>
       stream.println("""if (!(%1$s instanceof Array)) throw "Not an Array: " + %1$s;""".format(v))
       val List(arrayElem) = m.typeArguments
       stream.println("""for (var i=0; i < %1$s; i++) {""".format(v + ".length"))

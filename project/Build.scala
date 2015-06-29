@@ -5,10 +5,9 @@ object BuildSettings {
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "EPFL",
     version := "0.4-SNAPSHOT",
-    scalaVersion := "2.10.2-RC1",
+    scalaVersion := "2.11.2",
     scalaOrganization := "org.scala-lang.virtualized",
-    resolvers += Resolver.sonatypeRepo("snapshots"),
-    addCompilerPlugin("org.scala-lang.virtualized.plugins" % "macro-paradise_2.10.2-RC1" % "2.0.0-SNAPSHOT")
+    resolvers += Resolver.sonatypeRepo("snapshots")
   )
 }
 
@@ -27,7 +26,7 @@ object JsScalaBuild extends Build {
     "core",
     file("core"),
     settings = buildSettings ++ Seq(
-      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics"/*, "-Ymacro-debug-lite"*/),
+      scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics"/*, "-Ymacro-debug-lite"*/),
 
       name := "js-scala",
 
@@ -39,10 +38,11 @@ object JsScalaBuild extends Build {
       autoCompilerPlugins := true,
     
       libraryDependencies ++= Seq(
-        "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
+        "org.scalatest" %% "scalatest" % "2.2.2" % "test",
         "EPFL" %% "lms" % "0.3-SNAPSHOT",
         "org.scala-lang.virtualized" % "scala-reflect" % scalaVersion.value,
-        compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % scalaVersion.value)
+        compilerPlugin("org.scala-lang.plugins" % "scala-continuations-plugin_2.11.2" % "1.0.2")
+
       )
     )
   )
@@ -53,8 +53,9 @@ object JsScalaBuild extends Build {
     settings = buildSettings ++ Seq(
       publishLocal := (),
       autoCompilerPlugins := true,
-      libraryDependencies += compilerPlugin("org.scala-lang.virtualized.plugins" % "continuations" % scalaVersion.value),
-      scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics")
+      libraryDependencies += compilerPlugin("org.scala-lang.plugins" % "scala-continuations-plugin_2.11.2" % "1.0.2"),
+
+      scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xexperimental", "-P:continuations:enable", "-Yvirtualize", "-language:dynamics")
     )
   ) dependsOn core
 

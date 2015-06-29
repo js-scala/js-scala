@@ -26,7 +26,7 @@ trait TraitsExp extends Traits with ProxyExp {
   private var registered : Map[String, Exp[Constructor[Any]]] = Map()
   private def registerInternal[T<:AnyRef:Manifest](outer: AnyRef) : Exp[Constructor[T]] = {
     val m = implicitly[Manifest[T]]
-    val traitClazz = m.erasure
+    val traitClazz = m.runtimeClass
     val key = traitClazz.getName
 
     registered.get(key) match {
@@ -35,7 +35,7 @@ trait TraitsExp extends Traits with ProxyExp {
     }
 
     val implClazz = Class.forName(traitClazz.getName + "$class")
-    val parents = traitClazz.getInterfaces.filter(_ != implicitly[Manifest[scala.ScalaObject]].erasure)
+    val parents = traitClazz.getInterfaces.filter(_ != implicitly[Manifest[AnyRef]].runtimeClass)
     assert (parents.length < 2, "Only single inheritance is supported.")
     val parentConstructor = if (parents.length == 0) None else Some(registerInternal[AnyRef](outer)(Manifest.classType(parents(0))))
     val parent = parentConstructor.map(c => ParentTemplate(c, create[AnyRef](c)))
