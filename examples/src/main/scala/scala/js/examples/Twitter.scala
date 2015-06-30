@@ -1,5 +1,7 @@
 package scala.js.examples
 
+import scala.language.reflectiveCalls
+
 import scala.util.continuations._
 import java.io.PrintWriter
 import Predef.{any2stringadd => _, _}

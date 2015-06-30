@@ -1,5 +1,7 @@
 package scala.js.language
 
+import scala.language.implicitConversions
+
 import scala.virtualization.lms.common.Base
 
 trait JSLiteral extends Base with EmbeddedControls {

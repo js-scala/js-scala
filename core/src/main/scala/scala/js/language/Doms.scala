@@ -1,5 +1,7 @@
 package scala.js.language
 
+import scala.language.implicitConversions
+
 trait Doms extends Proxy {
   trait Element {
     def getElementById(id: Rep[String]): Rep[Element]

@@ -9,7 +9,7 @@ trait ElementOpsExp extends ElementOps with EffectExp with EventOpsExp with Sele
   def css_fontweight(css: Rep[CSSStyleDeclaration]) = foreign"$css.fontWeight"[Int].withEffect()
   def css_set_fontweight(css: Rep[CSSStyleDeclaration], v: Rep[Int]) = foreign"$css.fontWeight = $v".withEffect()
 
-  def element_setAttribute(e: Exp[Element], name: Exp[String], value: Exp[Any]) = foreign"$e.setAttribute($name, $value)".withEffect()
+  override def element_setAttribute(e: Exp[Element], name: Exp[String], value: Exp[_]):Rep[Unit] = foreign"$e.setAttribute($name, $value)".withEffect()
   def element_tagName(e: Exp[Element]) = foreign"$e.tagName"[String]
   def element_className(e: Exp[Element]) = foreign"$e.className"[String].withEffect()
   def element_parentNode(e: Exp[Element]) = foreign"$e.parentNode"[Option[Element]].withEffect()

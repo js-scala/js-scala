@@ -1,5 +1,8 @@
 package scala.js.language
 
+import scala.language.implicitConversions
+import scala.language.reflectiveCalls
+
 import scala.util.continuations._
 import scala.virtualization.lms.common._
 
@@ -47,8 +50,8 @@ trait CPS extends JS with LiftVariables with Proxy {
   }
 
   def suspendableWhile(cond: => Rep[Boolean])(body: => Rep[Unit] @suspendable): Rep[Unit] @suspendable = shift { k =>
-    lazy val rec: Rep[Unit => Unit] = fun { () => if (cond) reset { body; rec() } else k() }
-    rec()
+    lazy val rec: Rep[Unit => Unit] = fun { () => if (cond) reset { body; rec(()) } else k(()) }
+    rec(())
   }
   
   class DataFlowCell[A: Manifest](cell: Cell[A]) extends java.io.Serializable {

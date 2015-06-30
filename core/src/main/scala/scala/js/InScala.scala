@@ -1,5 +1,8 @@
 package scala.js
 
+import scala.language.implicitConversions
+import scala.language.existentials
+
 import scala.virtualization.lms.common._
 import scala.reflect.SourceContext
 import scala.js.language._
@@ -233,7 +236,7 @@ trait JSProxyInScala extends Proxy with InScala {
 
 trait JSTraitsInScala extends Traits with JSProxyInScala {
   def create[T<:AnyRef:Manifest](): T =
-    throw new RuntimeException("don't know how to create " + implicitly[Manifest[T]].erasure.getName)
+    throw new RuntimeException("don't know how to create " + implicitly[Manifest[T]].runtimeClass.getName)
   def register[T<:AnyRef:Manifest](outer: AnyRef): Factory[T] =
     new Factory[T] {
       override def apply() = create[T]()

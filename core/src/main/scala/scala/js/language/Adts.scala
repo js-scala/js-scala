@@ -1,5 +1,7 @@
 package scala.js.language
 
+import scala.language.higherKinds
+
 import scala.language.experimental.macros
 import scala.virtualization.lms.common.Functions
 
@@ -40,7 +42,7 @@ trait Adts extends Functions {
    * 
    * @return a staged smart constructor for the data type T
    */
-  def adt[T <: Adt] = macro AdtsImpl.adt[T]
+  def adt[T <: Adt]: AnyRef = macro AdtsImpl.adt[T]
   
   /**
    * {{{
@@ -57,22 +59,22 @@ trait Adts extends Functions {
    *
    * @return an object with staged members for the type T
    */
-  def adtOps[T <: Adt](o: Rep[T]) = macro AdtsImpl.ops[T, Rep]
+  def adtOps[T <: Adt](o: Rep[T]): AnyRef = macro AdtsImpl.ops[T, Rep]
 
 }
 
 object AdtsImpl {
 
-  import scala.reflect.macros.Context
+  import scala.reflect.macros.whitebox.Context
 
   trait Adt
 
   def adt[U <: Adt : c.WeakTypeTag](c: Context) =
-    c.Expr[Any](new Generator[c.type](c).construct[U])
+    c.Expr[AnyRef](new Generator[c.type](c).construct[U])
 
 
   def ops[U <: Adt : c.WeakTypeTag, R[_]](c: Context)(o: c.Expr[R[U]]) =
-    c.Expr[Any](new Generator[c.type](c).ops(o))
+    c.Expr[AnyRef](new Generator[c.type](c).ops(o))
 
 
   class Generator[C <: Context](val c: C) {
@@ -99,13 +101,13 @@ object AdtsImpl {
         base.knownDirectSubclasses.foldLeft(List(base)) { (result, symbol) =>
           val clazz = symbol.asClass
           if (clazz.isCaseClass) clazz :: result
-          else if (clazz.isSealed && (clazz.isTrait || clazz.isAbstractClass)) subHierarchy(clazz) ++ result
+          else if (clazz.isSealed && (clazz.isTrait || clazz.isAbstract)) subHierarchy(clazz) ++ result
           else c.abort(c.enclosingPosition, "A class hierarchy may only contain case classes, sealed traits and sealed abstract classes")
         }
       }
 
       subHierarchy(rootClass)
-        .sortBy(_.name.decoded)
+        .sortBy(_.name.decodedName.toString)
         .ensuring(_.nonEmpty, s"Oops: whole hierarchy of $rootClass is empty")
     }
 
@@ -122,14 +124,14 @@ object AdtsImpl {
     object Member {
       def apply(symbol: Symbol) = {
         // Trim because case classes members introduce a trailing space
-        val nameStr = symbol.name.decoded.trim
-        new Member(nameStr, newTermName(nameStr), symbol.typeSignature)
+        val nameStr = symbol.name.decodedName.toString.trim
+        new Member(nameStr, TermName(nameStr), symbol.typeSignature)
       }
     }
 
     /** @return The members of the type `tpe` */
     def listMembers(tpe: Type): List[Member] =
-      tpe.typeSymbol.typeSignature.declarations.toList.collect { case x: TermSymbol if x.isVal && x.isCaseAccessor => Member(x) }
+      tpe.typeSymbol.typeSignature.decls.toList.collect { case x: TermSymbol if x.isVal && x.isCaseAccessor => Member(x) }
 
     /**
      * Expands to a value providing staged operations on algebraic data types.
@@ -159,9 +161,9 @@ object AdtsImpl {
      */
     // TODO Simplify the expansion
     def ops[U <: Adt : c.WeakTypeTag, R[_]](obj: c.Expr[R[U]]) = {
-      val anon = newTypeName(c.fresh)
-      val wrapper = newTypeName(c.fresh)
-      val ctor = newTermName(c.fresh)
+      val anon = TypeName(c.freshName)
+      val wrapper = TypeName(c.freshName)
+      val ctor = TermName(c.freshName)
 
       val U = weakTypeOf[U]
       val members = listMembers(U)
@@ -169,7 +171,7 @@ object AdtsImpl {
         c.abort(c.enclosingPosition, s"$U must be a sealed trait, an abstract class or a case class")
       }
       val typeSymbol = U.typeSymbol.asClass
-      if (!(typeSymbol.isCaseClass || (typeSymbol.isSealed && (typeSymbol.isTrait || typeSymbol.isAbstractClass)))) {
+      if (!(typeSymbol.isCaseClass || (typeSymbol.isSealed && (typeSymbol.isTrait || typeSymbol.isAbstract)))) {
         c.abort(c.enclosingPosition, s"$U must be a sealed trait, an abstract class or a case class")
       }
 
@@ -216,7 +218,7 @@ object AdtsImpl {
           }
         """
 
-      val variants2 = wholeHierarchy[U].filter(_.isCaseClass).map(s => s -> newTermName(c.fresh()))
+      val variants2 = wholeHierarchy[U].filter(_.isCaseClass).map(s => s -> TermName(c.freshName))
 
       val paramsFold = for((param, symbol) <- variants2) yield q"val $symbol: (Rep[$param] => Rep[A])"
 
@@ -266,7 +268,7 @@ object AdtsImpl {
       val U = weakTypeOf[U]
       if (U.typeSymbol.asClass.isCaseClass) {
         val members = listMembers(U)
-        val objName = U.typeSymbol.name
+        val objName:c.TypeName = U.typeSymbol.name.asInstanceOf[c.TypeName]
         val paramsDef = for(member <- members) yield q"val ${member.term}: Rep[${member.tpe}]"
         val paramsConstruct = for(member <- members) yield q"${member.name} -> ${member.term}"
         val paramsType = for(member <- members) yield tq"Rep[${member.tpe}]"
@@ -278,7 +280,7 @@ object AdtsImpl {
           }
         }
         q"""
-        new ${newTypeName("Function" + paramsType.length)}[..$paramsType, Rep[$objName]] {
+        new ${TypeName("Function" + paramsType.length)}[..$paramsType, Rep[$objName]] {
           def apply(..$paramsDef) = adt_construct[$objName](..$allParams)
         }
        """

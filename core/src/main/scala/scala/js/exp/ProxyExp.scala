@@ -21,7 +21,7 @@ trait ProxyExp extends Proxy with EffectExp {
   }
 
   def proxy[T<:AnyRef](x: Rep[T], parentConstructor: Option[Rep[Any]], outer: AnyRef)(implicit m: Manifest[T]): T = {
-    val clazz = m.erasure
+    val clazz = m.runtimeClass
     val handler = new JSInvocationHandler(x, parentConstructor, outer)
     val proxy = jreflect.Proxy.newProxyInstance(clazz.getClassLoader(), Array(clazz), handler)
     proxy.asInstanceOf[T]

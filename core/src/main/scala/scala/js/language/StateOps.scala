@@ -1,5 +1,8 @@
 package scala.js.language
 
+import scala.language.implicitConversions
+import scala.language.higherKinds
+
 import scala.virtualization.lms.common.Base
 
 trait StateOps extends Base {

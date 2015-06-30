@@ -1,5 +1,7 @@
 package scala.js.exp
 
+import scala.language.implicitConversions
+
 import scala.js.language.JSLiteral
 import scala.virtualization.lms.common._
  
